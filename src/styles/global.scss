@@ -1,0 +1,250 @@
+@use 'variables' as v;
+
+// ── Fonts ──────────────────────────────────────────────
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap");
+
+// ── CSS Custom Properties ─────────────────────────────────────
+:root {
+  --primary:      #{v.$primary};
+  --primary-dk:   #{v.$primary-dk};
+  --primary-lt:   #{v.$primary-lt};
+  --accent:       #{v.$accent};
+  --navy:         #{v.$navy};
+  --navy-lt:      #{v.$navy-lt};
+  --text:         #{v.$text};
+  --text-muted:   #{v.$text-muted};
+  --border:       #{v.$border};
+  --bg-main:      #{v.$bg-main};
+  --bg-card:      #{v.$bg-card};
+  --white:        #{v.$white};
+  --radius:       #{v.$radius};
+  --radius-sm:    #{v.$radius-sm};
+  --shadow:       #{v.$shadow};
+  --shadow-hover: #{v.$shadow-hover};
+  --ff-head:      #{v.$ff-head};
+  --ff-body:      #{v.$ff-body};
+}
+
+// ── Mixins ────────────────────────────────────────────────────
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-middle {
+  display: flex;
+  align-items: center;
+}
+
+@mixin card-base {
+  background: v.$bg-card;
+  border-radius: v.$radius;
+  border: 1.5px solid v.$border;
+  transition: all 0.3s;
+}
+
+@mixin card-hover {
+  transform: translateY(-6px);
+  box-shadow: v.$shadow-hover;
+  border-color: v.$primary;
+}
+
+@mixin grad-primary {
+  background: linear-gradient(135deg, v.$primary 0%, v.$primary-dk 100%);
+}
+
+@mixin pill {
+  border-radius: 50px;
+}
+
+@mixin lift($y: -2px, $shadow: null) {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+
+  &:hover {
+    transform: translateY($y);
+
+    @if $shadow {
+      box-shadow: $shadow;
+    }
+  }
+}
+
+@mixin square($size) {
+  width: $size;
+  height: $size;
+}
+
+@mixin img-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+// ── Placeholder (extend) ──────────────────────────────────────
+
+%badge-pill {
+  display: inline-flex;
+  align-items: center;
+  @include pill;
+  font-weight: 700;
+  font-size: 0.74rem;
+  padding: 5px 12px;
+}
+
+%icon-box {
+  @include flex-center;
+  border-radius: 18px;
+  transition: transform 0.25s;
+}
+
+// ── Reset & Base ──────────────────────────────────────────────
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: v.$ff-body;
+  color: v.$text;
+  background: v.$bg-main;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+// ── Global utility classes ────────────────────────────────────
+
+.section-pad {
+  padding: 80px 0;
+}
+
+// ── Section Header ────────────────────────────────────────────
+
+.sec-header {
+  text-align: center;
+  margin-bottom: 52px;
+}
+
+.sec-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: v.$primary-lt;
+  color: v.$primary-dk;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 6px 16px;
+  border-radius: 50px;
+  margin-bottom: 16px;
+
+  span {
+    margin-top: 2px;
+  }
+}
+
+.sec-title {
+  font-family: v.$ff-head;
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  color: v.$navy;
+  line-height: 1.25;
+  margin-bottom: 14px;
+
+  em {
+    font-style: italic;
+    color: v.$primary;
+  }
+}
+
+.sec-sub {
+  color: v.$text-muted;
+  max-width: 520px;
+  margin: 0 auto;
+  font-size: 0.97rem;
+}
+
+// ── Outline Button ────────────────────────────────────────────
+
+.btn-outline-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 2px solid v.$primary;
+  color: v.$primary;
+  @include pill;
+  padding: 12px 32px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.25s;
+
+  &:hover {
+    @include grad-primary;
+    color: v.$white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(11, 163, 163, 0.25);
+  }
+}
+
+// ── Brand ─────────────────────────────────────────────────────
+
+.brand-icon {
+  @include square(38px);
+  @include grad-primary;
+  border-radius: 10px;
+  @include flex-center;
+  color: v.$white;
+  font-size: 1.1rem;
+
+  &.sm {
+    @include square(32px);
+    font-size: 0.95rem;
+  }
+}
+
+.brand-text {
+  font-family: v.$ff-head;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: v.$navy;
+
+  span:first-child { color: v.$accent; }
+  span:last-child  { color: v.$primary; }
+}
+
+// ── Keyframe Animations ───────────────────────────────────────
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
+}

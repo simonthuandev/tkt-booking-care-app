@@ -1,0 +1,321 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=DM+Sans:wght@400;500;600&display=swap');
+
+// ─── Design tokens ────────────────────────────────────────────────────────────
+$brand-primary : #0d6e56;
+$brand-accent  : #1aab84;
+$brand-light   : #e8f7f3;
+$text-main     : #1a2e27;
+$text-muted    : #6b8c81;
+$nav-bg        : #ffffff;
+$nav-border    : rgba(16, 108, 89, 0.12);
+$nav-shadow    : 0 2px 24px rgba(13, 110, 86, 0.08);
+$transition    : 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+
+$font-display  : 'Playfair Display', serif;
+$font-body     : 'DM Sans', sans-serif;
+
+// ─── Navbar shell ─────────────────────────────────────────────────────────────
+.hc-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  background: $nav-bg;
+  border-bottom: 1.5px solid $nav-border;
+  box-shadow: $nav-shadow;
+  font-family: $font-body;
+  padding: 0 !important;
+  transition: box-shadow $transition;
+
+  &.scrolled {
+    box-shadow: 0 4px 32px rgba(13, 110, 86, 0.13);
+  }
+
+  .container {
+    max-width: 1240px;
+    height: 68px;
+    display: flex;
+    align-items: center;
+  }
+}
+
+// ─── Brand / Logo ─────────────────────────────────────────────────────────────
+.hc-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none !important;
+  flex-shrink: 0;
+
+  &:hover .hc-brand-icon {
+    transform: rotate(-6deg) scale(1.07);
+    box-shadow: 0 4px 16px rgba(13, 110, 86, 0.32);
+  }
+}
+
+.hc-brand-icon {
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg, $brand-primary 0%, $brand-accent 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(13, 110, 86, 0.25);
+  flex-shrink: 0;
+  transition: transform $transition, box-shadow $transition;
+
+  svg {
+    width: 20px;
+    height: 20px;
+    fill: white;
+  }
+}
+
+.hc-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.hc-brand-name {
+  font-family: $font-display;
+  font-size: 18px;
+  color: $brand-primary;
+  letter-spacing: -0.3px;
+  font-weight: 600;
+}
+
+.hc-brand-tagline {
+  font-size: 10px;
+  color: $text-muted;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+// ─── Center nav menu ──────────────────────────────────────────────────────────
+.hc-nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  .nav-item {
+    position: relative;
+  }
+}
+
+.hc-nav-link {
+  display: block;
+  padding: 6px 14px;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: $text-main !important;
+  text-decoration: none !important;
+  border-radius: 8px;
+  transition: color $transition, background $transition;
+  position: relative;
+  white-space: nowrap;
+
+  // Animated underline
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%) scaleX(0);
+    width: calc(100% - 28px);
+    height: 2px;
+    background: $brand-accent;
+    border-radius: 2px;
+    transition: transform $transition;
+    transform-origin: center;
+  }
+
+  &:hover {
+    color: $brand-primary !important;
+    background: $brand-light;
+
+    &::after {
+      transform: translateX(-50%) scaleX(1);
+    }
+  }
+
+  &.active {
+    color: $brand-primary !important;
+    background: $brand-light;
+    font-weight: 600;
+
+    &::after {
+      transform: translateX(-50%) scaleX(1);
+    }
+  }
+}
+
+// ─── Right actions ────────────────────────────────────────────────────────────
+.hc-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+// Search button
+.hc-search-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px 7px 11px;
+  border: 1.5px solid $nav-border;
+  border-radius: 40px;
+  background: $brand-light;
+  color: $brand-primary;
+  font-family: $font-body;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all $transition;
+  white-space: nowrap;
+
+  svg {
+    width: 15px;
+    height: 15px;
+    stroke: $brand-primary;
+    flex-shrink: 0;
+    transition: stroke $transition;
+  }
+
+  &:hover {
+    background: $brand-primary;
+    color: white;
+    border-color: $brand-primary;
+    box-shadow: 0 4px 14px rgba(13, 110, 86, 0.22);
+    transform: translateY(-1px);
+
+    svg {
+      stroke: white;
+    }
+  }
+}
+
+// Vertical divider
+.hc-divider {
+  width: 1px;
+  height: 24px;
+  background: $nav-border;
+  flex-shrink: 0;
+}
+
+// Login button
+.hc-login-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 20px;
+  border-radius: 40px;
+  background: linear-gradient(135deg, $brand-primary 0%, $brand-accent 100%);
+  color: white !important;
+  font-family: $font-body;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none !important;
+  border: none;
+  cursor: pointer;
+  transition: all $transition;
+  box-shadow: 0 2px 10px rgba(13, 110, 86, 0.2);
+  white-space: nowrap;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(13, 110, 86, 0.32);
+    color: white !important;
+  }
+}
+
+// User chip (authenticated state)
+.hc-user-chip {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 14px 5px 6px;
+  border: 1.5px solid $nav-border;
+  border-radius: 40px;
+  background: white;
+  cursor: pointer;
+  transition: all $transition;
+  text-decoration: none !important;
+
+  &:hover {
+    border-color: $brand-accent;
+    box-shadow: 0 2px 12px rgba(13, 110, 86, 0.12);
+    background: $brand-light;
+  }
+}
+
+.hc-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $brand-primary, $brand-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  font-family: $font-body;
+}
+
+.hc-username {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: $text-main;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// ─── Mobile toggler ───────────────────────────────────────────────────────────
+.hc-toggler {
+  border: 1.5px solid $nav-border !important;
+  border-radius: 8px !important;
+  padding: 6px 10px !important;
+  color: $brand-primary !important;
+
+  &:focus {
+    box-shadow: 0 0 0 3px rgba(13, 110, 86, 0.15) !important;
+  }
+}
+
+// ─── Mobile collapse panel ────────────────────────────────────────────────────
+@media (max-width: 991.98px) {
+  .hc-collapse-panel {
+    padding: 12px 0 16px;
+    border-top: 1px solid $nav-border;
+    margin-top: 8px;
+  }
+
+  .hc-nav-menu {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    margin-bottom: 12px;
+
+    .nav-item {
+      width: 100%;
+    }
+  }
+
+  .hc-nav-link {
+    padding: 10px 12px;
+  }
+
+  .hc-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}

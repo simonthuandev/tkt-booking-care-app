@@ -1,0 +1,42 @@
+// ── Colors ───────────────────────────────────────────────────
+$primary:     #0ba3a3;
+$primary-dk:  #077d7d;
+$primary-lt:  #e6f7f7;
+$accent:      #ff6b35;
+$navy:        #0d2b45;
+$navy-lt:     #1a3a5c;
+$text:        #1a2b3c;
+$text-muted:  #6b7f8e;
+$border:      #e2ebf0;
+$bg-main:     #f7fafb;
+$bg-card:     #ffffff;
+$white:       #ffffff;
+
+// ── Star / rating color ───────────────────────────────────────
+$star:        #f5a623;
+
+// ── Typography ───────────────────────────────────────────────
+$ff-head:     'Playfair Display', serif;
+$ff-body:     'DM Sans', sans-serif;
+
+// ── Spacing & Shape ──────────────────────────────────────────
+$radius:      16px;
+$radius-sm:   10px;
+
+// ── Elevation ────────────────────────────────────────────────
+$shadow:      0 4px 24px rgba(13, 43, 69, 0.08);
+$shadow-hover: 0 12px 40px rgba(13, 43, 69, 0.14);
+
+// ── Gradient helpers ─────────────────────────────────────────
+// Cách Dùng: background: v.grad-primary();
+@function grad-primary() {
+  @return linear-gradient(135deg, $primary 0%, $primary-dk 100%);
+}
+
+// ── Breakpoints ──────────────────────────────────────────────
+$bp-xl:   1200px;
+$bp-lg:   992px;
+$bp-md:   768px;
+$bp-sm:   576px;
+$bp-xs:   480px;
+$bp-xxs:  376px;

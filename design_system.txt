@@ -1,0 +1,91 @@
+/
+├── (GuestLayout)
+│   ├── index                                 -> Home / landing
+│   ├── doctors                               -> Doctor listing
+│   ├── doctors/:doctorId                     -> Doctor detail profile
+│   ├── specialties                           -> Specialty listing
+│   ├── specialties/:specialtySlug            -> Specialty detail + doctors
+│   ├── hospitals                             -> Hospital/clinic listing
+│   ├── hospitals/:hospitalId                 -> Hospital detail + doctors
+│   ├── news                                  -> News listing
+│   ├── news/:newsId                          -> News detail
+│   ├── services                              -> Service listing
+│   ├── services/:serviceId                   -> Service detail
+│   ├── search                                -> Unified search results
+│   ├── about                                 -> Platform/about page
+│   └── contact                               -> Contact/support
+
+/auth
+├── (AuthLayout + GuestOnlyGuard)
+│   ├── login                                 -> Sign in
+│   ├── register                              -> Sign up
+│   ├── forgot-password                       -> Request reset link
+│   ├── reset-password/:token                 -> Reset password
+│   ├── verify-email/:token                   -> Email verification
+│   └── oauth/callback                        -> Social login callback
+
+/app
+├── (ProtectedGuard + AppLayout)
+│   ├── profile-setup                         -> First-time profile completion (optional gate)
+│   ├── user
+│   │   ├── (RoleGuard: patient/user)
+│   │   ├── dashboard                         -> User overview
+│   │   ├── booking
+│   │   │   ├── :doctorId/confirm             -> Fill form and confirm
+│   │   │   ├── :doctorId/payment             -> Payment online (optional)
+│   │   │   └── success/:appointmentId        -> Completion page
+│   │   ├── appointments
+│   │   │   ├── upcoming                       -> Upcoming appointments
+│   │   │   ├── history                        -> Past appointments
+│   │   │   ├── :appointmentId                 -> Appointment detail
+│   │   │   ├── :appointmentId/reschedule      -> Reschedule flow
+│   │   │   └── :appointmentId/cancel          -> Cancellation flow
+│   │   ├── medical-records                    -> Personal records/documents
+│   │   ├── notifications                      -> Alerts/reminders
+│   │   ├── favorites/doctors                  -> Saved doctors
+│   │   └── settings                           -> Account settings
+│   ├── doctor
+│   │   ├── (RoleGuard: doctor)
+│   │   ├── dashboard                          -> Trang tổng quan của bác sĩ 
+│   │   ├── schedules
+│   │   │   ├── index                          -> Quản lý lịch làm việc tuần / tháng
+│   │   │   ├── time-blocks                    -> Đăng kí khung giờ nghỉ, bận đột xuất 
+│   │   ├── appointments
+│   │   │   ├── upcoming                       -> Danh sách lịch hẹn sắp tới
+│   │   │   ├── today                          -> Danh sách lịch hẹn hôm nay
+│   │   │   ├── history                        -> Danh sách lịch hẹn trong quá khứ
+│   │   │   ├── :appointmentId                 -> Xem chi tiết lịch hẹn
+│   │   ├── patients
+│   │   │   ├── index                          -> Danh sách các bệnh nhân từng khám với bác sĩ này
+│   │   │   ├── :patientId                     -> Thông tin chi tiết về bệnh nhân
+│   │   ├── notifications                      -> Alerts/reminders
+│   │   └── settings                           -> Account settings
+│   └── admin
+│       ├── (RoleGuard: admin)
+│       ├── dashboard                          -> Admin KPI overview
+│       ├── doctors
+│       │   ├── index                          -> Doctor management list
+│       │   ├── create                         -> Create doctor profile
+│       │   ├── :doctorId                      -> Doctor detail/admin view
+│       │   └── :doctorId/edit                 -> Update doctor profile
+│       ├── schedules
+│       │   ├── index                          -> Manage schedule templates
+│       │   └── doctor/:doctorId               -> Doctor-specific schedule
+│       ├── appointments
+│       │   ├── index                          -> Global appointment queue
+│       │   └── :appointmentId                 -> Admin appointment detail
+│       ├── patients                           -> Patient directory
+│       ├── specialties                        -> Specialty taxonomy management
+│       ├── news                               -> News management
+│       ├── services                           -> Service management
+│       ├── hospitals                          -> Hospital/clinic management
+│       ├── users                              -> Staff/user account management
+│       ├── reports                            -> Operational/financial reports
+│       └── settings                           -> System-level settings
+
+/system
+├── 403                                        -> Unauthorized
+├── 404                                        -> Not found
+└── 500                                        -> Error fallback
+
+*                                              -> Catch-all redirect to /system/404
