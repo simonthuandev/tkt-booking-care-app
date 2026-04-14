@@ -28,59 +28,32 @@
 ├── (ProtectedGuard + AppLayout)
 │   ├── user
 │   │   ├── (RoleGuard: patient/user)
-│   │   ├── dashboard                         -> User overview
-│   │   ├── booking
-│   │   │   ├── :doctorId/confirm             -> Fill form and confirm
-│   │   │   ├── :doctorId/payment             -> Payment online (optional)
-│   │   │   └── success/:appointmentId        -> Completion page
-│   │   ├── appointments
-│   │   │   ├── upcoming                       -> Upcoming appointments
-│   │   │   ├── history                        -> Past appointments
-│   │   │   ├── :appointmentId                 -> Appointment detail
-│   │   │   ├── :appointmentId/reschedule      -> Reschedule flow
-│   │   │   └── :appointmentId/cancel          -> Cancellation flow
-│   │   ├── medical-records                    -> Personal records/documents
-│   │   ├── notifications                      -> Alerts/reminders
-│   │   ├── favorites/doctors                  -> Saved doctors
-│   │   └── settings                           -> Account settings
+│   │   ├── dashboard                          -> Trang tổng quan của người dùng / bệnh nhân
+│   │   ├── booking/:doctorId                  -> Điền form và xác nhận đặt lịch
+│   │   ├── appointments                       -> Bệnh nhân được xem lịch hẹn của mình (quá khứ, sắp tới)
+│   │   ├── medical-records                    -> Bệnh nhân được xem hồ sơ bệnh án của mình
+│   │   └── settings                           -> Trang cài đặt của bác sĩ
 │   ├── doctor
 │   │   ├── (RoleGuard: doctor)
 │   │   ├── dashboard                          -> Trang tổng quan của bác sĩ 
-│   │   ├── schedules
-│   │   │   ├── index                          -> Quản lý lịch làm việc tuần / tháng
-│   │   │   ├── time-blocks                    -> Đăng kí khung giờ nghỉ, bận đột xuất 
-│   │   ├── appointments
-│   │   │   ├── upcoming                       -> Danh sách lịch hẹn sắp tới
-│   │   │   ├── today                          -> Danh sách lịch hẹn hôm nay
-│   │   │   ├── history                        -> Danh sách lịch hẹn trong quá khứ
-│   │   │   ├── :appointmentId                 -> Xem chi tiết lịch hẹn
-│   │   ├── patients
-│   │   │   ├── index                          -> Danh sách các bệnh nhân từng khám với bác sĩ này
-│   │   │   ├── :patientId                     -> Thông tin chi tiết về bệnh nhân
-│   │   ├── notifications                      -> Alerts/reminders
-│   │   └── settings                           -> Account settings
+│   │   ├── schedule                           -> Bác sĩ chỉ được xem lịch làm việc, hoặc xin nghỉ phép
+│   │   ├── appointments                       -> Bác sĩ chỉ được xem lịch hẹn với bệnh nhân, và điền form khám bệnh
+│   │   ├── patients                           -> Bác sĩ chỉ được xem thông tin bệnh nhân mình đã khám
+│   │   └── settings                           -> Trang cài đặt của bác sĩ
 │   └── admin
 │       ├── (RoleGuard: admin)
-│       ├── dashboard                          -> Admin KPI overview
-│       ├── doctors
-│       │   ├── index                          -> Doctor management list
-│       │   ├── create                         -> Create doctor profile
-│       │   ├── :doctorId                      -> Doctor detail/admin view
-│       │   └── :doctorId/edit                 -> Update doctor profile
-│       ├── schedules
-│       │   ├── index                          -> Manage schedule templates
-│       │   └── doctor/:doctorId               -> Doctor-specific schedule
-│       ├── appointments
-│       │   ├── index                          -> Global appointment queue
-│       │   └── :appointmentId                 -> Admin appointment detail
-│       ├── patients                           -> Patient directory
-│       ├── specialties                        -> Specialty taxonomy management
-│       ├── news                               -> News management
-│       ├── services                           -> Service management
-│       ├── hospitals                          -> Hospital/clinic management
-│       ├── users                              -> Staff/user account management
-│       ├── reports                            -> Operational/financial reports
-│       └── settings                           -> System-level settings
+│       ├── dashboard                          -> Trang tổng quan của admin
+│       ├── doctors                            -> Admin toàn quyền quản lý bác sĩ
+│       ├── schedules                          -> Admin toàn quyền sắp lịch trình cho bác sĩ
+│       ├── appointments                       -> Admin toàn quyền quản lý các lịch hẹn của các bác sĩ
+│       ├── patients                           -> Admin được xem toàn bộ bệnh nhân đã đặt lịch khám trên trang web
+│       ├── specialties                        -> Admin toàn quyền quản lý các chuyên khoa
+│       ├── news                               -> Admin toàn quyền quản lý các bài viết
+│       ├── services                           -> Admin toàn quyền quản lý các dịch vụ
+│       ├── hospitals                          -> Admin toàn quyền quản lý phòng khám / bệnh viện hợp tác
+│       ├── users                              -> Admin toàn quyền quản lý tài khoản
+│       ├── reports                            -> Admin có thể xem báo cáo doanh số
+│       └── settings                           -> Trang cài đặt của admin
 
 /system
 ├── 403                                        -> Unauthorized

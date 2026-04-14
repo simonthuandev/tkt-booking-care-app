@@ -1,8 +1,8 @@
-import { Navigate } from "react-router";
 import ProtectedGate from "../components/Auth/ProtectedGate";
 import ProtectedLayout from "../components/Layout/ProtectedLayout";
 import UserRoute from "./UserRoute";
 import AdminRoute from "./AdminRoute";
+import DoctorRoute from "./DoctorRoute";
 
 const ProtectedRoute = {
   path: "/app",
@@ -13,6 +13,7 @@ const ProtectedRoute = {
       children: [
         UserRoute,
         AdminRoute,
+        DoctorRoute,
       ],
     },
   ],

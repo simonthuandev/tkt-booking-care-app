@@ -10,18 +10,10 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   isAuthenticated: true,
   user: {
-    name: "huynh hoang khoa",
+    name: "nguyen van de quy",
     role: "admin",
   }
 };
-
-// const initialState = {
-//   isAuthenticated: true,
-//   user: {
-//     name: "pham minh tuan",
-//     role: "user",
-//   }
-// };
 
 const authSlice = createSlice({
   name: "auth",

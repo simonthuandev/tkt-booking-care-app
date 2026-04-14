@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 
 const ROLE_REDIRECT = {
   admin: "/app/admin/dashboard",
+  doctor: "/app/doctor/dashboard",
   user: "/app/user/dashboard",
 };
 

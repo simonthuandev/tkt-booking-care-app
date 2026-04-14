@@ -28,8 +28,8 @@ const NavBar = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false); 
 
-  // Thêm shadow khi scroll
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -40,31 +40,28 @@ const NavBar = () => {
     <nav className={`hc-navbar navbar navbar-expand-lg${scrolled ? " scrolled" : ""}`}>
       <div className="container">
 
-        {/* ── Brand ── */}
         <BrandLogo />
 
         {/* ── Mobile toggler ── */}
         <button
           className="navbar-toggler hc-toggler ms-auto"
           type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#hcNavCollapse"
-          aria-controls="hcNavCollapse"
-          aria-expanded="false"
+          onClick={() => setMenuOpen((prev) => !prev)}
+          aria-expanded={menuOpen}
           aria-label="Toggle navigation"
         >
           <span className="navbar-toggler-icon" />
         </button>
 
         {/* ── Collapsible content ── */}
-        <div className="collapse navbar-collapse hc-collapse-panel" id="hcNavCollapse">
+        <div className={`collapse navbar-collapse hc-collapse-panel${menuOpen ? " show" : ""}`}>
 
-          {/* Center menu */}
           <ul className="hc-nav-menu mx-auto">
             {NAV_LINKS.map(({ label, to }) => (
               <li key={to} className="nav-item">
                 <NavLink
                   to={to}
+                  onClick={() => setMenuOpen(false)}
                   className={({ isActive }) =>
                     `hc-nav-link${isActive ? " active" : ""}`
                   }
@@ -75,40 +72,42 @@ const NavBar = () => {
             ))}
           </ul>
 
-          {/* Right actions */}
           <div className="hc-actions">
-
-            {/* Search */}
             <button
               className="hc-search-btn"
-              onClick={() => navigate("/search")}
+              onClick={() => { navigate("/search"); setMenuOpen(false); }}
               aria-label="Tìm kiếm"
             >
               <BsSearch />
               Tìm kiếm
             </button>
 
-            {/* Vertical divider — desktop only */}
             <div className="hc-divider d-none d-lg-block" />
 
-            {/* Auth section */}
             {isAuthenticated && user ? (
-              <NavLink to={`/app/${user.role || ""}/dashboard`} className="hc-user-chip">
+              <NavLink
+                to={`/app/${user.role || ""}/dashboard`}
+                className="hc-user-chip"
+                onClick={() => setMenuOpen(false)}
+              >
                 <div className="hc-avatar" title={user.name}>
                   {getInitials(user.name)}
                 </div>
                 <span className="hc-username">{user.name}</span>
               </NavLink>
             ) : (
-              <NavLink to="/auth/login" className="hc-login-btn">
+              <NavLink
+                to="/auth/login"
+                className="hc-login-btn"
+                onClick={() => setMenuOpen(false)}
+              >
                 <FiUser />
                 Đăng nhập
               </NavLink>
             )}
-
           </div>
-        </div>
 
+        </div>
       </div>
     </nav>
   );

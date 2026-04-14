@@ -1,10 +1,10 @@
-import RoutePage from "../../../../components/Common/RoutePage";
+import RoutePage from "../../../components/Common/RoutePage";
 
 const AdminAppointmentsPage = () => {
   return (
     <RoutePage
       title="Admin Appointments"
-      description="Monitor all appointments across the platform."
+      description="Monitor system KPIs and operational activity."
     />
   );
 };

@@ -1,10 +1,10 @@
-import RoutePage from "../../../../components/Common/RoutePage";
+import RoutePage from "../../../components/Common/RoutePage";
 
 const AdminSchedulesPage = () => {
   return (
     <RoutePage
       title="Admin Schedules"
-      description="Manage scheduling templates and capacity."
+      description="Monitor system KPIs and operational activity."
     />
   );
 };

@@ -12,9 +12,11 @@ import {
   FaStethoscope,
   FaTachometerAlt,
   FaUserInjured,
-  FaUsers,
+  FaHospital,
   FaThList,
+  FaUser
 } from "react-icons/fa";
+import { GrSchedules } from "react-icons/gr";
 
 const MENU_ITEMS = [
   {
@@ -33,7 +35,7 @@ const MENU_ITEMS = [
   {
     key: "user-appointments",
     label: "Appointments",
-    path: "/app/user/appointments/upcoming",
+    path: "/app/user/appointments",
     icon: FaCalendarAlt,
     roles: ["user"],
   },
@@ -61,6 +63,20 @@ const MENU_ITEMS = [
     roles: ["admin"],
   },
   {
+    key: "admin-schedules",
+    label: "Schedules",
+    path: "/app/admin/schedules",
+    icon: GrSchedules,
+    roles: ["admin"],
+  },
+  {
+    key: "admin-appointments",
+    label: "Appointments",
+    path: "/app/admin/appointments",
+    icon: FaCalendarAlt,
+    roles: ["admin"],
+  },
+  {
     key: "admin-patients",
     label: "Patients",
     path: "/app/admin/patients",
@@ -75,6 +91,13 @@ const MENU_ITEMS = [
     roles: ["admin"],
   },
   {
+    key: "admin-news",
+    label: "News",
+    path: "/app/admin/news",
+    icon: FaNewspaper,
+    roles: ["admin"],
+  },
+  {
     key: "admin-services",
     label: "Services",
     path: "/app/admin/services",
@@ -82,10 +105,17 @@ const MENU_ITEMS = [
     roles: ["admin"],
   },
   {
-    key: "admin-news",
-    label: "News",
-    path: "/app/admin/news",
-    icon: FaNewspaper,
+    key: "admin-hospitals",
+    label: "Hospitals",
+    path: "/app/admin/hospitals",
+    icon: FaHospital,
+    roles: ["admin"],
+  },
+  {
+    key: "admin-users",
+    label: "Users",
+    path: "/app/admin/users",
+    icon: FaUser,
     roles: ["admin"],
   },
   {
@@ -95,20 +125,41 @@ const MENU_ITEMS = [
     icon: FaChartBar,
     roles: ["admin"],
   },
+  {
+    key: "admin-settings",
+    label: "Settings",
+    path: "/app/admin/settings",
+    icon: FaCog,
+    roles: ["admin"],
+  },
 
   // Doctor
   {
     key: "doctor-schedule",
     label: "Schedule",
     path: "/app/doctor/schedule",
-    icon: FaCalendarAlt,
+    icon: GrSchedules,
     roles: ["doctor"],
   },
   {
     key: "doctor-appointments",
     label: "Appointments",
     path: "/app/doctor/appointments",
-    icon: FaUsers,
+    icon: FaCalendarAlt,
+    roles: ["doctor"],
+  },
+  {
+    key: "doctor-patients",
+    label: "Patients",
+    path: "/app/doctor/patients",
+    icon:   FaUserInjured,
+    roles: ["doctor"],
+  },
+  {
+    key: "doctor-settings",
+    label: "Settings",
+    path: "/app/doctor/settings",
+    icon: FaCog,
     roles: ["doctor"],
   },
 ];
@@ -154,7 +205,8 @@ const SideBar = () => {
       className="d-flex flex-column border-end bg-white"
       style={{
         width: collapsed ? 84 : 260,
-        minHeight: "100vh",
+        // minHeight: "100vh",
+        height: "100%",
         transition: "width 180ms ease",
         position: "sticky",
         top: 0,
@@ -168,28 +220,18 @@ const SideBar = () => {
         style={{ height: 68, padding: "0 12px" }}
       >
         <div className="d-flex align-items-center gap-2 overflow-hidden">
-          {!collapsed && (             
+          {!collapsed && (
             <div
-              className="d-inline-flex align-items-center justify-content-center"
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 10,
-                background: "linear-gradient(135deg, #0ba3a3 0%, #0a7d8c 100%)",
-                color: "#fff",
-                flexShrink: 0,
-              }}
+              className="rounded-circle bg-secondary-subtle d-inline-flex align-items-center justify-content-center"
+              style={{ width: 34, height: 34, flexShrink: 0 }}
             >
-              <FaStethoscope size={14} />
+              {String(user?.name || "U").trim().charAt(0).toUpperCase()}
             </div>
           )}
-
           {!collapsed && (
-            <div className="text-truncate">
-              <div className="fw-bold" style={{ fontSize: 15, lineHeight: 1.1 }}>
-                TKTBookingCare
-              </div>
-              <small className="text-muted text-capitalize">{role} panel</small>
+            <div className="overflow-hidden">
+              <div className="small fw-semibold text-truncate">{user?.name || "User"}</div>
+              <div className="small text-muted text-capitalize">{role}</div>
             </div>
           )}
         </div>
@@ -225,23 +267,6 @@ const SideBar = () => {
           </NavLink>
         ))}
       </nav>
-
-      <div className="mt-auto border-top p-3">
-        <div className="d-flex align-items-center gap-2">
-          <div
-            className="rounded-circle bg-secondary-subtle d-inline-flex align-items-center justify-content-center"
-            style={{ width: 34, height: 34, flexShrink: 0 }}
-          >
-            {String(user?.name || "U").trim().charAt(0).toUpperCase()}
-          </div>
-          {!collapsed ? (
-            <div className="overflow-hidden">
-              <div className="small fw-semibold text-truncate">{user?.name || "User"}</div>
-              <div className="small text-muted text-capitalize">{role}</div>
-            </div>
-          ) : null}
-        </div>
-      </div>
     </aside>
   );
 };

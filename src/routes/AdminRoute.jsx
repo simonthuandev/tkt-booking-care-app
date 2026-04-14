@@ -10,35 +10,15 @@ const AdminRoute = {
       element: <AdminLayout />,
       children: [
         { path: "dashboard", element: <Admin.AdminDashboardPage /> },
-        {
-          path: "doctors",
-          children: [
-            { index: true, element: <Admin.AdminDoctorsPage /> },
-            { path: "create", element: <Admin.AdminDoctorCreatePage /> },
-            { path: ":doctorId", element: <Admin.AdminDoctorDetailPage /> },
-            { path: ":doctorId/edit", element: <Admin.AdminDoctorEditPage /> },
-          ],
-        },
-        {
-          path: "schedules",
-          children: [
-            { index: true, element: <Admin.AdminSchedulesPage /> },
-            { path: "doctor/:doctorId", element: <Admin.AdminDoctorSchedulePage /> },
-          ],
-        },
-        {
-          path: "appointments",
-          children: [
-            { index: true, element: <Admin.AdminAppointmentsPage /> },
-            { path: ":appointmentId", element: <Admin.AdminAppointmentDetailPage /> },
-          ],
-        },
+        { path: "doctors", element: <Admin.AdminDoctorsPage /> },
+        { path: "schedules", element: <Admin.AdminSchedulesPage /> },
+        { path: "appointments", element: <Admin.AdminAppointmentsPage /> },
         { path: "patients", element: <Admin.AdminPatientsPage /> },
         { path: "specialties", element: <Admin.AdminSpecialtiesPage /> },
+        { path: "news", element: <Admin.AdminNewsPage /> },
+        { path: "services", element: <Admin.AdminServicesPage /> },
         { path: "hospitals", element: <Admin.AdminHospitalsPage /> },
         { path: "users", element: <Admin.AdminUsersPage /> },
-        { path: "services", element: <Admin.AdminServicesPage /> },
-        { path: "news", element: <Admin.AdminNewsPage /> },
         { path: "reports", element: <Admin.AdminReportsPage /> },
         { path: "settings", element: <Admin.AdminSettingsPage /> },
       ],
