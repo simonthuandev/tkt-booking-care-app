@@ -26,7 +26,6 @@
 
 /app
 ├── (ProtectedGuard + AppLayout)
-│   ├── profile-setup                         -> First-time profile completion (optional gate)
 │   ├── user
 │   │   ├── (RoleGuard: patient/user)
 │   │   ├── dashboard                         -> User overview
