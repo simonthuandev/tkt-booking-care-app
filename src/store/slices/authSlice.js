@@ -11,8 +11,8 @@ const initialState = {
   isAuthenticated: true,
   user: {
     name: "nguyen van de quy",
-    role: "admin",
-  }
+    role: "user",
+  },
 };
 
 const authSlice = createSlice({
