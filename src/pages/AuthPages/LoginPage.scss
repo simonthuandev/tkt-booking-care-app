@@ -2,7 +2,7 @@
 @use "../../styles/variables" as v;
 
 .login-container {
-  background: linear-gradient(135deg, v.$navy 0%, v.$navy-lt 100%);
+  background: linear-gradient(135deg, #0d2b45 0%, #0a4a6b 55%, #077d7d 100%);
   min-height: 100vh;
 }
 

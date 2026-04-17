@@ -30,16 +30,15 @@ const ForgotPasswordPage = () => {
         </div>
 
         {/* Button go to gmail */}
-        <button className="btn btn-primary btn-lg w-100 fw-semibold mb-4">
-          Tiếp tục
-        </button>
+        <button className="btn-search-go">Tiếp tục</button>
 
         {/* Goback Login */}
-        <div className="d-flex justify-content-center align-items-center text-secondary">
-          <Link to="/auth/login">
-            <a href="#" className="text-secondary text-decoration-none">
-              Quay lại trang đăng nhập
-            </a>
+        <div className="d-flex justify-content-center align-items-center text-secondary pt-3">
+          <Link
+            to="/auth/login"
+            className="text-secondary text-decoration-none"
+          >
+            Quay lại trang đăng nhập
           </Link>
         </div>
       </div>
