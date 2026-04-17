@@ -17,13 +17,13 @@ import {
   FaClock,
   FaHospital,
 } from "react-icons/fa";
-import "./UserDashboardPage.scss";
+import "./UserDashBoardPage.scss";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MOCK DATA
 // ─────────────────────────────────────────────────────────────────────────────
 const mockUser = {
-  name: "Pham Minh Tuan",
+  name: "nguyen van de quy",
 };
 
 // 4 thẻ thống kê
