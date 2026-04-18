@@ -17,13 +17,13 @@ import {
   FaClock,
   FaHospital,
 } from "react-icons/fa";
-import "./UserDashBoardPage.scss";
+import "./UserDashboardPage.scss";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MOCK DATA
 // ─────────────────────────────────────────────────────────────────────────────
 const mockUser = {
-  name: "nguyen van de quy",
+  name: "Pham Minh Tuan",
 };
 
 // 4 thẻ thống kê
@@ -63,6 +63,7 @@ const statsData = [
 ];
 
 // Danh sách lịch hẹn sắp tới
+// avatarUrl dùng pravatar.cc — stable, không bị block
 const upcomingAppointments = [
   {
     id: 1,
@@ -71,7 +72,7 @@ const upcomingAppointments = [
     date: "Thu, Apr 17, 2026",
     time: "09:00 AM",
     status: "confirmed",
-    avatar: "NA",
+    avatarUrl: "https://i.pravatar.cc/150?img=11",
   },
   {
     id: 2,
@@ -80,7 +81,7 @@ const upcomingAppointments = [
     date: "Sat, Apr 19, 2026",
     time: "02:30 PM",
     status: "pending",
-    avatar: "LB",
+    avatarUrl: "https://i.pravatar.cc/150?img=47",
   },
   {
     id: 3,
@@ -89,7 +90,7 @@ const upcomingAppointments = [
     date: "Mon, Apr 21, 2026",
     time: "10:00 AM",
     status: "confirmed",
-    avatar: "TH",
+    avatarUrl: "https://i.pravatar.cc/150?img=15",
   },
 ];
 
@@ -139,11 +140,18 @@ function StatCard({ label, value, icon: Icon, color, note }) {
 }
 
 // ── AppointmentRow ──────────────────────────────────────────────────────────
-function AppointmentRow({ doctor, specialty, date, time, status, avatar }) {
+function AppointmentRow({ doctor, specialty, date, time, status, avatarUrl }) {
   return (
     <div className="appointment-row">
-      {/* Avatar */}
-      <div className="appointment-row__avatar">{avatar}</div>
+      {/* Avatar – ảnh bác sĩ, fallback về ui-avatars nếu lỗi */}
+      <img
+        src={avatarUrl}
+        alt={doctor}
+        className="appointment-row__avatar"
+        onError={(e) => {
+          e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(doctor)}&background=0ba3a3&color=fff`;
+        }}
+      />
 
       {/* Info */}
       <div className="appointment-row__info">

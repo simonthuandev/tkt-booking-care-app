@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// UserMedicalRecordsPage.scss
+// DoctorAppointmentsPage.scss
 // ─────────────────────────────────────────────────────────────────────────────
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap");
 
@@ -17,6 +17,12 @@ $border: #e2ebf0;
 $bg-main: #f7fafb;
 $bg-card: #ffffff;
 $white: #ffffff;
+$green: #1a9e5c;
+$green-lt: #e6f9f0;
+$danger: #e24b4a;
+$danger-lt: #fef2f2;
+$star: #f5a623;
+$star-lt: #fff8e6;
 $ff-head: "Playfair Display", serif;
 $ff-body: "DM Sans", sans-serif;
 $radius: 16px;
@@ -24,12 +30,6 @@ $radius-sm: 10px;
 $shadow: 0 4px 24px rgba(13, 43, 69, 0.08);
 $shadow-hover: 0 12px 40px rgba(13, 43, 69, 0.14);
 
-// ── Type colors ─────────────────────────────────────────────────────────────
-$lab-color: $primary;
-$presc-color: $navy;
-$img-color: $accent;
-
-// ── Mixin ───────────────────────────────────────────────────────────────────
 @mixin card-base {
   background: $bg-card;
   border-radius: $radius;
@@ -40,22 +40,22 @@ $img-color: $accent;
 // ─────────────────────────────────────────────────────────────────────────────
 // PAGE
 // ─────────────────────────────────────────────────────────────────────────────
-.rec-page {
+.doc-appts-page {
   font-family: $ff-body;
   max-width: 1400px;
 }
 
-// ── Header ──────────────────────────────────────────────────────────────────
-.rec-page__header {
+// ── Header ───────────────────────────────────────────────────────────────────
+.doc-appts-page__header {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 0.75rem;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.5rem;
 }
 
-.rec-page__title {
+.doc-appts-page__title {
   font-family: $ff-head;
   font-size: 2rem;
   font-weight: 700;
@@ -67,124 +67,47 @@ $img-color: $accent;
   }
 }
 
-.rec-page__subtitle {
+.doc-appts-page__subtitle {
   font-size: 0.875rem;
   color: $text-muted;
   margin: 0;
 }
 
-.rec-page__total {
+.doc-appts-page__today-badge {
   display: flex;
   align-items: center;
   gap: 7px;
   font-size: 0.8rem;
-  color: $text-muted;
-  background: $bg-card;
+  font-weight: 600;
+  color: $primary-dk;
+  background: $primary-lt;
   padding: 6px 14px;
   border-radius: 100px;
-  border: 1px solid $border;
+  border: 1px solid rgba($primary, 0.25);
   white-space: nowrap;
 
   svg {
-    color: $primary;
-    font-size: 0.85rem;
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SUMMARY GRID (3 thẻ thống kê)
-// ─────────────────────────────────────────────────────────────────────────────
-.rec-summary-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-bottom: 1.75rem;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.rec-summary-card {
-  @include card-base;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 1.25rem;
-  transition:
-    box-shadow 0.2s,
-    transform 0.2s;
-
-  &:hover {
-    box-shadow: $shadow-hover;
-    transform: translateY(-2px);
-  }
-
-  &__icon {
-    width: 44px;
-    height: 44px;
-    border-radius: $radius-sm;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    flex-shrink: 0;
-  }
-
-  &__value {
-    font-size: 1.35rem;
-    font-weight: 700;
-    color: $text;
-    margin: 0 0 2px;
-    line-height: 1;
-  }
-
-  &__label {
-    font-size: 0.75rem;
-    color: $text-muted;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin: 0;
-  }
-
-  // ── Color variants ──────────────────────────────────
-  &--teal .rec-summary-card__icon {
-    background: $primary-lt;
-    color: $primary;
-  }
-
-  &--navy .rec-summary-card__icon {
-    background: $navy-lt;
-    color: $navy;
-  }
-
-  &--accent .rec-summary-card__icon {
-    background: $accent-lt;
-    color: $accent;
+    font-size: 0.82rem;
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TABS
 // ─────────────────────────────────────────────────────────────────────────────
-.rec-tabs {
+.doc-appts-tabs {
   display: flex;
-  gap: 6px;
-  margin-bottom: 1.25rem;
+  gap: 4px;
   border-bottom: 2px solid $border;
-  padding-bottom: 0;
-  overflow-x: auto; // scroll ngang trên mobile
-
-  // Ẩn scrollbar nhưng vẫn scroll được
+  margin-bottom: 1.25rem;
+  overflow-x: auto;
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
   }
 }
 
-.rec-tabs__btn {
-  display: flex;
+.doc-appts-tabs__btn {
+  display: inline-flex;
   align-items: center;
   gap: 7px;
   padding: 0.6rem 1.1rem;
@@ -192,6 +115,7 @@ $img-color: $accent;
   border: none;
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
+  font-family: $ff-body;
   font-size: 0.85rem;
   font-weight: 500;
   color: $text-muted;
@@ -203,10 +127,6 @@ $img-color: $accent;
     border-color 0.18s,
     background 0.18s;
 
-  svg {
-    font-size: 0.82rem;
-  }
-
   &:hover {
     color: $primary;
     background: $primary-lt;
@@ -216,10 +136,15 @@ $img-color: $accent;
     color: $primary;
     border-bottom-color: $primary;
     font-weight: 600;
+
+    .doc-appts-tabs__count {
+      background: $primary-lt;
+      color: $primary;
+    }
   }
 }
 
-.rec-tabs__count {
+.doc-appts-tabs__count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -234,42 +159,37 @@ $img-color: $accent;
   transition:
     background 0.18s,
     color 0.18s;
-
-  .rec-tabs__btn--active & {
-    background: $primary-lt;
-    color: $primary;
-  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TOOLBAR (Search + Sort)
+// TOOLBAR
 // ─────────────────────────────────────────────────────────────────────────────
-.rec-toolbar {
+.doc-appts-toolbar {
   display: flex;
-  gap: 12px;
-  margin-bottom: 1.25rem;
+  gap: 10px;
+  margin-bottom: 0.75rem;
   flex-wrap: wrap;
 }
 
-// ── Search ──────────────────────────────────────────────────────────────────
-.rec-search {
+// ── Search ───────────────────────────────────────────────────────────────────
+.doc-appts-search {
   flex: 1;
-  min-width: 220px;
+  min-width: 200px;
   position: relative;
 
   &__icon {
     position: absolute;
-    left: 14px;
+    left: 13px;
     top: 50%;
     transform: translateY(-50%);
     color: $text-muted;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     pointer-events: none;
   }
 
   &__input {
     width: 100%;
-    padding: 0.55rem 1rem 0.55rem 2.4rem;
+    padding: 0.55rem 1rem 0.55rem 2.35rem;
     border: 1px solid $border;
     border-radius: $radius-sm;
     font-family: $ff-body;
@@ -284,7 +204,6 @@ $img-color: $accent;
     &::placeholder {
       color: $text-muted;
     }
-
     &:focus {
       border-color: $primary;
       box-shadow: 0 0 0 3px rgba($primary, 0.12);
@@ -292,23 +211,23 @@ $img-color: $accent;
   }
 }
 
-// ── Sort ────────────────────────────────────────────────────────────────────
-.rec-sort {
+// ── Select dropdowns ──────────────────────────────────────────────────────────
+.doc-appts-select-wrap {
   position: relative;
   flex-shrink: 0;
 
   &__icon {
     position: absolute;
-    left: 12px;
+    left: 11px;
     top: 50%;
     transform: translateY(-50%);
     color: $text-muted;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     pointer-events: none;
   }
 
-  &__select {
-    padding: 0.55rem 1rem 0.55rem 2.2rem;
+  select {
+    padding: 0.55rem 1rem 0.55rem 2.1rem;
     border: 1px solid $border;
     border-radius: $radius-sm;
     font-family: $ff-body;
@@ -326,23 +245,35 @@ $img-color: $accent;
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// RECORD LIST
-// ─────────────────────────────────────────────────────────────────────────────
-.rec-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+// ── Results count ─────────────────────────────────────────────────────────────
+.doc-appts-results-count {
+  font-size: 0.8rem;
+  color: $text-muted;
+  margin: 0 0 1rem;
+
+  strong {
+    color: $text;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// RECORD CARD
+// APPOINTMENT LIST
 // ─────────────────────────────────────────────────────────────────────────────
-.rec-card {
+.doc-appts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// APPOINTMENT ROW
+// ─────────────────────────────────────────────────────────────────────────────
+.doc-appt-row {
   @include card-base;
   display: flex;
-  gap: 1.25rem;
-  padding: 1.25rem 1.5rem;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
   transition:
     box-shadow 0.2s,
     transform 0.2s;
@@ -352,167 +283,207 @@ $img-color: $accent;
     transform: translateY(-2px);
   }
 
+  @media (max-width: 900px) {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
   @media (max-width: 576px) {
-    flex-direction: column;
     padding: 1rem;
-    gap: 1rem;
   }
 }
 
-// ── Icon wrap ────────────────────────────────────────────────────────────────
-.rec-card__icon-wrap {
-  width: 50px;
-  height: 50px;
-  border-radius: $radius-sm;
+// ── Avatar ────────────────────────────────────────────────────────────────────
+.doc-appt-row__avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  color: $white;
+  font-size: 0.8rem;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
   flex-shrink: 0;
-  align-self: flex-start;
-
-  &--lab {
-    background: $primary-lt;
-    color: $primary;
-  }
-
-  &--prescription {
-    background: $navy-lt;
-    color: $navy;
-  }
-
-  &--imaging {
-    background: $accent-lt;
-    color: $accent;
-  }
+  letter-spacing: 0.02em;
 }
 
-// ── Body ────────────────────────────────────────────────────────────────────
-.rec-card__body {
+// ── Patient ───────────────────────────────────────────────────────────────────
+.doc-appt-row__patient {
   flex: 1;
-  min-width: 0;
+  min-width: 140px;
 }
 
-.rec-card__top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 6px;
-  flex-wrap: wrap;
-}
-
-.rec-card__title {
-  font-size: 0.95rem;
+.doc-appt-row__name {
+  font-size: 0.9rem;
   font-weight: 700;
   color: $text;
-  margin: 0;
-}
-
-.rec-card__doctor {
+  margin: 0 0 5px;
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.8rem;
-  color: $text-muted;
-  margin: 0 0 8px;
-
-  svg {
-    color: $primary;
-    font-size: 0.75rem;
-    opacity: 0.8;
-  }
-}
-
-.rec-card__note {
-  font-size: 0.8rem;
-  color: $text-muted;
-  margin: 0 0 12px;
-  line-height: 1.6;
-}
-
-// ── Footer: date + actions ───────────────────────────────────────────────────
-.rec-card__footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   flex-wrap: wrap;
-  gap: 0.75rem;
 }
 
-.rec-card__date {
+.doc-appt-row__age {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: $text-muted;
+}
+
+// ── Datetime ──────────────────────────────────────────────────────────────────
+.doc-appt-row__datetime {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+  min-width: 130px;
+}
+
+.doc-appt-row__date,
+.doc-appt-row__time {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   font-size: 0.78rem;
   color: $text-muted;
 
   svg {
+    font-size: 0.7rem;
     color: $primary;
-    font-size: 0.72rem;
   }
 }
 
-.rec-card__actions {
+// ── Status col ────────────────────────────────────────────────────────────────
+.doc-appt-row__status {
+  flex-shrink: 0;
+  min-width: 100px;
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  justify-content: center;
+
+  @media (max-width: 900px) {
+    justify-content: flex-start;
+  }
 }
 
-// ── Type Tag ────────────────────────────────────────────────────────────────
-.rec-tag {
+// ── Actions ───────────────────────────────────────────────────────────────────
+.doc-appt-row__actions {
+  display: flex;
+  gap: 7px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+
+  @media (max-width: 900px) {
+    justify-content: flex-start;
+    width: 100%;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TYPE TAG
+// ─────────────────────────────────────────────────────────────────────────────
+.appt-type-tag {
   display: inline-flex;
   align-items: center;
-  padding: 3px 10px;
+  gap: 4px;
+  padding: 3px 9px;
   border-radius: 100px;
   font-size: 0.7rem;
   font-weight: 600;
-  white-space: nowrap;
-  flex-shrink: 0;
 
-  &--lab {
+  svg {
+    font-size: 0.62rem;
+  }
+
+  &.type--checkup {
+    background: $primary-lt;
+    color: $primary-dk;
+    border: 1px solid rgba($primary, 0.2);
+  }
+
+  &.type--followup {
+    background: $navy-lt;
+    color: $navy;
+    border: 1px solid rgba($navy, 0.15);
+  }
+
+  &.type--consultation {
+    background: $accent-lt;
+    color: darken($accent, 12%);
+    border: 1px solid rgba($accent, 0.25);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATUS BADGE
+// ─────────────────────────────────────────────────────────────────────────────
+.appt-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 11px;
+  border-radius: 100px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  svg {
+    font-size: 0.65rem;
+  }
+
+  &.status--waiting {
+    background: $star-lt;
+    color: darken($star, 15%);
+    border: 1px solid rgba($star, 0.35);
+  }
+
+  &.status--confirmed {
     background: $primary-lt;
     color: $primary-dk;
     border: 1px solid rgba($primary, 0.25);
   }
 
-  &--prescription {
-    background: $navy-lt;
-    color: $navy;
-    border: 1px solid rgba($navy, 0.2);
+  &.status--completed {
+    background: $green-lt;
+    color: $green;
+    border: 1px solid rgba($green, 0.25);
   }
 
-  &--imaging {
-    background: $accent-lt;
-    color: darken($accent, 10%);
-    border: 1px solid rgba($accent, 0.25);
+  &.status--cancelled {
+    background: $danger-lt;
+    color: $danger;
+    border: 1px solid rgba($danger, 0.2);
   }
 }
 
-// ── Buttons ──────────────────────────────────────────────────────────────────
-.rec-btn {
+// ─────────────────────────────────────────────────────────────────────────────
+// ACTION BUTTONS
+// ─────────────────────────────────────────────────────────────────────────────
+.doc-appt-btn {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 5px 13px;
+  padding: 5px 12px;
   border-radius: $radius-sm;
-  font-size: 0.78rem;
+  font-family: $ff-body;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
+  border: none;
   transition:
     background 0.18s,
-    transform 0.15s,
-    box-shadow 0.18s;
-  border: none;
+    box-shadow 0.15s,
+    transform 0.12s;
 
   svg {
-    font-size: 0.72rem;
+    font-size: 0.68rem;
   }
   &:active {
     transform: scale(0.97);
   }
 
-  &--view {
+  // Confirm – teal
+  &--confirm {
     background: $primary-lt;
     color: $primary-dk;
     border: 1px solid rgba($primary, 0.3);
@@ -524,7 +495,34 @@ $img-color: $accent;
     }
   }
 
-  &--download {
+  // Mark Done – green
+  &--done {
+    background: $green-lt;
+    color: $green;
+    border: 1px solid rgba($green, 0.3);
+
+    &:hover {
+      background: $green;
+      color: $white;
+      box-shadow: 0 4px 12px rgba($green, 0.35);
+    }
+  }
+
+  // Cancel – red
+  &--cancel {
+    background: $danger-lt;
+    color: $danger;
+    border: 1px solid rgba($danger, 0.25);
+
+    &:hover {
+      background: $danger;
+      color: $white;
+      box-shadow: 0 4px 12px rgba($danger, 0.3);
+    }
+  }
+
+  // View Notes – navy
+  &--view {
     background: $navy-lt;
     color: $navy;
     border: 1px solid rgba($navy, 0.2);
@@ -540,9 +538,9 @@ $img-color: $accent;
 // ─────────────────────────────────────────────────────────────────────────────
 // EMPTY STATE
 // ─────────────────────────────────────────────────────────────────────────────
-.rec-empty {
+.doc-appts-empty {
   @include card-base;
-  padding: 3rem;
+  padding: 3.5rem 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -550,20 +548,20 @@ $img-color: $accent;
   text-align: center;
 }
 
-.rec-empty__icon {
+.doc-appts-empty__icon {
   font-size: 2.5rem;
   color: rgba($primary, 0.2);
   margin-bottom: 0.5rem;
 }
 
-.rec-empty__text {
+.doc-appts-empty__text {
   font-size: 0.95rem;
   font-weight: 600;
   color: $text;
   margin: 0;
 }
 
-.rec-empty__hint {
+.doc-appts-empty__hint {
   font-size: 0.8rem;
   color: $text-muted;
   margin: 0;

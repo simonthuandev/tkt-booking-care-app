@@ -33,8 +33,7 @@ const mockAppointments = [
     time: "09:00 AM",
     location: "TKT Medical Center – Room 302",
     status: "confirmed",
-    avatar: "NA",
-    avatarColor: "#0ba3a3",
+    avatarUrl: "https://i.pravatar.cc/150?img=11",
   },
   {
     id: 2,
@@ -45,8 +44,7 @@ const mockAppointments = [
     time: "02:30 PM",
     location: "City Hospital – Room 105",
     status: "pending",
-    avatar: "LB",
-    avatarColor: "#f5a623",
+    avatarUrl: "https://i.pravatar.cc/150?img=47",
   },
   {
     id: 3,
@@ -57,8 +55,7 @@ const mockAppointments = [
     time: "10:00 AM",
     location: "Skin & Care Clinic – Room 201",
     status: "confirmed",
-    avatar: "TH",
-    avatarColor: "#077d7d",
+    avatarUrl: "https://i.pravatar.cc/150?img=15",
   },
 
   // ── History ───────────────────────────────────────────────────────────────
@@ -71,8 +68,7 @@ const mockAppointments = [
     time: "08:00 AM",
     location: "Bone & Joint Hospital – Room 401",
     status: "completed",
-    avatar: "PM",
-    avatarColor: "#1a9e5c",
+    avatarUrl: "https://i.pravatar.cc/150?img=12",
   },
   {
     id: 5,
@@ -83,8 +79,7 @@ const mockAppointments = [
     time: "03:00 PM",
     location: "Eye Care Center – Room 102",
     status: "cancelled",
-    avatar: "VL",
-    avatarColor: "#ff6b35",
+    avatarUrl: "https://i.pravatar.cc/150?img=48",
   },
   {
     id: 6,
@@ -95,8 +90,7 @@ const mockAppointments = [
     time: "11:00 AM",
     location: "Children's Hospital – Room 203",
     status: "completed",
-    avatar: "HN",
-    avatarColor: "#534ab7",
+    avatarUrl: "https://i.pravatar.cc/150?img=53",
   },
 ];
 
@@ -129,14 +123,8 @@ const STATUS_CONFIG = {
 // ─────────────────────────────────────────────────────────────────────────────
 function AppointmentCard({ appointment, tab }) {
   const {
-    doctor,
-    specialty,
-    date,
-    time,
-    location,
-    status,
-    avatar,
-    avatarColor,
+    doctor, specialty, date, time,
+    location, status, avatarUrl,
   } = appointment;
 
   const statusCfg = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
@@ -145,9 +133,14 @@ function AppointmentCard({ appointment, tab }) {
   return (
     <div className="appt-card">
       {/* ── Left: Avatar ───────────────────────────────── */}
-      <div className="appt-card__avatar" style={{ background: avatarColor }}>
-        {avatar}
-      </div>
+      <img
+        src={avatarUrl}
+        alt={doctor}
+        className="appt-card__avatar"
+        onError={(e) => {
+          e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(doctor)}&background=0ba3a3&color=fff`;
+        }}
+      />
 
       {/* ── Center: Info ───────────────────────────────── */}
       <div className="appt-card__info">
@@ -219,6 +212,7 @@ export default function UserAppointmentsPage() {
 
   return (
     <div className="appt-page">
+
       {/* ── Page Header ──────────────────────────────────── */}
       <div className="appt-page__header">
         <div>
@@ -231,8 +225,7 @@ export default function UserAppointmentsPage() {
         {/* Tổng số theo tab */}
         <div className="appt-page__count">
           <BsCalendar2WeekFill />
-          {filtered.length} {activeTab === "upcoming" ? "upcoming" : "past"}{" "}
-          appointments
+          {filtered.length} {activeTab === "upcoming" ? "upcoming" : "past"} appointments
         </div>
       </div>
 
@@ -271,10 +264,15 @@ export default function UserAppointmentsPage() {
           </div>
         ) : (
           filtered.map((appt) => (
-            <AppointmentCard key={appt.id} appointment={appt} tab={activeTab} />
+            <AppointmentCard
+              key={appt.id}
+              appointment={appt}
+              tab={activeTab}
+            />
           ))
         )}
       </div>
+
     </div>
   );
 }

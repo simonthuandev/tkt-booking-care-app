@@ -14,7 +14,7 @@ import {
   FaUserInjured,
   FaHospital,
   FaThList,
-  FaUser
+  FaUser,
 } from "react-icons/fa";
 import { GrSchedules } from "react-icons/gr";
 
@@ -152,7 +152,7 @@ const MENU_ITEMS = [
     key: "doctor-patients",
     label: "Patients",
     path: "/app/doctor/patients",
-    icon:   FaUserInjured,
+    icon: FaUserInjured,
     roles: ["doctor"],
   },
   {
@@ -190,10 +190,12 @@ const SideBar = () => {
   const role = getPrimaryRole(user);
 
   const menu = useMemo(() => {
-    return MENU_ITEMS.filter((item) => item.roles.includes(role)).map((item) => ({
-      ...item,
-      path: item.path || item.getPathByRole?.(role) || "/app/user/dashboard",
-    }));
+    return MENU_ITEMS.filter((item) => item.roles.includes(role)).map(
+      (item) => ({
+        ...item,
+        path: item.path || item.getPathByRole?.(role) || "/app/user/dashboard",
+      }),
+    );
   }, [role]);
 
   if (!isAuthenticated) {
@@ -225,12 +227,17 @@ const SideBar = () => {
               className="rounded-circle bg-secondary-subtle d-inline-flex align-items-center justify-content-center"
               style={{ width: 34, height: 34, flexShrink: 0 }}
             >
-              {String(user?.name || "U").trim().charAt(0).toUpperCase()}
+              {String(user?.name || "U")
+                .trim()
+                .charAt(0)
+                .toUpperCase()}
             </div>
           )}
           {!collapsed && (
             <div className="overflow-hidden">
-              <div className="small fw-semibold text-truncate">{user?.name || "User"}</div>
+              <div className="small fw-semibold text-truncate">
+                {user?.name || "User"}
+              </div>
               <div className="small text-muted text-capitalize">{role}</div>
             </div>
           )}
@@ -246,7 +253,10 @@ const SideBar = () => {
         </button>
       </div>
 
-      <nav className="py-2 px-2 d-flex flex-column gap-1" aria-label="Sidebar menu">
+      <nav
+        className="py-2 px-2 d-flex flex-column gap-1"
+        aria-label="Sidebar menu"
+      >
         {menu.map(({ key, label, path, icon: Icon }) => (
           <NavLink
             key={key}
@@ -258,7 +268,9 @@ const SideBar = () => {
               `
             }
             style={({ isActive }) => ({
-              background: isActive ? "linear-gradient(135deg, #0ba3a3 0%, #0a7d8c 100%)" : "transparent",
+              background: isActive
+                ? "linear-gradient(135deg, #0ba3a3 0%, #0a7d8c 100%)"
+                : "transparent",
               fontWeight: isActive ? 600 : 500,
             })}
           >

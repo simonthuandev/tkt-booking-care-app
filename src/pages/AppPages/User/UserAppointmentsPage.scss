@@ -41,7 +41,7 @@ $status-cancelled: #e24b4a;
 // ─────────────────────────────────────────────────────────────────────────────
 .appt-page {
   font-family: $ff-body;
-  max-width: 1100px;
+  max-width: 1400px;
 }
 
 // ── Page Header ─────────────────────────────────────────────────────────────
@@ -201,14 +201,10 @@ $status-cancelled: #e24b4a;
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  color: $white;
-  font-size: 0.85rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  object-fit: cover; // ảnh không bị méo
   flex-shrink: 0;
-  letter-spacing: 0.02em;
+  display: block;
+  border: 2px solid $border;
 }
 
 // ── Info (giữa) ─────────────────────────────────────────────────────────────

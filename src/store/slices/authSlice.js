@@ -11,7 +11,7 @@ const initialState = {
   isAuthenticated: true,
   user: {
     name: "nguyen van de quy",
-    role: "user",
+    role: "doctor",
   },
 };
 
