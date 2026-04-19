@@ -1,0 +1,827 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// DoctorPatientsPage.scss
+// ─────────────────────────────────────────────────────────────────────────────
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap");
+
+// ── Design tokens ──────────────────────────────────────────────────────────
+$primary: #0ba3a3;
+$primary-dk: #077d7d;
+$primary-lt: #e6f7f7;
+$accent: #ff6b35;
+$accent-lt: #fff1ec;
+$navy: #0d2b45;
+$navy-lt: #e6eef5;
+$text: #1a2b3c;
+$text-muted: #6b7f8e;
+$border: #e2ebf0;
+$bg-main: #f7fafb;
+$bg-card: #ffffff;
+$white: #ffffff;
+$green: #1a9e5c;
+$green-lt: #e6f9f0;
+$danger: #e24b4a;
+$danger-lt: #fef2f2;
+$star: #f5a623;
+$star-lt: #fff8e6;
+$ff-head: "Playfair Display", serif;
+$ff-body: "DM Sans", sans-serif;
+$radius: 16px;
+$radius-sm: 10px;
+$shadow: 0 4px 24px rgba(13, 43, 69, 0.08);
+$shadow-hover: 0 12px 40px rgba(13, 43, 69, 0.14);
+
+@mixin card-base {
+  background: $bg-card;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  border: 1px solid $border;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PAGE
+// ─────────────────────────────────────────────────────────────────────────────
+.pt-page {
+  font-family: $ff-body;
+  max-width: 1100px;
+}
+
+// ── Header ───────────────────────────────────────────────────────────────────
+.pt-page__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.pt-page__title {
+  font-family: $ff-head;
+  font-size: 2rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 4px;
+
+  @media (max-width: 576px) {
+    font-size: 1.5rem;
+  }
+}
+
+.pt-page__subtitle {
+  font-size: 0.875rem;
+  color: $text-muted;
+  margin: 0;
+}
+
+.pt-page__total-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: $primary-dk;
+  background: $primary-lt;
+  padding: 6px 14px;
+  border-radius: 100px;
+  border: 1px solid rgba($primary, 0.25);
+  white-space: nowrap;
+
+  svg {
+    font-size: 0.82rem;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUMMARY GRID
+// ─────────────────────────────────────────────────────────────────────────────
+.pt-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pt-summary-card {
+  @include card-base;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
+
+  &:hover {
+    box-shadow: $shadow-hover;
+    transform: translateY(-2px);
+  }
+
+  &__icon {
+    width: 44px;
+    height: 44px;
+    border-radius: $radius-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+  }
+
+  &__value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: $text;
+    margin: 0 0 2px;
+    line-height: 1;
+  }
+
+  &__label {
+    font-size: 0.72rem;
+    color: $text-muted;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0;
+  }
+
+  &--teal .pt-summary-card__icon {
+    background: $primary-lt;
+    color: $primary;
+  }
+  &--navy .pt-summary-card__icon {
+    background: $navy-lt;
+    color: $navy;
+  }
+  &--critical .pt-summary-card__icon {
+    background: $danger-lt;
+    color: $danger;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TOOLBAR
+// ─────────────────────────────────────────────────────────────────────────────
+.pt-toolbar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.pt-search {
+  flex: 1;
+  min-width: 200px;
+  position: relative;
+
+  &__icon {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $text-muted;
+    font-size: 0.8rem;
+    pointer-events: none;
+  }
+
+  &__input {
+    width: 100%;
+    padding: 0.55rem 1rem 0.55rem 2.35rem;
+    border: 1px solid $border;
+    border-radius: $radius-sm;
+    font-family: $ff-body;
+    font-size: 0.85rem;
+    color: $text;
+    background: $bg-card;
+    outline: none;
+    transition:
+      border-color 0.18s,
+      box-shadow 0.18s;
+
+    &::placeholder {
+      color: $text-muted;
+    }
+    &:focus {
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary, 0.12);
+    }
+  }
+}
+
+.pt-select-wrap {
+  position: relative;
+  flex-shrink: 0;
+
+  &__icon {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $text-muted;
+    font-size: 0.78rem;
+    pointer-events: none;
+  }
+
+  select {
+    padding: 0.55rem 1rem 0.55rem 2.1rem;
+    border: 1px solid $border;
+    border-radius: $radius-sm;
+    font-family: $ff-body;
+    font-size: 0.85rem;
+    color: $text;
+    background: $bg-card;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    transition: border-color 0.18s;
+
+    &:focus {
+      border-color: $primary;
+    }
+  }
+}
+
+.pt-results-count {
+  font-size: 0.8rem;
+  color: $text-muted;
+  margin: 0 0 1.25rem;
+
+  strong {
+    color: $text;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PATIENT GRID – 2 cột
+// ─────────────────────────────────────────────────────────────────────────────
+.pt-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PATIENT CARD
+// ─────────────────────────────────────────────────────────────────────────────
+.pt-card {
+  @include card-base;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
+
+  &:hover {
+    box-shadow: $shadow-hover;
+    transform: translateY(-3px);
+  }
+}
+
+// ── Top row: avatar + name + tag ─────────────────────────────────────────────
+.pt-card__top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pt-card__avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: 0.03em;
+}
+
+.pt-card__identity {
+  flex: 1;
+  min-width: 0;
+}
+
+.pt-card__name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pt-card__age {
+  font-size: 0.75rem;
+  color: $text-muted;
+  margin: 0;
+}
+
+// ── Category tag ─────────────────────────────────────────────────────────────
+.pt-cat-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &.cat--new {
+    background: $primary-lt;
+    color: $primary-dk;
+    border: 1px solid rgba($primary, 0.25);
+  }
+
+  &.cat--regular {
+    background: $navy-lt;
+    color: $navy;
+    border: 1px solid rgba($navy, 0.2);
+  }
+
+  &.cat--critical {
+    background: $danger-lt;
+    color: $danger;
+    border: 1px solid rgba($danger, 0.25);
+  }
+}
+
+// ── Info rows ─────────────────────────────────────────────────────────────────
+.pt-card__info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+}
+
+.pt-card__info-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: $text-muted;
+}
+
+.pt-card__info-icon {
+  font-size: 0.7rem;
+  color: $primary;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.pt-card__email {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+}
+
+// ── Last visit ────────────────────────────────────────────────────────────────
+.pt-card__last-visit {
+  background: $bg-main;
+  border-radius: $radius-sm;
+  padding: 10px 12px;
+  border: 1px solid $border;
+}
+
+.pt-card__last-visit-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 4px;
+
+  svg {
+    color: $primary;
+    font-size: 0.65rem;
+  }
+}
+
+.pt-card__last-visit-date {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 2px;
+}
+
+.pt-card__last-visit-reason {
+  font-size: 0.75rem;
+  color: $text-muted;
+  margin: 0;
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+.pt-card__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 13px;
+  border-radius: $radius-sm;
+  font-family: $ff-body;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition:
+    background 0.18s,
+    box-shadow 0.15s,
+    transform 0.12s;
+  flex: 1;
+  justify-content: center;
+
+  svg {
+    font-size: 0.72rem;
+  }
+  &:active {
+    transform: scale(0.97);
+  }
+
+  &--view {
+    background: $primary-lt;
+    color: $primary-dk;
+    border: 1px solid rgba($primary, 0.3);
+
+    &:hover {
+      background: $primary;
+      color: $white;
+      box-shadow: 0 4px 12px rgba($primary, 0.35);
+    }
+  }
+
+  &--book {
+    background: $navy-lt;
+    color: $navy;
+    border: 1px solid rgba($navy, 0.2);
+
+    &:hover {
+      background: $navy;
+      color: $white;
+      box-shadow: 0 4px 12px rgba($navy, 0.25);
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EMPTY STATE
+// ─────────────────────────────────────────────────────────────────────────────
+.pt-empty {
+  @include card-base;
+  padding: 3.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+
+  &__icon {
+    font-size: 2.5rem;
+    color: rgba($primary, 0.2);
+    margin-bottom: 0.5rem;
+  }
+
+  &__text {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: $text;
+    margin: 0;
+  }
+
+  &__hint {
+    font-size: 0.8rem;
+    color: $text-muted;
+    margin: 0;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PATIENT MODAL
+// ─────────────────────────────────────────────────────────────────────────────
+.pt-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba($navy, 0.55);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  // Fade in animation
+  animation: fadeIn 0.18s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.pt-modal {
+  background: $bg-card;
+  border-radius: $radius;
+  box-shadow: $shadow-hover;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  // Slide up animation
+  animation: slideUp 0.2s ease;
+
+  // Custom scrollbar
+  scrollbar-width: thin;
+  scrollbar-color: $border transparent;
+  &::-webkit-scrollbar {
+    width: 5px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: $border;
+    border-radius: 3px;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// ── Modal Header ─────────────────────────────────────────────────────────────
+.pt-modal__header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 1.5rem 1.25rem;
+  border-bottom: 1px solid $border;
+  position: sticky;
+  top: 0;
+  background: $bg-card;
+  z-index: 1;
+}
+
+.pt-modal__avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: 0.03em;
+}
+
+.pt-modal__identity {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pt-modal__name {
+  font-family: $ff-head;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0;
+}
+
+.pt-modal__meta {
+  font-size: 0.8rem;
+  color: $text-muted;
+  margin: 0;
+}
+
+.pt-modal__close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid $border;
+  background: $bg-main;
+  color: $text-muted;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  transition:
+    background 0.15s,
+    color 0.15s;
+
+  &:hover {
+    background: $danger-lt;
+    color: $danger;
+    border-color: rgba($danger, 0.3);
+  }
+}
+
+// ── Modal Body ────────────────────────────────────────────────────────────────
+.pt-modal__body {
+  padding: 1.25rem 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.pt-modal__section-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: $ff-head;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: $text;
+  margin: 0 0 1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid $border;
+
+  svg {
+    color: $primary;
+    font-size: 0.85rem;
+  }
+}
+
+// ── Info grid ─────────────────────────────────────────────────────────────────
+.pt-modal__info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pt-modal__info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  svg {
+    font-size: 0.85rem;
+    color: $primary;
+    margin-top: 2px;
+    flex-shrink: 0;
+    opacity: 0.8;
+  }
+}
+
+.pt-modal__info-label {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+
+.pt-modal__info-value {
+  display: block;
+  font-size: 0.83rem;
+  font-weight: 500;
+  color: $text;
+}
+
+.pt-modal__blood {
+  color: $danger;
+  font-weight: 700;
+}
+
+// ── Visit History ─────────────────────────────────────────────────────────────
+.pt-modal__history {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+
+  // Đường kẻ dọc timeline
+  &::before {
+    content: "";
+    position: absolute;
+    left: 7px;
+    top: 10px;
+    bottom: 10px;
+    width: 2px;
+    background: $border;
+    border-radius: 1px;
+  }
+}
+
+.pt-modal__history-item {
+  display: flex;
+  gap: 16px;
+  padding-bottom: 1rem;
+  position: relative;
+
+  &:last-child {
+    padding-bottom: 0;
+  }
+}
+
+.pt-modal__history-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: $primary;
+  border: 3px solid $primary-lt;
+  flex-shrink: 0;
+  margin-top: 2px;
+  position: relative;
+  z-index: 1;
+}
+
+.pt-modal__history-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.pt-modal__history-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 5px;
+}
+
+.pt-modal__history-date {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $text-muted;
+
+  svg {
+    font-size: 0.68rem;
+    color: $primary;
+  }
+}
+
+.pt-modal__history-type {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 100px;
+
+  &--checkup {
+    background: $primary-lt;
+    color: $primary-dk;
+  }
+  &--followup {
+    background: $navy-lt;
+    color: $navy;
+  }
+  &--consultation {
+    background: $accent-lt;
+    color: darken($accent, 12%);
+  }
+}
+
+.pt-modal__history-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: $text-muted;
+  margin: 0;
+  line-height: 1.5;
+
+  svg {
+    font-size: 0.68rem;
+    color: $text-muted;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+}
