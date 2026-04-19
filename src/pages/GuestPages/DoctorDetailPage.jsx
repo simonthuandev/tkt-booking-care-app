@@ -1,5 +1,6 @@
 import RoutePage from "../../components/Common/RoutePage";
 import "./DoctorDetailPage.scss";
+import { useState } from "react";
 
 const doctor = {
   id: 2,
@@ -9,6 +10,7 @@ const doctor = {
   hospital: "BV Từ Dũ, TP.HCM",
   city: "Ho Chi Minh",
   rating: 3,
+  examinationPrice: 500000, // Giá khám (đơn vị: VNĐ)
   slot: [
     "7:30 - 8:00",
     "8:00 - 8:30",
@@ -78,6 +80,15 @@ const doctor = {
 };
 
 const DoctorDetailPage = () => {
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedSlot, setSelectedSlot] = useState(null);
+
+  // Lấy ngày hôm nay để set min date
+  const getTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
+  };
+
   return (
     <div className="doctor-detail">
       {/* Hero Section */}
@@ -95,24 +106,55 @@ const DoctorDetailPage = () => {
         </div>
       </div>
 
-      {/* Time Slots Section */}
-      <div className="d-flex">
-        <div className="slots-section">
-          <h3>Lịch khám</h3>
-          <div className="slots-grid">
-            {doctor.slot.map((item, index) => (
-              <div key={index} className="slot-box">
-                {item}
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* Booking Section */}
+      <div className="info-section-full">
+        <div className="booking-container">
+          <h3 className="booking-title">Đặt lịch khám</h3>
 
-        <div className="slots-section">
-          <h3>Địa chỉ khám</h3>
-          {doctor.address.map((addr, index) => (
-            <p key={index}>{addr}</p>
-          ))}
+          {/* Date & Slot Selection */}
+          <div className="booking-form">
+            <div className="form-group">
+              <label htmlFor="examination-date" className="form-label">
+                Chọn ngày khám
+              </label>
+              <input
+                type="date"
+                id="examination-date"
+                className="form-input date-input"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                min={getTodayDate()}
+              />
+            </div>
+
+            {selectedDate && (
+              <div className="form-group">
+                <label className="form-label">Chọn giờ khám</label>
+                <div className="slots-grid">
+                  {doctor.slot.map((item, index) => (
+                    <div
+                      key={index}
+                      className={`slot-box ${selectedSlot === item ? "selected" : ""}`}
+                      onClick={() => setSelectedSlot(item)}
+                    >
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Examination Price */}
+            <div className="price-box">
+              <div className="price-header">
+                <span className="price-label">Giá khám:</span>
+                <span className="price-value">
+                  {doctor.examinationPrice.toLocaleString("vi-VN")} ₫
+                </span>
+              </div>
+              <p className="price-note">*Giá chỉ mang tính chất tham khảo</p>
+            </div>
+          </div>
         </div>
       </div>
 
