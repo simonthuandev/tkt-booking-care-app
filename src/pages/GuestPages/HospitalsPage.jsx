@@ -2,8 +2,9 @@ import { Link } from "react-router";
 import RoutePage from "../../components/Common/RoutePage";
 import { useState } from "react";
 import "./HospitalsPage.scss";
+import { toSlug } from "../../utils/helpers";
 
-const hospitails = [
+const hospitals = [
   {
     name: "Phòng khám Đa khoa Hoàn Mỹ Sài Gòn",
     city: "TP.HCM",
@@ -101,10 +102,10 @@ const HospitalsPage = () => {
   const [searchName, setSearchName] = useState("");
 
   // Lấy danh sách các tỉnh/thành duy nhất
-  const cities = ["Tất cả", ...new Set(hospitails.map((h) => h.city))];
+  const cities = ["Tất cả", ...new Set(hospitals.map((h) => h.city))];
 
   // Lọc phòng khám theo tỉnh và tên được chọn
-  const filteredHospitals = hospitails.filter((hospital) => {
+  const filteredHospitals = hospitals.filter((hospital) => {
     const cityMatch =
       selectedCity === "Tất cả" || hospital.city === selectedCity;
     const nameMatch = hospital.name
@@ -166,7 +167,7 @@ const HospitalsPage = () => {
             filteredHospitals.map((hospitail, index) => (
               <Link
                 key={index}
-                to={`/hospital/${hospitail.name}`}
+                to={`/hospitals/${toSlug(hospitail.name)}`}
                 className="specialty-card"
               >
                 <div className="specialty-image">
