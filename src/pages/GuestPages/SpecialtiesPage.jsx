@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import RoutePage from "../../components/Common/RoutePage";
 import "./SpecialtiesPage.scss";
+import { toSlug } from "../../utils/helpers";
 
 const specialties = [
   {
@@ -77,7 +78,7 @@ const SpecialtiesPage = () => {
           <Link
             key={index}
             // chỉnh lại link to để chuyển sang form khác
-            to={`/specialty/${specialty.name}`}
+            to={`/specialties/${toSlug(specialty.name)}`}
             className="specialty-card"
           >
             <div className="specialty-image">
