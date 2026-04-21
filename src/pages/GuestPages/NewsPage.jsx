@@ -1,6 +1,7 @@
 import { useState } from "react";
 import RoutePage from "../../components/Common/RoutePage";
 import "./NewsPage.scss";
+import { Link, Links } from "react-router";
 
 const news = [
   {
@@ -112,18 +113,20 @@ const NewsPage = () => {
       <div className="news-list">
         {filteredNews.length > 0 ? (
           filteredNews.map((article) => (
-            <div key={article.id} className="news-item">
-              <div className="news-item-image">
-                <img src={article.img} alt={article.text} />
-              </div>
-              <div className="news-item-content">
-                <div className="news-item-header">
-                  <span className="news-category">{article.category}</span>
+            <Link to={`/news/${article.id}`}>
+              <div key={article.id} className="news-item">
+                <div className="news-item-image">
+                  <img src={article.img} alt={article.text} />
                 </div>
-                <h3 className="news-item-title">{article.text}</h3>
-                <p className="news-item-description">{article.description}</p>
+                <div className="news-item-content">
+                  <div className="news-item-header">
+                    <span className="news-category">{article.category}</span>
+                  </div>
+                  <h3 className="news-item-title">{article.text}</h3>
+                  <p className="news-item-description">{article.description}</p>
+                </div>
               </div>
-            </div>
+            </Link>
           ))
         ) : (
           <p className="no-results">Không tìm thấy bài viết nào</p>
