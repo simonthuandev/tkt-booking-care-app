@@ -1,5 +1,5 @@
 // ContactPage Styles
-@import "../../styles/variables.scss";
+@use "../../styles/variables" as *;
 
 .header-contact {
   padding: 60px 20px;
