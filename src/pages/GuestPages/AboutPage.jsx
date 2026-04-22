@@ -38,6 +38,52 @@ const member = [
 const AboutPage = () => {
   return (
     <>
+      <div className="history-about">
+        <h2 className="history-title">Quá trình phát triển dự án</h2>
+        <div className="timeline">
+          <div className="timeline-item">
+            <div className="timeline-marker"></div>
+            <div className="timeline-content">
+              <h3 className="timeline-date">1/2026</h3>
+              <p className="timeline-description">Khởi tạo dự án ban đầu</p>
+            </div>
+          </div>
+          <div className="timeline-item">
+            <div className="timeline-marker"></div>
+            <div className="timeline-content">
+              <h3 className="timeline-date">2/2026</h3>
+              <p className="timeline-description">
+                Phân tích thiết kế hệ thống
+              </p>
+            </div>
+          </div>
+          <div className="timeline-item">
+            <div className="timeline-marker"></div>
+            <div className="timeline-content">
+              <h3 className="timeline-date">3/2026</h3>
+              <p className="timeline-description">
+                Viết bản kiểm thử cho dự án
+              </p>
+            </div>
+          </div>
+          <div className="timeline-item">
+            <div className="timeline-marker"></div>
+            <div className="timeline-content">
+              <h3 className="timeline-date">4/2026</h3>
+              <p className="timeline-description">
+                Hoàn thành giao diện, chức năng của chương trình
+              </p>
+            </div>
+          </div>
+          <div className="timeline-item">
+            <div className="timeline-marker"></div>
+            <div className="timeline-content">
+              <h3 className="timeline-date">5/2026</h3>
+              <p className="timeline-description">Hoàn thành dự án</p>
+            </div>
+          </div>
+        </div>
+      </div>
       <div className="body-about">
         <h1>Thành viên nhóm</h1>
         {member.map((item, index) => (

@@ -192,3 +192,29 @@
     margin: 15px;
   }
 }
+
+.info {
+  width: 100vw;
+  position: relative;
+  display: flex;
+  justify-content: space-around;
+  padding: 40px 0;
+
+  background: url("https://img.freepik.com/free-photo/medical-banner-with-doctor-wearing-goggles_23-2149611193.jpg")
+    center/cover no-repeat;
+}
+
+/* lớp phủ làm mờ */
+.info::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.8); /* chỉnh độ mờ ở đây */
+  backdrop-filter: blur(4px); /* optional: blur nhẹ */
+}
+
+/* đảm bảo content nằm trên lớp mờ */
+.info > div {
+  position: relative;
+  z-index: 1;
+}

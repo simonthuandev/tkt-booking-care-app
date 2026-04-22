@@ -19,15 +19,24 @@ const ContactPage = () => {
       <div className="header-contact">
         <h1>HỢP TÁC CÙNG BOOKINGCARE</h1>
         <p>Kết nối bệnh nhân, nâng tầm thương hiệu</p>
-        <div>
-          <h2>1.500.000 + </h2>
-          <h3>LƯỢT TRUY CẬP/ THÁNG</h3>
-          <h2>300.000 +</h2>
-          <h3>NGƯỜI ĐÃ SỬ DỤNG</h3>
-          <h2>2.000 +</h2>
-          <h3>BÁC SĨ</h3>
-          <h2>300 +</h2>
-          <h3>CƠ SỞ Y TẾ</h3>
+
+        <div className="info">
+          <div className="d-flex flex-column">
+            <h2>1.500.000 + </h2>
+            <h3>LƯỢT TRUY CẬP/ THÁNG</h3>
+          </div>
+          <div className="d-flex flex-column">
+            <h2>300.000 +</h2>
+            <h3>NGƯỜI ĐÃ SỬ DỤNG</h3>
+          </div>
+          <div className="d-flex flex-column">
+            <h2>2.000 +</h2>
+            <h3>BÁC SĨ</h3>
+          </div>
+          <div className="d-flex flex-column">
+            <h2>300 +</h2>
+            <h3>CƠ SỞ Y TẾ</h3>
+          </div>
         </div>
         <div className="body-contact">
           <div>
