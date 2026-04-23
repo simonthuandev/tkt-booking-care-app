@@ -1,5 +1,5 @@
 import { useState } from "react";
-import {Container} from 'react-bootstrap';
+import { Container } from "react-bootstrap";
 import { BsShieldFillCheck } from "react-icons/bs";
 import { FaSearch, FaCalendarCheck } from "react-icons/fa";
 import { FaLocationDot, FaFaceSmile } from "react-icons/fa6";
@@ -9,13 +9,13 @@ import { Link } from "react-router-dom";
 import { toSlug } from "../../utils/helpers";
 
 const tabs = [
-  { key: 'doctor',    icon: 'bsPersonBadgeFill',      label: 'Bác sĩ'     },
-  { key: 'specialty', icon: 'faClipboardList',  label: 'Chuyên khoa' },
-  { key: 'hospital',  icon: 'faHospital',           label: 'Bệnh viện'  },
+  { key: "doctor", icon: "bsPersonBadgeFill", label: "Bác sĩ" },
+  { key: "specialty", icon: "faClipboardList", label: "Chuyên khoa" },
+  { key: "hospital", icon: "faHospital", label: "Bệnh viện" },
 ];
 
 export default function HeroSection() {
-  const [activeTab, setActiveTab] = useState('doctor');
+  const [activeTab, setActiveTab] = useState("doctor");
 
   return (
     <section className="hero-section" id="home">
@@ -24,7 +24,6 @@ export default function HeroSection() {
 
       <Container>
         <div className="row align-items-center min-vh-100 pt-5">
-
           {/* Left */}
           <div className="col-lg-6 hero-content">
             <div className="hero-badge">
@@ -33,14 +32,15 @@ export default function HeroSection() {
             </div>
 
             <h1 className="hero-title">
-              Đặt Lịch Khám<br />
+              Đặt Lịch Khám
+              <br />
               <em>Nhanh – Dễ – Tiện</em>
             </h1>
 
             <p className="hero-desc">
-              Kết nối bạn với hơn <strong>5.000+ bác sĩ</strong> chuyên khoa và{' '}
-              <strong>200+ bệnh viện</strong> trên toàn quốc. Đặt lịch trong 60 giây,
-              nhận xác nhận ngay lập tức.
+              Kết nối bạn với hơn <strong>5.000+ bác sĩ</strong> chuyên khoa và{" "}
+              <strong>200+ bệnh viện</strong> trên toàn quốc. Đặt lịch trong 60
+              giây, nhận xác nhận ngay lập tức.
             </p>
 
             {/* Search box */}
@@ -49,10 +49,10 @@ export default function HeroSection() {
                 {tabs.map(({ key, icon, label }) => (
                   <button
                     key={key}
-                    className={`stab${activeTab === key ? ' active' : ''}`}
+                    className={`stab${activeTab === key ? " active" : ""}`}
                     onClick={() => setActiveTab(key)}
                   >
-                    <DynamicIcon name={`${icon}`}/>
+                    <DynamicIcon name={`${icon}`} />
                     <span className="ms-1">{label}</span>
                   </button>
                 ))}
@@ -75,19 +75,27 @@ export default function HeroSection() {
                     <option>Cần Thơ</option>
                   </select>
                 </div>
-                <button className="btn-search-go">
+                <Link className="btn-search-go" to="/search">
                   <FaSearch className="me-2" />
                   Tìm kiếm
-                </button>
+                </Link>
               </div>
             </div>
 
             {/* Quick tags */}
             <div className="quick-tags">
               <span className="qt-label">Tìm nhanh:</span>
-              {['Tim mạch', 'Nha khoa', 'Nhi khoa', 'Da liễu', 'Mắt'].map(t => (
-                <Link key={t} to={`/search?q=${encodeURIComponent(t)}`} className="qt">{t}</Link>
-              ))}
+              {["Tim mạch", "Nha khoa", "Nhi khoa", "Da liễu", "Mắt"].map(
+                (t) => (
+                  <Link
+                    key={t}
+                    to={`/search?q=${encodeURIComponent(t)}`}
+                    className="qt"
+                  >
+                    {t}
+                  </Link>
+                ),
+              )}
             </div>
           </div>
 
@@ -96,19 +104,22 @@ export default function HeroSection() {
             <div className="hero-card-stack">
               <div className="hcard hcard-main">
                 <div className="hcard-avatar">
-                  <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Doctor" />
+                  <img
+                    src="https://randomuser.me/api/portraits/women/44.jpg"
+                    alt="Doctor"
+                  />
                   <div className="hcard-status" />
                 </div>
                 <div className="hcard-info">
                   <div className="hcard-name">BS. Nguyễn Thị Lan</div>
                   <div className="hcard-spec">Tim mạch – BV Chợ Rẫy</div>
                   <div className="hcard-stars">
-                    <StarRating rating={4.8} half={true} /> 
+                    <StarRating rating={4.8} half={true} />
                     <span>4.8 (320 đánh giá)</span>
                   </div>
                 </div>
                 <button className="hcard-btn">
-                  <Link to={`/doctors/${toSlug('BS . Nguyễn Thị Lan')}`}>
+                  <Link to={`/doctors/${toSlug("BS . Nguyễn Thị Lan")}`}>
                     Xem bác sĩ
                   </Link>
                 </button>
@@ -134,13 +145,15 @@ export default function HeroSection() {
               <div className="hero-circle hc2" />
             </div>
           </div>
-
         </div>
       </Container>
 
       <div className="hero-wave">
         <svg viewBox="0 0 1440 80" preserveAspectRatio="none">
-          <path d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z" fill="var(--bg-main)" />
+          <path
+            d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z"
+            fill="var(--bg-main)"
+          />
         </svg>
       </div>
     </section>
