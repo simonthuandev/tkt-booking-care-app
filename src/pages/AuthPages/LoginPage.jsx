@@ -1,12 +1,33 @@
 import axios from "axios";
-import { FaFacebook, FaGithub, FaGoogle } from "react-icons/fa";
+import {
+  FaFacebook,
+  FaGithub,
+  FaGoogle,
+  FaEye,
+  FaEyeSlash,
+} from "react-icons/fa";
 import { FcLock } from "react-icons/fc";
 import { Link, useNavigate } from "react-router-dom";
 import { BrandLogo } from "../../components/Common/BrandLogo";
 import "./LoginPage.scss";
 import { FaUserPlus } from "react-icons/fa6";
+import { useState } from "react";
+import Password from "../../components/Common/Password";
 
 const LoginPage = () => {
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   return (
     <div className="login-container min-vh-100 d-flex flex-column align-items-center justify-content-center p-4">
       {/* Logo */}
@@ -26,46 +47,39 @@ const LoginPage = () => {
           </label>
           <input
             type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
             placeholder=""
-            className="form-control form-control-lg"
+            className="form-control"
           />
         </div>
 
         {/* Password Input */}
-        <div className="mb-3">
-          <label className="form-label fw-semibold text-secondary">
-            Password
-          </label>
-          <input
-            type="password"
-            placeholder=""
-            className="form-control form-control-lg"
-          />
-        </div>
+        <Password
+          label="Nhập mật khẩu"
+          className=""
+          name="password"
+          value={formData.password}
+          onChange={handleChange}
+        ></Password>
 
         {/* Login Button */}
-        <button className="btn-search-go">Đăng nhập →</button>
+        <button className="btn-search-go mt-3">Đăng nhập →</button>
 
         {/* Divider */}
-        <div className="mb-4">
+        <div className="">
           <hr className="my-3" />
+          <p className="text-center" style={{ fontSize: "0,75rem" }}>
+            Đăng nhập với
+          </p>
         </div>
 
         {/* OAuth Buttons */}
-        <div className="mb-4 row ">
-          <div className="col-4">
-            <button className="btn-search-go w-100">
-              <FaFacebook />
-            </button>
-          </div>
-          <div className="col-4">
+        <div className="row justify-content-center mb-4">
+          <div className="col-4 ">
             <button className="btn-search-go w-100">
               <FaGoogle />
-            </button>
-          </div>
-          <div className="col-4">
-            <button className="btn-search-go w-100">
-              <FaGithub />
             </button>
           </div>
         </div>

@@ -8,83 +8,108 @@ import {
   FaFacebook,
 } from "react-icons/fa";
 import { Link } from "react-router";
+import { useState } from "react";
+import Password from "../../components/Common/Password";
+import { BrandLogo } from "../../components/Common/BrandLogo";
 
 export default function RegisterInvite() {
+  const [formData, setFormData] = useState({
+    surname: "",
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   return (
-    <div className="login-container d-flex align-items-center justify-content-center">
+    <div className="login-container d-flex flex-column align-items-center justify-content-center">
+      <div className="p-3">
+        <BrandLogo />
+      </div>
+
       <div
         className="card p-4 shadow-sm"
         style={{ width: "420px", borderRadius: "12px" }}
       >
-        <h5 className="text-center mb-4">Đăng ký người mời</h5>
+        <h5 className="text-center">Đăng ký người mời</h5>
 
-        {/* Name */}
-        <div className="mb-3">
-          <label className="form-label fw-semibold text-secondary">
-            Họ tên
-          </label>
-          <input type="text" className="form-control" />
+        {/* Ho */}
+        <div className="">
+          <label className="form-label fw-semibold text-secondary">Họ</label>
+          <input
+            type="text"
+            name="surname"
+            value={formData.surname}
+            onChange={handleChange}
+            className="form-control"
+          />
+        </div>
+        {/* Ten */}
+        <div className="">
+          <label className="form-label fw-semibold text-secondary">Tên</label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            className="form-control"
+          />
         </div>
 
         {/* Email */}
-        <div className="mb-3">
+        <div className="">
           <label className="form-label fw-semibold text-secondary">
             E-mail
           </label>
-          <input type="email" className="form-control" />
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            className="form-control"
+          />
         </div>
 
         {/* Password */}
-        <div className="mb-3">
-          <label className="form-label fw-semibold text-secondary">
-            Mật khẩu
-          </label>
-          <input type="password" className="form-control" />
-        </div>
+        <Password
+          label="Mật khẩu"
+          name="password"
+          value={formData.password}
+          onChange={handleChange}
+        ></Password>
 
         {/* Confirm */}
-        <div className="mb-3">
-          <label className="form-label fw-semibold text-secondary">
-            Nhập lại mật khẩu
-          </label>
-          <input type="password" className="form-control" />
-        </div>
+        <Password
+          label="Nhập lại mật khẩu"
+          name="confirmPassword"
+          value={formData.confirmPassword}
+          onChange={handleChange}
+        ></Password>
 
         {/* Button */}
-        <button className="btn-search-go">Đăng ký →</button>
+        <button className="btn-search-go mt-3">Đăng ký →</button>
 
         {/* Divider */}
-        <div className="mb-4">
+        <div className="">
           <hr className="my-3" />
+          <p className="text-center">Đăng ký với</p>
         </div>
 
         {/* OAuth Buttons */}
-        <div className="mb-4 row ">
-          <div className="col-4">
-            <button className="btn-search-go w-100">
-              <FaFacebook />
-            </button>
-          </div>
+        <div className="row justify-content-center">
           <div className="col-4">
             <button className="btn-search-go w-100">
               <FaGoogle />
             </button>
           </div>
-          <div className="col-4">
-            <button className="btn-search-go w-100">
-              <FaGithub />
-            </button>
-          </div>
-        </div>
-
-        {/* Bottom links */}
-        <div className="d-flex justify-content-center">
-          <Link
-            to="/auth/login"
-            className="text-secondary text-decoration-none"
-          >
-            Đã có tài khoản <CgLogIn />
-          </Link>
         </div>
       </div>
     </div>
