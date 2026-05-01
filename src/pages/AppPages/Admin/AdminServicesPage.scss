@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// AdminPatientsPage.scss  —  compact style
+// AdminServicesPage.scss
 // ─────────────────────────────────────────────────────────────────────────────
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap");
 
@@ -36,17 +36,23 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
   box-shadow: $shadow;
   border: 1px solid $border;
 }
+@mixin line-clamp($n) {
+  display: -webkit-box;
+  -webkit-line-clamp: $n;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PAGE
 // ─────────────────────────────────────────────────────────────────────────────
-.admin-pats {
+.admin-svc {
   font-family: $ff-body;
   max-width: 1400px;
 }
 
 // ── Header ───────────────────────────────────────────────────────────────────
-.pats-header {
+.svc-header {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -62,7 +68,7 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
   }
 }
 
-.pats-title {
+.svc-title {
   font-family: $ff-head;
   font-size: 2rem;
   font-weight: 700;
@@ -73,13 +79,13 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
   }
 }
 
-.pats-sub {
+.svc-sub {
   font-size: 0.875rem;
   color: $text-muted;
   margin: 0;
 }
 
-.pats-badge {
+.svc-badge {
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -96,7 +102,7 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
   }
 }
 
-.btn-add-pat {
+.btn-add-svc {
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -127,12 +133,11 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
 // ─────────────────────────────────────────────────────────────────────────────
 // SUMMARY — 4 thẻ
 // ─────────────────────────────────────────────────────────────────────────────
-.pats-summary {
+.svc-summary {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
   margin-bottom: 1.5rem;
-
   @media (max-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -151,7 +156,6 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
       box-shadow: $shadow-hov;
       transform: translateY(-2px);
     }
-
     &.s-teal {
       border-top: 3px solid $primary;
     }
@@ -161,17 +165,18 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
     &.s-navy {
       border-top: 3px solid $navy;
     }
-    &.s-danger {
-      border-top: 3px solid $danger;
+    &.s-amber {
+      border-top: 3px solid $star;
     }
   }
 
   &__value {
-    font-size: 1.6rem;
+    font-size: 1.3rem;
     font-weight: 700;
     color: $text;
     margin: 0 0 4px;
-    line-height: 1;
+    line-height: 1.2;
+    word-break: break-word;
   }
 
   &__label {
@@ -187,7 +192,7 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
 // ─────────────────────────────────────────────────────────────────────────────
 // TOOLBAR
 // ─────────────────────────────────────────────────────────────────────────────
-.pats-toolbar {
+.svc-toolbar {
   display: flex;
   gap: 8px;
   margin-bottom: 0.75rem;
@@ -196,7 +201,7 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
 
 .toolbar-search {
   flex: 1;
-  min-width: 180px;
+  min-width: 200px;
   position: relative;
 
   &__icon {
@@ -264,7 +269,7 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
   }
 }
 
-.pats-count {
+.svc-count {
   font-size: 0.8rem;
   color: $text-muted;
   margin: 0 0 1rem;
@@ -274,9 +279,9 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PATIENT GRID — 3 cột → 2 → 1
+// SERVICE GRID
 // ─────────────────────────────────────────────────────────────────────────────
-.pats-grid {
+.svc-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.25rem;
@@ -289,173 +294,180 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PATIENT CARD
+// SERVICE CARD
 // ─────────────────────────────────────────────────────────────────────────────
-.pat-card {
+.svc-card {
   @include card;
-  padding: 1.25rem;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
   transition:
     box-shadow 0.2s,
     transform 0.2s;
   &:hover {
     box-shadow: $shadow-hov;
-    transform: translateY(-3px);
+    transform: translateY(-4px);
   }
 
-  // Top row: avatar + name + tag
-  &__top {
+  // Gradient header — giống SpecialtyCard
+  &__header {
+    padding: 1.5rem 1.25rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+  }
+
+  &__icon {
+    font-size: 2.75rem;
+    line-height: 1;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.2));
+  }
+
+  &__name {
+    font-family: $ff-head;
+    font-size: 1rem;
+    font-weight: 700;
+    color: $white;
+    margin: 0;
+    text-align: center;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    @include line-clamp(2);
+  }
+
+  &__status-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 100px;
+    backdrop-filter: blur(4px);
+    svg {
+      font-size: 0.6rem;
+    }
+  }
+
+  // Body
+  &__body {
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    flex: 1;
+  }
+
+  &__meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  &__desc {
+    font-size: 0.78rem;
+    color: $text-muted;
+    margin: 0;
+    line-height: 1.55;
+    @include line-clamp(2);
+  }
+
+  &__stats {
     display: flex;
     align-items: center;
     gap: 10px;
   }
 
-  &__avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    color: $white;
-    font-size: 0.85rem;
+  // Price — highlight lớn
+  &__price {
+    font-size: 1.15rem;
     font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    letter-spacing: 0.02em;
-  }
-
-  &__identity {
-    flex: 1;
-    min-width: 0;
-  }
-
-  &__name {
-    font-size: 0.92rem;
-    font-weight: 700;
-    color: $text;
-    margin: 0 0 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  &__age {
-    font-size: 0.72rem;
-    color: $text-muted;
+    color: $navy;
     margin: 0;
-  }
-
-  // Info grid 2 cột
-  &__info {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 5px 8px;
-
-    span {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 0.74rem;
-      color: $text-muted;
-      svg {
-        font-size: 0.63rem;
-        color: $primary;
-        flex-shrink: 0;
-      }
-    }
-
-    .truncate {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: 100px;
-    }
-
-    .blood {
-      color: $danger;
-      font-weight: 700;
-    }
-  }
-
-  // Last visit box
-  &__visit {
-    background: $bg-main;
+    background: $navy-lt;
+    padding: 6px 10px;
     border-radius: $radius-sm;
-    padding: 8px 10px;
-    border: 1px solid $border;
+    text-align: center;
+    border: 1px solid rgba($navy, 0.12);
   }
 
-  &__visit-label {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.65rem;
-    font-weight: 700;
-    color: $text-muted;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin: 0 0 3px;
-    svg {
-      color: $primary;
-      font-size: 0.6rem;
-    }
-  }
-
-  &__visit-date {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: $text;
-    margin: 0 0 2px;
-  }
-
-  &__visit-reason {
-    font-size: 0.72rem;
-    color: $text-muted;
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  // Action buttons
   &__actions {
     display: flex;
     gap: 6px;
+    padding-top: 0.6rem;
+    border-top: 1px solid $border;
+    margin-top: auto;
   }
+}
+
+// Status badges on header
+.st-active {
+  background: rgba(255, 255, 255, 0.25);
+  color: $white;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.st-inactive {
+  background: rgba(0, 0, 0, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 // Category tag
-.pat-cat {
+.svc-cat-tag {
   display: inline-flex;
   align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
   padding: 3px 9px;
   border-radius: 100px;
-  font-size: 0.65rem;
-  font-weight: 700;
+  background: $primary-lt;
+  color: $primary-dk;
+  border: 1px solid rgba($primary, 0.2);
   white-space: nowrap;
-  flex-shrink: 0;
+}
 
-  &.cat-new {
-    background: $primary-lt;
-    color: $primary-dk;
-    border: 1px solid rgba($primary, 0.2);
-  }
-  &.cat-regular {
-    background: $navy-lt;
-    color: $navy;
-    border: 1px solid rgba($navy, 0.15);
-  }
-  &.cat-critical {
-    background: $danger-lt;
-    color: $danger;
-    border: 1px solid rgba($danger, 0.2);
+// Duration pill
+.svc-duration {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: $text-muted;
+  svg {
+    font-size: 0.62rem;
+    color: $primary;
   }
 }
 
-// Card action buttons
-.pat-btn {
+// Stats items
+.svc-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &__icon {
+    font-size: 0.68rem;
+    color: $text-muted;
+  }
+  &__icon--star {
+    font-size: 0.68rem;
+    color: $star;
+  }
+}
+
+// Card buttons
+.svc-btn {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -517,7 +529,7 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
 // ─────────────────────────────────────────────────────────────────────────────
 // EMPTY STATE
 // ─────────────────────────────────────────────────────────────────────────────
-.pats-empty {
+.svc-empty {
   @include card;
   padding: 3rem 2rem;
   text-align: center;
@@ -566,7 +578,6 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
   }
 }
 
-// Save button
 .btn-save {
   display: inline-flex;
   align-items: center;
@@ -587,123 +598,203 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// FORM MODAL — Avatar color picker
+// FORM MODAL — Icon + Color pickers
 // ─────────────────────────────────────────────────────────────────────────────
-.form-avatar-row {
+.icon-picker {
   display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  padding: 0.85rem 1rem;
-  background: $bg-main;
-  border-radius: $radius-sm;
-  border: 1px solid $border;
-  margin-bottom: 0.5rem;
-}
-
-.form-avatar-preview {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  color: $white;
-  font-size: 1rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  letter-spacing: 0.02em;
-  transition: background 0.2s;
-}
-
-.form-avatar-label {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: $text-muted;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin: 0 0 8px;
-}
-
-.color-picker {
-  display: flex;
-  gap: 7px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
-.color-swatch {
-  width: 26px;
-  height: 26px;
+.icon-swatch {
+  width: 40px;
+  height: 40px;
+  border-radius: $radius-sm;
+  border: 2px solid $border;
+  background: $bg-main;
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    border-color 0.15s,
+    transform 0.15s,
+    background 0.15s;
+  &:hover {
+    border-color: $primary;
+    background: $primary-lt;
+    transform: scale(1.1);
+  }
+  &--active {
+    border-color: $primary;
+    background: $primary-lt;
+    outline: 2px solid rgba($primary, 0.3);
+  }
+}
+
+.svc-color-picker {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.svc-color-swatch {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  border: 2px solid transparent;
+  border: 3px solid transparent;
   cursor: pointer;
   transition:
     transform 0.15s,
     border-color 0.15s;
-
   &:hover {
     transform: scale(1.15);
   }
-
   &--active {
-    border-color: $white;
-    outline: 2px solid $text;
+    border-color: $text;
     transform: scale(1.15);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FORM PREVIEW CARD
+// ─────────────────────────────────────────────────────────────────────────────
+.svc-preview {
+  border-radius: $radius;
+  overflow: hidden;
+  border: 1px solid $border;
+  box-shadow: $shadow;
+
+  &__header {
+    padding: 1.25rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    transition: background 0.3s;
+  }
+
+  &__icon {
+    font-size: 2rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  }
+
+  &__name {
+    font-family: $ff-head;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: $white;
+    margin: 0;
+    text-align: center;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    @include line-clamp(2);
+  }
+
+  &__body {
+    padding: 0.85rem 1rem;
+    background: $bg-card;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+  }
+
+  &__desc {
+    font-size: 0.72rem;
+    color: $text-muted;
+    margin: 0;
+    line-height: 1.5;
+    @include line-clamp(2);
+  }
+
+  &__price {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: $navy;
+    margin: 0;
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // VIEW MODAL
 // ─────────────────────────────────────────────────────────────────────────────
-.view-pat-header {
+
+// Gradient header
+.svc-view-header {
+  padding: 2rem 1.5rem 1.5rem;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 1.25rem;
-  padding: 0.85rem 1rem;
-  background: $bg-main;
-  border-radius: $radius-sm;
-  border: 1px solid $border;
+  gap: 0.6rem;
+  position: relative;
+  border-radius: $radius $radius 0 0;
+
+  &__icon {
+    font-size: 3rem;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
+  }
+
+  &__name {
+    font-family: $ff-head;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: $white;
+    margin: 0;
+    text-align: center;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+
+  &__badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 }
 
-.view-pat-avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  color: $white;
-  font-size: 1.1rem;
-  font-weight: 700;
-  display: flex;
+.svc-view-rating {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.view-pat-name {
-  font-family: $ff-head;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: $text;
-  margin: 0 0 3px;
-}
-
-.view-pat-age {
+  gap: 4px;
   font-size: 0.8rem;
-  color: $text-muted;
-  margin: 0 0 6px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.25);
+  color: $white;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  svg {
+    font-size: 0.7rem;
+    color: $star;
+  }
 }
 
-// Info items (reuse from DoctorView pattern)
-.view-info-item {
+// Stats grid in view modal
+.svc-view-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.svc-view-stat-item {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  padding: 0.6rem 0.75rem;
+  padding: 0.65rem 0.85rem;
   background: $bg-main;
   border-radius: $radius-sm;
   border: 1px solid $border;
-  height: 100%;
 }
 
-.view-info-icon {
+.svc-view-stat-icon {
   font-size: 0.85rem;
   color: $primary;
   margin-top: 2px;
@@ -711,7 +802,7 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
   opacity: 0.85;
 }
 
-.view-info-label {
+.svc-view-stat-label {
   font-size: 0.65rem;
   font-weight: 600;
   color: $text-muted;
@@ -720,41 +811,38 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
   margin: 0 0 2px;
 }
 
-.view-info-val {
+.svc-view-stat-val {
   font-size: 0.82rem;
-  font-weight: 500;
+  font-weight: 600;
   color: $text;
   margin: 0;
+}
 
-  &.blood-highlight {
-    color: $danger;
-    font-weight: 700;
+.svc-view-section-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  svg {
+    color: $primary;
+    font-size: 0.68rem;
   }
 }
 
-// Notes box
-.view-notes {
-  margin-top: 1rem;
+.svc-view-requirements {
   padding: 0.85rem 1rem;
-  background: $bg-main;
+  background: $star-lt;
   border-radius: $radius-sm;
-  border: 1px solid $border;
+  border: 1px solid rgba($star, 0.25);
+  border-left: 3px solid $star;
+  margin-bottom: 1rem;
 
-  &__title {
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: $text-muted;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0 0 6px;
-    display: flex;
-    align-items: center;
-    svg {
-      color: $primary;
-    }
-  }
-
-  &__text {
+  p {
     font-size: 0.82rem;
     color: $text-muted;
     margin: 0;
@@ -762,119 +850,70 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
   }
 }
 
-// Medical history timeline
-.view-history {
-  margin-top: 1rem;
+.svc-view-description {
+  padding: 0.85rem 1rem;
+  background: $bg-main;
+  border-radius: $radius-sm;
+  border: 1px solid $border;
+  border-left: 3px solid $primary;
+  margin-bottom: 1rem;
 
-  &__title {
+  p {
     font-size: 0.82rem;
-    font-weight: 700;
-    color: $text;
-    margin: 0 0 0.85rem;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    svg {
-      color: $primary;
-      font-size: 0.75rem;
-    }
+    color: $text-muted;
+    margin: 0;
+    line-height: 1.6;
   }
 }
 
-.view-history-row {
+// Doctors list in view modal
+.svc-view-doc-list {
   display: flex;
-  gap: 14px;
-  padding-bottom: 0.9rem;
-  position: relative;
-
-  &:last-child {
-    padding-bottom: 0;
-  }
-
-  // Đường kẻ dọc timeline
-  &:not(:last-child)::before {
-    content: "";
-    position: absolute;
-    left: 7px;
-    top: 16px;
-    bottom: 0;
-    width: 2px;
-    background: $border;
-  }
+  flex-direction: column;
+  gap: 7px;
 }
 
-.view-history-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: $primary;
-  border: 3px solid $primary-lt;
-  flex-shrink: 0;
-  margin-top: 2px;
-  position: relative;
-  z-index: 1;
-}
-
-.view-history-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.view-history-top {
+.svc-view-doc-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 3px;
+  gap: 10px;
+  padding: 0.6rem 0.85rem;
+  background: $bg-main;
+  border-radius: $radius-sm;
+  border: 1px solid $border;
+  transition: background 0.15s;
+  &:hover {
+    background: $primary-lt;
+  }
 }
 
-.view-history-date {
+.svc-view-doc-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid $primary-lt;
+  flex-shrink: 0;
+}
+
+.svc-view-doc-name {
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: $text;
+  margin: 0 0 2px;
+}
+
+.svc-view-doc-spec {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.73rem;
-  font-weight: 600;
-  color: $text-muted;
-  svg {
-    font-size: 0.65rem;
-    color: $primary;
-  }
-}
-
-.view-history-type {
-  font-size: 0.67rem;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 100px;
-
-  &--checkup {
-    background: $primary-lt;
-    color: $primary-dk;
-  }
-  &--followup {
-    background: $navy-lt;
-    color: $navy;
-  }
-  &--consultation {
-    background: $accent-lt;
-    color: darken($accent, 12%);
-  }
-}
-
-.view-history-doctor {
-  font-size: 0.8rem;
-  color: $text;
-  margin: 0 0 2px;
-  strong {
-    font-weight: 600;
-  }
-}
-
-.view-history-note {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: $text-muted;
   margin: 0;
-  line-height: 1.5;
+  svg {
+    font-size: 0.62rem;
+    color: $primary;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

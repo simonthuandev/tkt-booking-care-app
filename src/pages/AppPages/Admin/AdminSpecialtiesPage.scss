@@ -4,26 +4,43 @@
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap");
 
 // ── Tokens ──────────────────────────────────────────────────────────────────
-$primary:    #0ba3a3;  $primary-dk: #077d7d;  $primary-lt: #e6f7f7;
-$navy:       #0d2b45;  $navy-lt:    #e6eef5;
-$text:       #1a2b3c;  $text-muted: #6b7f8e;
-$border:     #e2ebf0;  $bg-main:    #f7fafb;  $bg-card: #ffffff;
-$white:      #ffffff;
-$green:      #1a9e5c;  $green-lt:   #e6f9f0;
-$danger:     #e24b4a;  $danger-lt:  #fef2f2;
-$star:       #f5a623;
-$ff-head:    "Playfair Display", serif;
-$ff-body:    "DM Sans", sans-serif;
-$radius:     16px;  $radius-sm: 10px;
-$shadow:     0 4px 24px rgba(13,43,69,.08);
-$shadow-hov: 0 12px 40px rgba(13,43,69,.14);
+$primary: #0ba3a3;
+$primary-dk: #077d7d;
+$primary-lt: #e6f7f7;
+$navy: #0d2b45;
+$navy-lt: #e6eef5;
+$text: #1a2b3c;
+$text-muted: #6b7f8e;
+$border: #e2ebf0;
+$bg-main: #f7fafb;
+$bg-card: #ffffff;
+$white: #ffffff;
+$green: #1a9e5c;
+$green-lt: #e6f9f0;
+$danger: #e24b4a;
+$danger-lt: #fef2f2;
+$star: #f5a623;
+$ff-head: "Playfair Display", serif;
+$ff-body: "DM Sans", sans-serif;
+$radius: 16px;
+$radius-sm: 10px;
+$shadow: 0 4px 24px rgba(13, 43, 69, 0.08);
+$shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
 
-@mixin card { background:$bg-card; border-radius:$radius; box-shadow:$shadow; border:1px solid $border; }
+@mixin card {
+  background: $bg-card;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  border: 1px solid $border;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PAGE
 // ─────────────────────────────────────────────────────────────────────────────
-.admin-specs { font-family:$ff-body; max-width:1100px; }
+.admin-specs {
+  font-family: $ff-body;
+  max-width: 1400px;
+}
 
 // ── Header ───────────────────────────────────────────────────────────────────
 .specs-header {
@@ -31,10 +48,15 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   align-items: flex-end;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: .75rem;
+  gap: 0.75rem;
   margin-bottom: 1.5rem;
 
-  &__right { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; }
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
 }
 
 .specs-title {
@@ -43,43 +65,60 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   font-weight: 700;
   color: $text;
   margin: 0 0 4px;
-  @media (max-width:576px) { font-size:1.5rem; }
+  @media (max-width: 576px) {
+    font-size: 1.5rem;
+  }
 }
 
-.specs-sub { font-size:.875rem; color:$text-muted; margin:0; }
+.specs-sub {
+  font-size: 0.875rem;
+  color: $text-muted;
+  margin: 0;
+}
 
 .specs-badge {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-size: .8rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: $primary-dk;
   background: $primary-lt;
   padding: 6px 14px;
   border-radius: 100px;
-  border: 1px solid rgba($primary,.25);
+  border: 1px solid rgba($primary, 0.25);
   white-space: nowrap;
-  svg { font-size:.82rem; }
+  svg {
+    font-size: 0.82rem;
+  }
 }
 
 .btn-add-spec {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: .6rem 1.35rem;
+  padding: 0.6rem 1.35rem;
   border: none;
   border-radius: $radius-sm;
   background: linear-gradient(135deg, $primary 0%, $primary-dk 100%);
   color: $white;
   font-family: $ff-body;
-  font-size: .875rem;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: box-shadow .2s, transform .15s;
-  svg { font-size:.8rem; }
-  &:hover { box-shadow:0 6px 18px rgba($primary,.4); transform:translateY(-1px); }
-  &:active { transform:scale(.98); }
+  transition:
+    box-shadow 0.2s,
+    transform 0.15s;
+  svg {
+    font-size: 0.8rem;
+  }
+  &:hover {
+    box-shadow: 0 6px 18px rgba($primary, 0.4);
+    transform: translateY(-1px);
+  }
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -87,20 +126,33 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
 // ─────────────────────────────────────────────────────────────────────────────
 .specs-summary {
   display: grid;
-  grid-template-columns: repeat(3,1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
   margin-bottom: 1.5rem;
-  @media (max-width:600px) { grid-template-columns:1fr; }
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
 
   &__card {
     @include card;
     padding: 1rem 1.25rem;
     text-align: center;
-    transition: box-shadow .2s, transform .2s;
-    &:hover { box-shadow:$shadow-hov; transform:translateY(-2px); }
-    &.s-teal  { border-top:3px solid $primary; }
-    &.s-green { border-top:3px solid $green;   }
-    &.s-navy  { border-top:3px solid $navy;    }
+    transition:
+      box-shadow 0.2s,
+      transform 0.2s;
+    &:hover {
+      box-shadow: $shadow-hov;
+      transform: translateY(-2px);
+    }
+    &.s-teal {
+      border-top: 3px solid $primary;
+    }
+    &.s-green {
+      border-top: 3px solid $green;
+    }
+    &.s-navy {
+      border-top: 3px solid $navy;
+    }
   }
 
   &__value {
@@ -112,11 +164,11 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   }
 
   &__label {
-    font-size: .72rem;
+    font-size: 0.72rem;
     font-weight: 600;
     color: $text-muted;
     text-transform: uppercase;
-    letter-spacing: .04em;
+    letter-spacing: 0.04em;
     margin: 0;
   }
 }
@@ -127,7 +179,7 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
 .specs-toolbar {
   display: flex;
   gap: 8px;
-  margin-bottom: .75rem;
+  margin-bottom: 0.75rem;
   flex-wrap: wrap;
 }
 
@@ -138,26 +190,34 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
 
   &__icon {
     position: absolute;
-    left: 12px; top: 50%;
+    left: 12px;
+    top: 50%;
     transform: translateY(-50%);
     color: $text-muted;
-    font-size: .78rem;
+    font-size: 0.78rem;
     pointer-events: none;
   }
 
   input {
     width: 100%;
-    padding: .52rem 1rem .52rem 2.2rem;
+    padding: 0.52rem 1rem 0.52rem 2.2rem;
     border: 1px solid $border;
     border-radius: $radius-sm;
     font-family: $ff-body;
-    font-size: .83rem;
+    font-size: 0.83rem;
     color: $text;
     background: $bg-card;
     outline: none;
-    transition: border-color .18s, box-shadow .18s;
-    &::placeholder { color:$text-muted; }
-    &:focus { border-color:$primary; box-shadow:0 0 0 3px rgba($primary,.1); }
+    transition:
+      border-color 0.18s,
+      box-shadow 0.18s;
+    &::placeholder {
+      color: $text-muted;
+    }
+    &:focus {
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary, 0.1);
+    }
   }
 }
 
@@ -167,32 +227,39 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
 
   &__icon {
     position: absolute;
-    left: 10px; top: 50%;
+    left: 10px;
+    top: 50%;
     transform: translateY(-50%);
     color: $text-muted;
-    font-size: .75rem;
+    font-size: 0.75rem;
     pointer-events: none;
   }
 
   select {
-    padding: .52rem 1rem .52rem 2rem;
+    padding: 0.52rem 1rem 0.52rem 2rem;
     border: 1px solid $border;
     border-radius: $radius-sm;
     font-family: $ff-body;
-    font-size: .83rem;
+    font-size: 0.83rem;
     color: $text;
     background: $bg-card;
     outline: none;
     cursor: pointer;
     appearance: none;
-    transition: border-color .18s;
-    &:focus { border-color:$primary; }
+    transition: border-color 0.18s;
+    &:focus {
+      border-color: $primary;
+    }
   }
 }
 
 .specs-count {
-  font-size:.8rem; color:$text-muted; margin:0 0 1rem;
-  strong { color:$text; }
+  font-size: 0.8rem;
+  color: $text-muted;
+  margin: 0 0 1rem;
+  strong {
+    color: $text;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -200,10 +267,14 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
 // ─────────────────────────────────────────────────────────────────────────────
 .specs-grid {
   display: grid;
-  grid-template-columns: repeat(3,1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.25rem;
-  @media (max-width:900px) { grid-template-columns:repeat(2,1fr); }
-  @media (max-width:576px) { grid-template-columns:1fr; }
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (max-width: 576px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -212,11 +283,16 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
 .spec-card {
   @include card;
   overflow: hidden;
-  transition: box-shadow .2s, transform .2s;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
   display: flex;
   flex-direction: column;
 
-  &:hover { box-shadow:$shadow-hov; transform:translateY(-4px); }
+  &:hover {
+    box-shadow: $shadow-hov;
+    transform: translateY(-4px);
+  }
 
   // Gradient header
   &__header {
@@ -224,14 +300,14 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: .5rem;
+    gap: 0.5rem;
     position: relative;
   }
 
   &__icon {
     font-size: 2.75rem;
     line-height: 1;
-    filter: drop-shadow(0 2px 6px rgba(0,0,0,.2));
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.2));
   }
 
   &__name {
@@ -241,21 +317,24 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
     color: $white;
     margin: 0;
     text-align: center;
-    text-shadow: 0 1px 3px rgba(0,0,0,.2);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   }
 
   &__status {
     position: absolute;
-    top: 10px; right: 10px;
+    top: 10px;
+    right: 10px;
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-size: .65rem;
+    font-size: 0.65rem;
     font-weight: 700;
     padding: 3px 8px;
     border-radius: 100px;
     backdrop-filter: blur(4px);
-    svg { font-size:.6rem; }
+    svg {
+      font-size: 0.6rem;
+    }
   }
 
   // Body
@@ -263,12 +342,12 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
     padding: 1.1rem 1.25rem;
     display: flex;
     flex-direction: column;
-    gap: .85rem;
+    gap: 0.85rem;
     flex: 1;
   }
 
   &__desc {
-    font-size: .8rem;
+    font-size: 0.8rem;
     color: $text-muted;
     margin: 0;
     line-height: 1.6;
@@ -288,11 +367,15 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
     align-items: center;
     gap: 8px;
     flex: 1;
-    svg { font-size:.9rem; color:$primary; flex-shrink:0; }
+    svg {
+      font-size: 0.9rem;
+      color: $primary;
+      flex-shrink: 0;
+    }
   }
 
   &__stat-value {
-    font-size: .95rem;
+    font-size: 0.95rem;
     font-weight: 700;
     color: $text;
     margin: 0;
@@ -300,11 +383,11 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   }
 
   &__stat-label {
-    font-size: .65rem;
+    font-size: 0.65rem;
     color: $text-muted;
     margin: 0;
     text-transform: uppercase;
-    letter-spacing: .04em;
+    letter-spacing: 0.04em;
   }
 
   &__actions {
@@ -316,15 +399,15 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
 
 // Status badges trên nền gradient
 .status-active {
-  background: rgba(255,255,255,.25);
+  background: rgba(255, 255, 255, 0.25);
   color: $white;
-  border: 1px solid rgba(255,255,255,.4);
+  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .status-inactive {
-  background: rgba(0,0,0,.2);
-  color: rgba(255,255,255,.8);
-  border: 1px solid rgba(255,255,255,.15);
+  background: rgba(0, 0, 0, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 // Card buttons
@@ -335,37 +418,54 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   padding: 6px 0;
   border-radius: $radius-sm;
   font-family: $ff-body;
-  font-size: .72rem;
+  font-size: 0.72rem;
   font-weight: 600;
   cursor: pointer;
   border: none;
-  transition: background .15s, color .15s, box-shadow .15s;
-  svg { font-size:.65rem; }
-  &:active { transform:scale(.97); }
+  transition:
+    background 0.15s,
+    color 0.15s,
+    box-shadow 0.15s;
+  svg {
+    font-size: 0.65rem;
+  }
+  &:active {
+    transform: scale(0.97);
+  }
 
   &--view {
     flex: 1;
     justify-content: center;
     background: $primary-lt;
     color: $primary-dk;
-    border: 1px solid rgba($primary,.25) !important;
-    &:hover { background:$primary; color:$white; box-shadow:0 3px 10px rgba($primary,.3); }
+    border: 1px solid rgba($primary, 0.25) !important;
+    &:hover {
+      background: $primary;
+      color: $white;
+      box-shadow: 0 3px 10px rgba($primary, 0.3);
+    }
   }
 
   &--edit {
     padding: 6px 12px;
     background: $navy-lt;
     color: $navy;
-    border: 1px solid rgba($navy,.2) !important;
-    &:hover { background:$navy; color:$white; }
+    border: 1px solid rgba($navy, 0.2) !important;
+    &:hover {
+      background: $navy;
+      color: $white;
+    }
   }
 
   &--delete {
     padding: 6px 12px;
     background: $danger-lt;
     color: $danger;
-    border: 1px solid rgba($danger,.2) !important;
-    &:hover { background:$danger; color:$white; }
+    border: 1px solid rgba($danger, 0.2) !important;
+    &:hover {
+      background: $danger;
+      color: $white;
+    }
   }
 }
 
@@ -379,47 +479,65 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: .5rem;
+  gap: 0.5rem;
 
-  &__icon { font-size:2.5rem; color:rgba($primary,.2); margin-bottom:.5rem; }
-  p    { font-size:.95rem; font-weight:600; color:$text; margin:0; }
-  span { font-size:.8rem; color:$text-muted; }
+  &__icon {
+    font-size: 2.5rem;
+    color: rgba($primary, 0.2);
+    margin-bottom: 0.5rem;
+  }
+  p {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: $text;
+    margin: 0;
+  }
+  span {
+    font-size: 0.8rem;
+    color: $text-muted;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BOOTSTRAP MODAL OVERRIDES
 // ─────────────────────────────────────────────────────────────────────────────
 .form-label {
-  font-size: .8rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: $text;
   margin-bottom: 5px;
 }
 
-.form-control, .form-select {
+.form-control,
+.form-select {
   font-family: $ff-body;
-  font-size: .875rem;
+  font-size: 0.875rem;
   border-radius: $radius-sm;
   border-color: $border;
   color: $text;
-  &:focus { border-color:$primary; box-shadow:0 0 0 3px rgba($primary,.12); }
+  &:focus {
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba($primary, 0.12);
+  }
 }
 
 .btn-save {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: .5rem 1.4rem;
+  padding: 0.5rem 1.4rem;
   border: none;
   border-radius: $radius-sm;
   background: linear-gradient(135deg, $primary 0%, $primary-dk 100%);
   color: $white !important;
   font-family: $ff-body;
-  font-size: .875rem;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: box-shadow .2s;
-  &:hover { box-shadow:0 6px 16px rgba($primary,.4); }
+  transition: box-shadow 0.2s;
+  &:hover {
+    box-shadow: 0 6px 16px rgba($primary, 0.4);
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -432,7 +550,8 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
 }
 
 .icon-swatch {
-  width: 40px; height: 40px;
+  width: 40px;
+  height: 40px;
   border-radius: $radius-sm;
   border: 2px solid $border;
   background: $bg-main;
@@ -441,14 +560,21 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color .15s, transform .15s, background .15s;
+  transition:
+    border-color 0.15s,
+    transform 0.15s,
+    background 0.15s;
 
-  &:hover { border-color:$primary; background:$primary-lt; transform:scale(1.1); }
+  &:hover {
+    border-color: $primary;
+    background: $primary-lt;
+    transform: scale(1.1);
+  }
 
   &--active {
     border-color: $primary;
     background: $primary-lt;
-    outline: 2px solid rgba($primary,.3);
+    outline: 2px solid rgba($primary, 0.3);
   }
 }
 
@@ -459,18 +585,23 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
 }
 
 .spec-color-swatch {
-  width: 32px; height: 32px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   border: 3px solid transparent;
   cursor: pointer;
-  transition: transform .15s, border-color .15s;
+  transition:
+    transform 0.15s,
+    border-color 0.15s;
 
-  &:hover { transform:scale(1.15); }
+  &:hover {
+    transform: scale(1.15);
+  }
 
   &--active {
     border-color: $text;
     transform: scale(1.15);
-    box-shadow: 0 0 0 2px rgba(255,255,255,.8);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8);
   }
 }
 
@@ -488,32 +619,32 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: .4rem;
-    transition: background .3s;
+    gap: 0.4rem;
+    transition: background 0.3s;
   }
 
   &__icon {
     font-size: 2rem;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,.2));
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
   }
 
   &__name {
     font-family: $ff-head;
-    font-size: .95rem;
+    font-size: 0.95rem;
     font-weight: 700;
     color: $white;
     margin: 0;
     text-align: center;
-    text-shadow: 0 1px 3px rgba(0,0,0,.2);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   }
 
   &__body {
-    padding: .85rem 1rem;
+    padding: 0.85rem 1rem;
     background: $bg-card;
   }
 
   &__desc {
-    font-size: .75rem;
+    font-size: 0.75rem;
     color: $text-muted;
     margin: 0 0 8px;
     line-height: 1.5;
@@ -524,7 +655,7 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   }
 
   &__status {
-    font-size: .68rem;
+    font-size: 0.68rem;
     font-weight: 700;
     padding: 3px 10px;
     border-radius: 100px;
@@ -543,26 +674,34 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: .85rem 1.25rem;
+  padding: 0.85rem 1.25rem;
   border-bottom: 1px solid $border;
-  transition: background .15s;
+  transition: background 0.15s;
 
-  &:last-child { border-bottom:none; }
-  &:hover { background:$bg-main; }
+  &:last-child {
+    border-bottom: none;
+  }
+  &:hover {
+    background: $bg-main;
+  }
 }
 
 .view-doc-avatar {
-  width: 40px; height: 40px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid $border;
   flex-shrink: 0;
 }
 
-.view-doc-info { flex:1; min-width:0; }
+.view-doc-info {
+  flex: 1;
+  min-width: 0;
+}
 
 .view-doc-name {
-  font-size: .87rem;
+  font-size: 0.87rem;
   font-weight: 600;
   color: $text;
   margin: 0 0 3px;
@@ -575,31 +714,37 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: .74rem;
+  font-size: 0.74rem;
   color: $text-muted;
   margin: 0;
-  svg { font-size:.65rem; color:$primary; }
+  svg {
+    font-size: 0.65rem;
+    color: $primary;
+  }
 }
 
 .view-doc-rating {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: .82rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: darken($star, 10%);
   flex-shrink: 0;
-  svg { font-size:.72rem; }
+  svg {
+    font-size: 0.72rem;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DELETE MODAL
 // ─────────────────────────────────────────────────────────────────────────────
 .delete-icon-wrap {
-  width: 60px; height: 60px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   background: $danger-lt;
-  border: 2px solid rgba($danger,.2);
+  border: 2px solid rgba($danger, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -613,13 +758,15 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   font-size: 1.1rem;
   font-weight: 700;
   color: $text;
-  margin: 0 0 .75rem;
+  margin: 0 0 0.75rem;
 }
 
 .delete-desc {
-  font-size: .85rem;
+  font-size: 0.85rem;
   color: $text-muted;
   margin: 0;
   line-height: 1.6;
-  strong { color:$text; }
+  strong {
+    color: $text;
+  }
 }

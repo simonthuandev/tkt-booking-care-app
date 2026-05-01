@@ -4,22 +4,38 @@
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap");
 
 // ── Tokens ──────────────────────────────────────────────────────────────────
-$primary:    #0ba3a3;  $primary-dk: #077d7d;  $primary-lt: #e6f7f7;
-$accent:     #ff6b35;  $accent-lt:  #fff1ec;
-$navy:       #0d2b45;  $navy-lt:    #e6eef5;
-$text:       #1a2b3c;  $text-muted: #6b7f8e;
-$border:     #e2ebf0;  $bg-main:    #f7fafb;  $bg-card: #ffffff;
-$white:      #ffffff;
-$green:      #1a9e5c;  $green-lt:   #e6f9f0;
-$danger:     #e24b4a;  $danger-lt:  #fef2f2;
-$star:       #f5a623;  $star-lt:    #fff8e6;
-$ff-head:    "Playfair Display", serif;
-$ff-body:    "DM Sans", sans-serif;
-$radius:     16px;  $radius-sm: 10px;
-$shadow:     0 4px 24px rgba(13,43,69,.08);
-$shadow-hov: 0 12px 40px rgba(13,43,69,.14);
+$primary: #0ba3a3;
+$primary-dk: #077d7d;
+$primary-lt: #e6f7f7;
+$accent: #ff6b35;
+$accent-lt: #fff1ec;
+$navy: #0d2b45;
+$navy-lt: #e6eef5;
+$text: #1a2b3c;
+$text-muted: #6b7f8e;
+$border: #e2ebf0;
+$bg-main: #f7fafb;
+$bg-card: #ffffff;
+$white: #ffffff;
+$green: #1a9e5c;
+$green-lt: #e6f9f0;
+$danger: #e24b4a;
+$danger-lt: #fef2f2;
+$star: #f5a623;
+$star-lt: #fff8e6;
+$ff-head: "Playfair Display", serif;
+$ff-body: "DM Sans", sans-serif;
+$radius: 16px;
+$radius-sm: 10px;
+$shadow: 0 4px 24px rgba(13, 43, 69, 0.08);
+$shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
 
-@mixin card { background:$bg-card; border-radius:$radius; box-shadow:$shadow; border:1px solid $border; }
+@mixin card {
+  background: $bg-card;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  border: 1px solid $border;
+}
 @mixin line-clamp($n) {
   display: -webkit-box;
   -webkit-line-clamp: $n;
@@ -30,7 +46,10 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
 // ─────────────────────────────────────────────────────────────────────────────
 // PAGE
 // ─────────────────────────────────────────────────────────────────────────────
-.admin-news { font-family:$ff-body; max-width:1100px; }
+.admin-news {
+  font-family: $ff-body;
+  max-width: 1400px;
+}
 
 // ── Header ───────────────────────────────────────────────────────────────────
 .news-header {
@@ -38,10 +57,15 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   align-items: flex-end;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: .75rem;
+  gap: 0.75rem;
   margin-bottom: 1.5rem;
 
-  &__right { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; }
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
 }
 
 .news-title {
@@ -50,43 +74,60 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   font-weight: 700;
   color: $text;
   margin: 0 0 4px;
-  @media (max-width:576px) { font-size:1.5rem; }
+  @media (max-width: 576px) {
+    font-size: 1.5rem;
+  }
 }
 
-.news-sub { font-size:.875rem; color:$text-muted; margin:0; }
+.news-sub {
+  font-size: 0.875rem;
+  color: $text-muted;
+  margin: 0;
+}
 
 .news-badge {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-size: .8rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: $primary-dk;
   background: $primary-lt;
   padding: 6px 14px;
   border-radius: 100px;
-  border: 1px solid rgba($primary,.25);
+  border: 1px solid rgba($primary, 0.25);
   white-space: nowrap;
-  svg { font-size:.82rem; }
+  svg {
+    font-size: 0.82rem;
+  }
 }
 
 .btn-add-news {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: .6rem 1.35rem;
+  padding: 0.6rem 1.35rem;
   border: none;
   border-radius: $radius-sm;
   background: linear-gradient(135deg, $primary 0%, $primary-dk 100%);
   color: $white;
   font-family: $ff-body;
-  font-size: .875rem;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: box-shadow .2s, transform .15s;
-  svg { font-size:.8rem; }
-  &:hover { box-shadow:0 6px 18px rgba($primary,.4); transform:translateY(-1px); }
-  &:active { transform:scale(.98); }
+  transition:
+    box-shadow 0.2s,
+    transform 0.15s;
+  svg {
+    font-size: 0.8rem;
+  }
+  &:hover {
+    box-shadow: 0 6px 18px rgba($primary, 0.4);
+    transform: translateY(-1px);
+  }
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -94,23 +135,40 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
 // ─────────────────────────────────────────────────────────────────────────────
 .news-summary {
   display: grid;
-  grid-template-columns: repeat(4,1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
   margin-bottom: 1.5rem;
-  @media (max-width:768px) { grid-template-columns:repeat(2,1fr); }
-  @media (max-width:400px) { grid-template-columns:1fr; }
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (max-width: 400px) {
+    grid-template-columns: 1fr;
+  }
 
   &__card {
     @include card;
     padding: 1rem 1.25rem;
     text-align: center;
-    transition: box-shadow .2s, transform .2s;
-    &:hover { box-shadow:$shadow-hov; transform:translateY(-2px); }
+    transition:
+      box-shadow 0.2s,
+      transform 0.2s;
+    &:hover {
+      box-shadow: $shadow-hov;
+      transform: translateY(-2px);
+    }
 
-    &.s-teal  { border-top:3px solid $primary; }
-    &.s-green { border-top:3px solid $green;   }
-    &.s-amber { border-top:3px solid $star;    }
-    &.s-navy  { border-top:3px solid $navy;    }
+    &.s-teal {
+      border-top: 3px solid $primary;
+    }
+    &.s-green {
+      border-top: 3px solid $green;
+    }
+    &.s-amber {
+      border-top: 3px solid $star;
+    }
+    &.s-navy {
+      border-top: 3px solid $navy;
+    }
   }
 
   &__value {
@@ -122,11 +180,11 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   }
 
   &__label {
-    font-size: .72rem;
+    font-size: 0.72rem;
     font-weight: 600;
     color: $text-muted;
     text-transform: uppercase;
-    letter-spacing: .04em;
+    letter-spacing: 0.04em;
     margin: 0;
   }
 }
@@ -137,7 +195,7 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
 .news-toolbar {
   display: flex;
   gap: 8px;
-  margin-bottom: .75rem;
+  margin-bottom: 0.75rem;
   flex-wrap: wrap;
 }
 
@@ -148,26 +206,34 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
 
   &__icon {
     position: absolute;
-    left: 12px; top: 50%;
+    left: 12px;
+    top: 50%;
     transform: translateY(-50%);
     color: $text-muted;
-    font-size: .78rem;
+    font-size: 0.78rem;
     pointer-events: none;
   }
 
   input {
     width: 100%;
-    padding: .52rem 1rem .52rem 2.2rem;
+    padding: 0.52rem 1rem 0.52rem 2.2rem;
     border: 1px solid $border;
     border-radius: $radius-sm;
     font-family: $ff-body;
-    font-size: .83rem;
+    font-size: 0.83rem;
     color: $text;
     background: $bg-card;
     outline: none;
-    transition: border-color .18s, box-shadow .18s;
-    &::placeholder { color:$text-muted; }
-    &:focus { border-color:$primary; box-shadow:0 0 0 3px rgba($primary,.1); }
+    transition:
+      border-color 0.18s,
+      box-shadow 0.18s;
+    &::placeholder {
+      color: $text-muted;
+    }
+    &:focus {
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary, 0.1);
+    }
   }
 }
 
@@ -177,32 +243,39 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
 
   &__icon {
     position: absolute;
-    left: 10px; top: 50%;
+    left: 10px;
+    top: 50%;
     transform: translateY(-50%);
     color: $text-muted;
-    font-size: .75rem;
+    font-size: 0.75rem;
     pointer-events: none;
   }
 
   select {
-    padding: .52rem 1rem .52rem 2rem;
+    padding: 0.52rem 1rem 0.52rem 2rem;
     border: 1px solid $border;
     border-radius: $radius-sm;
     font-family: $ff-body;
-    font-size: .83rem;
+    font-size: 0.83rem;
     color: $text;
     background: $bg-card;
     outline: none;
     cursor: pointer;
     appearance: none;
-    transition: border-color .18s;
-    &:focus { border-color:$primary; }
+    transition: border-color 0.18s;
+    &:focus {
+      border-color: $primary;
+    }
   }
 }
 
 .news-count {
-  font-size:.8rem; color:$text-muted; margin:0 0 1rem;
-  strong { color:$text; }
+  font-size: 0.8rem;
+  color: $text-muted;
+  margin: 0 0 1rem;
+  strong {
+    color: $text;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -210,10 +283,14 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
 // ─────────────────────────────────────────────────────────────────────────────
 .news-grid {
   display: grid;
-  grid-template-columns: repeat(3,1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.25rem;
-  @media (max-width:900px) { grid-template-columns:repeat(2,1fr); }
-  @media (max-width:576px) { grid-template-columns:1fr; }
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (max-width: 576px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -224,9 +301,14 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: box-shadow .2s, transform .2s;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
 
-  &:hover { box-shadow:$shadow-hov; transform:translateY(-4px); }
+  &:hover {
+    box-shadow: $shadow-hov;
+    transform: translateY(-4px);
+  }
 
   // Thumbnail
   &__thumb {
@@ -237,33 +319,38 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   }
 
   &__thumb-img {
-    width: 100%; height: 100%;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
     display: block;
   }
 
   &__thumb-placeholder {
-    width: 100%; height: 100%;
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 3rem;
-    filter: drop-shadow(0 2px 6px rgba(0,0,0,.15));
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
   }
 
   // Status badge trên thumbnail
   &__status-badge {
     position: absolute;
-    top: 10px; right: 10px;
+    top: 10px;
+    right: 10px;
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-size: .65rem;
+    font-size: 0.65rem;
     font-weight: 700;
     padding: 3px 8px;
     border-radius: 100px;
     backdrop-filter: blur(6px);
-    svg { font-size:.6rem; }
+    svg {
+      font-size: 0.6rem;
+    }
   }
 
   // Body
@@ -271,7 +358,7 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
     padding: 1rem 1.1rem;
     display: flex;
     flex-direction: column;
-    gap: .6rem;
+    gap: 0.6rem;
     flex: 1;
   }
 
@@ -280,11 +367,11 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-size: .68rem;
+    font-size: 0.68rem;
     font-weight: 700;
     padding: 3px 9px;
     border-radius: 100px;
-    border: 1px solid rgba(0,0,0,.06);
+    border: 1px solid rgba(0, 0, 0, 0.06);
     align-self: flex-start;
     white-space: nowrap;
   }
@@ -292,7 +379,7 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   // Title
   &__title {
     font-family: $ff-head;
-    font-size: .92rem;
+    font-size: 0.92rem;
     font-weight: 700;
     color: $text;
     margin: 0;
@@ -302,7 +389,7 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
 
   // Excerpt
   &__excerpt {
-    font-size: .78rem;
+    font-size: 0.78rem;
     color: $text-muted;
     margin: 0;
     line-height: 1.5;
@@ -323,16 +410,17 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: .75rem;
+    font-size: 0.75rem;
     color: $text-muted;
     flex-shrink: 0;
   }
 
   &__author-avatar {
-    width: 22px; height: 22px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     color: $white;
-    font-size: .62rem;
+    font-size: 0.62rem;
     font-weight: 700;
     display: flex;
     align-items: center;
@@ -349,9 +437,12 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
       display: flex;
       align-items: center;
       gap: 3px;
-      font-size: .7rem;
+      font-size: 0.7rem;
       color: $text-muted;
-      svg { font-size:.62rem; color:$primary; }
+      svg {
+        font-size: 0.62rem;
+        color: $primary;
+      }
     }
   }
 
@@ -359,19 +450,19 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   &__actions {
     display: flex;
     gap: 6px;
-    padding-top: .5rem;
+    padding-top: 0.5rem;
     border-top: 1px solid $border;
   }
 }
 
 // Status badge variants (on thumbnail)
 .st-published {
-  background: rgba($green,.85);
+  background: rgba($green, 0.85);
   color: $white;
 }
 
 .st-draft {
-  background: rgba($star,.85);
+  background: rgba($star, 0.85);
   color: darken($star, 20%);
 }
 
@@ -383,33 +474,55 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   padding: 5px 0;
   border-radius: $radius-sm;
   font-family: $ff-body;
-  font-size: .72rem;
+  font-size: 0.72rem;
   font-weight: 600;
   cursor: pointer;
   border: none;
-  transition: background .15s, color .15s, box-shadow .15s;
-  svg { font-size:.65rem; }
-  &:active { transform:scale(.97); }
+  transition:
+    background 0.15s,
+    color 0.15s,
+    box-shadow 0.15s;
+  svg {
+    font-size: 0.65rem;
+  }
+  &:active {
+    transform: scale(0.97);
+  }
 
   &--view {
-    flex: 1; justify-content: center;
-    background: $primary-lt; color: $primary-dk;
-    border: 1px solid rgba($primary,.25) !important;
-    &:hover { background:$primary; color:$white; box-shadow:0 3px 10px rgba($primary,.3); }
+    flex: 1;
+    justify-content: center;
+    background: $primary-lt;
+    color: $primary-dk;
+    border: 1px solid rgba($primary, 0.25) !important;
+    &:hover {
+      background: $primary;
+      color: $white;
+      box-shadow: 0 3px 10px rgba($primary, 0.3);
+    }
   }
 
   &--edit {
-    flex: 1; justify-content: center;
-    background: $navy-lt; color: $navy;
-    border: 1px solid rgba($navy,.2) !important;
-    &:hover { background:$navy; color:$white; }
+    flex: 1;
+    justify-content: center;
+    background: $navy-lt;
+    color: $navy;
+    border: 1px solid rgba($navy, 0.2) !important;
+    &:hover {
+      background: $navy;
+      color: $white;
+    }
   }
 
   &--delete {
     padding: 5px 10px;
-    background: $danger-lt; color: $danger;
-    border: 1px solid rgba($danger,.2) !important;
-    &:hover { background:$danger; color:$white; }
+    background: $danger-lt;
+    color: $danger;
+    border: 1px solid rgba($danger, 0.2) !important;
+    &:hover {
+      background: $danger;
+      color: $white;
+    }
   }
 }
 
@@ -423,52 +536,71 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: .5rem;
+  gap: 0.5rem;
 
-  &__icon { font-size:2.5rem; color:rgba($primary,.2); margin-bottom:.5rem; }
-  p    { font-size:.95rem; font-weight:600; color:$text; margin:0; }
-  span { font-size:.8rem; color:$text-muted; }
+  &__icon {
+    font-size: 2.5rem;
+    color: rgba($primary, 0.2);
+    margin-bottom: 0.5rem;
+  }
+  p {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: $text;
+    margin: 0;
+  }
+  span {
+    font-size: 0.8rem;
+    color: $text-muted;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BOOTSTRAP MODAL OVERRIDES
 // ─────────────────────────────────────────────────────────────────────────────
 .form-label {
-  font-size: .8rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: $text;
   margin-bottom: 5px;
 }
 
-.form-control, .form-select {
+.form-control,
+.form-select {
   font-family: $ff-body;
-  font-size: .875rem;
+  font-size: 0.875rem;
   border-radius: $radius-sm;
   border-color: $border;
   color: $text;
-  &:focus { border-color:$primary; box-shadow:0 0 0 3px rgba($primary,.12); }
+  &:focus {
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba($primary, 0.12);
+  }
 }
 
 .btn-save {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: .5rem 1.4rem;
+  padding: 0.5rem 1.4rem;
   border: none;
   border-radius: $radius-sm;
   background: linear-gradient(135deg, $primary 0%, $primary-dk 100%);
   color: $white !important;
   font-family: $ff-body;
-  font-size: .875rem;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: box-shadow .2s;
-  &:hover { box-shadow:0 6px 16px rgba($primary,.4); }
+  transition: box-shadow 0.2s;
+  &:hover {
+    box-shadow: 0 6px 16px rgba($primary, 0.4);
+  }
 }
 
 // Thumbnail preview nhỏ cạnh URL input
 .thumb-preview {
-  width: 40px; height: 40px;
+  width: 40px;
+  height: 40px;
   border-radius: $radius-sm;
   object-fit: cover;
   border: 2px solid $border;
@@ -491,16 +623,22 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
     position: relative;
 
     img {
-      width: 100%; height: 100%;
+      width: 100%;
+      height: 100%;
       object-fit: cover;
-      position: absolute; inset:0;
+      position: absolute;
+      inset: 0;
     }
 
-    span { font-size:2.5rem; position:relative; z-index:1; }
+    span {
+      font-size: 2.5rem;
+      position: relative;
+      z-index: 1;
+    }
   }
 
   &__body {
-    padding: .85rem 1rem;
+    padding: 0.85rem 1rem;
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -510,7 +648,7 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-size: .65rem;
+    font-size: 0.65rem;
     font-weight: 700;
     padding: 2px 8px;
     border-radius: 100px;
@@ -519,7 +657,7 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
 
   &__title {
     font-family: $ff-head;
-    font-size: .85rem;
+    font-size: 0.85rem;
     font-weight: 700;
     color: $text;
     margin: 0;
@@ -527,7 +665,7 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   }
 
   &__excerpt {
-    font-size: .72rem;
+    font-size: 0.72rem;
     color: $text-muted;
     margin: 0;
     line-height: 1.5;
@@ -535,7 +673,7 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   }
 
   &__status {
-    font-size: .68rem;
+    font-size: 0.68rem;
     font-weight: 700;
     padding: 3px 9px;
     border-radius: 100px;
@@ -557,12 +695,18 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   position: relative;
 
   img {
-    width: 100%; height: 100%;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    position: absolute; inset:0;
+    position: absolute;
+    inset: 0;
   }
 
-  span { font-size:4rem; position:relative; z-index:1; }
+  span {
+    font-size: 4rem;
+    position: relative;
+    z-index: 1;
+  }
 }
 
 .view-news-title {
@@ -570,7 +714,7 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   font-size: 1.3rem;
   font-weight: 700;
   color: $text;
-  margin: .5rem 0 .75rem;
+  margin: 0.5rem 0 0.75rem;
   line-height: 1.4;
 }
 
@@ -579,17 +723,20 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  margin-bottom: .85rem;
-  padding-bottom: .85rem;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.85rem;
   border-bottom: 1px solid $border;
 
   span {
     display: flex;
     align-items: center;
     gap: 5px;
-    font-size: .78rem;
+    font-size: 0.78rem;
     color: $text-muted;
-    svg { font-size:.68rem; color:$primary; }
+    svg {
+      font-size: 0.68rem;
+      color: $primary;
+    }
   }
 }
 
@@ -604,32 +751,37 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: .7rem;
+  font-size: 0.7rem;
   font-weight: 600;
   padding: 3px 10px;
   border-radius: 100px;
   background: $bg-main;
   color: $text-muted;
   border: 1px solid $border;
-  svg { font-size:.6rem; color:$primary; }
+  svg {
+    font-size: 0.6rem;
+    color: $primary;
+  }
 }
 
-.view-news-content { color:$text; }
+.view-news-content {
+  color: $text;
+}
 
 .view-news-excerpt {
-  font-size: .88rem;
+  font-size: 0.88rem;
   font-weight: 500;
   color: $text;
-  margin: 0 0 .85rem;
+  margin: 0 0 0.85rem;
   line-height: 1.7;
-  padding: .85rem 1rem;
+  padding: 0.85rem 1rem;
   background: $primary-lt;
   border-radius: $radius-sm;
   border-left: 3px solid $primary;
 }
 
 .view-news-body {
-  font-size: .85rem;
+  font-size: 0.85rem;
   color: $text-muted;
   margin: 0;
   line-height: 1.8;
@@ -639,10 +791,11 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
 // DELETE MODAL
 // ─────────────────────────────────────────────────────────────────────────────
 .delete-icon-wrap {
-  width: 60px; height: 60px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   background: $danger-lt;
-  border: 2px solid rgba($danger,.2);
+  border: 2px solid rgba($danger, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -656,13 +809,15 @@ $shadow-hov: 0 12px 40px rgba(13,43,69,.14);
   font-size: 1.1rem;
   font-weight: 700;
   color: $text;
-  margin: 0 0 .75rem;
+  margin: 0 0 0.75rem;
 }
 
 .delete-desc {
-  font-size: .85rem;
+  font-size: 0.85rem;
   color: $text-muted;
   margin: 0;
   line-height: 1.6;
-  strong { color:$text; }
+  strong {
+    color: $text;
+  }
 }
