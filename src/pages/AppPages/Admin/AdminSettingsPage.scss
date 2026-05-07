@@ -1,0 +1,899 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// AdminSettingsPage.scss
+// ─────────────────────────────────────────────────────────────────────────────
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap");
+
+// ── Tokens ──────────────────────────────────────────────────────────────────
+$primary: #0ba3a3;
+$primary-dk: #077d7d;
+$primary-lt: #e6f7f7;
+$accent: #ff6b35;
+$navy: #0d2b45;
+$navy-lt: #e6eef5;
+$text: #1a2b3c;
+$text-muted: #6b7f8e;
+$border: #e2ebf0;
+$bg-main: #f7fafb;
+$bg-card: #ffffff;
+$white: #ffffff;
+$green: #1a9e5c;
+$green-lt: #e6f9f0;
+$danger: #e24b4a;
+$danger-lt: #fef2f2;
+$star: #f5a623;
+$star-lt: #fff8e6;
+$ff-head: "Playfair Display", serif;
+$ff-body: "DM Sans", sans-serif;
+$radius: 16px;
+$radius-sm: 10px;
+$shadow: 0 4px 24px rgba(13, 43, 69, 0.08);
+$shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
+
+@mixin card {
+  background: $bg-card;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  border: 1px solid $border;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PAGE
+// ─────────────────────────────────────────────────────────────────────────────
+.settings-page {
+  font-family: $ff-body;
+  max-width: 1400px;
+}
+
+.settings-page__header {
+  margin-bottom: 1.75rem;
+}
+
+.settings-page__title {
+  font-family: $ff-head;
+  font-size: 2rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 4px;
+  @media (max-width: 576px) {
+    font-size: 1.5rem;
+  }
+}
+
+.settings-page__subtitle {
+  font-size: 0.875rem;
+  color: $text-muted;
+  margin: 0;
+}
+
+// ── Layout ────────────────────────────────────────────────────────────────────
+.settings-body {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION MENU (sidebar trái)
+// ─────────────────────────────────────────────────────────────────────────────
+.settings-menu {
+  @include card;
+  padding: 0.75rem;
+  position: sticky;
+  top: 1.5rem;
+}
+
+.settings-menu__heading {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.25rem 0.75rem 0.5rem;
+  margin: 0;
+}
+
+.settings-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: none;
+  background: transparent;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.18s;
+
+  &:hover {
+    background: $bg-main;
+  }
+
+  &--active {
+    background: $primary-lt;
+    .settings-menu__item-icon {
+      background: $primary;
+      color: $white;
+    }
+    .settings-menu__item-label {
+      color: $primary-dk;
+      font-weight: 600;
+    }
+    .settings-menu__item-arrow {
+      color: $primary;
+      opacity: 1;
+    }
+  }
+}
+
+.settings-menu__item-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: $bg-main;
+  color: $text-muted;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  transition:
+    background 0.18s,
+    color 0.18s;
+}
+
+.settings-menu__item-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-menu__item-label {
+  display: block;
+  font-size: 0.83rem;
+  font-weight: 500;
+  color: $text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings-menu__item-desc {
+  display: block;
+  font-size: 0.68rem;
+  color: $text-muted;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings-menu__item-arrow {
+  font-size: 0.65rem;
+  color: $border;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.18s;
+  .settings-menu__item:hover & {
+    opacity: 1;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PANEL
+// ─────────────────────────────────────────────────────────────────────────────
+.settings-panel {
+  @include card;
+  padding: 2rem;
+  @media (max-width: 576px) {
+    padding: 1.25rem;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION CONTENT
+// ─────────────────────────────────────────────────────────────────────────────
+.settings-content__title {
+  font-family: $ff-head;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 4px;
+}
+
+.settings-content__sub {
+  font-size: 0.85rem;
+  color: $text-muted;
+  margin: 0 0 1.75rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid $border;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PROFILE — Admin avatar
+// ─────────────────────────────────────────────────────────────────────────────
+.profile-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.75rem;
+  padding: 1.25rem;
+  background: $bg-main;
+  border-radius: $radius-sm;
+  border: 1px solid $border;
+}
+
+.admin-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #e24b4a;
+  color: $white;
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.profile-avatar__name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 5px;
+}
+
+.admin-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 100px;
+  background: $danger-lt;
+  color: $danger;
+  border: 1px solid rgba($danger, 0.2);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SETTINGS FORM
+// ─────────────────────────────────────────────────────────────────────────────
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    @media (max-width: 576px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    &--full {
+      grid-column: 1/-1;
+    }
+
+    label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: $text;
+    }
+
+    input,
+    select,
+    textarea {
+      padding: 0.55rem 0.85rem;
+      border: 1px solid $border;
+      border-radius: $radius-sm;
+      font-family: $ff-body;
+      font-size: 0.875rem;
+      color: $text;
+      background: $bg-card;
+      outline: none;
+      transition:
+        border-color 0.18s,
+        box-shadow 0.18s;
+      width: 100%;
+
+      &:focus {
+        border-color: $primary;
+        box-shadow: 0 0 0 3px rgba($primary, 0.12);
+      }
+      &::placeholder {
+        color: $text-muted;
+      }
+    }
+
+    select {
+      cursor: pointer;
+    }
+    textarea {
+      line-height: 1.6;
+      resize: vertical;
+    }
+  }
+}
+
+.input-disabled {
+  background: $bg-main !important;
+  color: $text-muted !important;
+  cursor: not-allowed !important;
+  border-color: $border !important;
+}
+
+.text-hint {
+  font-size: 0.72rem;
+  color: $text-muted;
+  font-weight: 400;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MAINTENANCE BANNER
+// ─────────────────────────────────────────────────────────────────────────────
+.maintenance-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.85rem 1rem;
+  background: $star-lt;
+  border: 1px solid rgba($star, 0.35);
+  border-radius: $radius-sm;
+  border-left: 3px solid $star;
+  font-size: 0.83rem;
+  color: darken($star, 20%);
+  margin-bottom: 1rem;
+
+  svg {
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+  strong {
+    font-weight: 700;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// APPEARANCE — Color picker + radios
+// ─────────────────────────────────────────────────────────────────────────────
+.appearance-color-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.app-color-swatches {
+  display: flex;
+  gap: 7px;
+}
+
+.app-color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition:
+    transform 0.15s,
+    border-color 0.15s;
+  &:hover {
+    transform: scale(1.15);
+  }
+  &--active {
+    border-color: $text;
+    transform: scale(1.15);
+    box-shadow: 0 0 0 2px rgba($white, 0.8);
+  }
+}
+
+.hex-input {
+  width: 100px;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  font-family: $ff-body;
+  font-size: 0.83rem;
+  color: $text;
+  outline: none;
+  &:focus {
+    border-color: $primary;
+  }
+}
+
+.hex-preview {
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-sm;
+  border: 1px solid $border;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+// Radio options (reuse pattern)
+.radio-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0.5rem 1rem;
+  border-radius: $radius-sm;
+  border: 1.5px solid $border;
+  background: $bg-main;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: $text-muted;
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    border-color 0.18s,
+    color 0.18s;
+  user-select: none;
+
+  input[type="radio"] {
+    display: none;
+  }
+
+  &::before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid $border;
+    flex-shrink: 0;
+    transition:
+      border-color 0.18s,
+      background 0.18s;
+  }
+
+  &:hover {
+    border-color: rgba($primary, 0.4);
+    color: $primary;
+  }
+
+  &--checked {
+    background: $primary-lt;
+    border-color: $primary;
+    color: $primary-dk;
+    font-weight: 600;
+    &::before {
+      border-color: $primary;
+      background: $primary;
+    }
+  }
+}
+
+// URL + image preview
+.url-preview-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  input {
+    flex: 1;
+  }
+}
+
+.url-img-preview {
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-sm;
+  object-fit: contain;
+  border: 1px solid $border;
+  flex-shrink: 0;
+  background: $bg-main;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PASSWORD INPUT (show/hide)
+// ─────────────────────────────────────────────────────────────────────────────
+.pw-wrap {
+  position: relative;
+
+  input {
+    padding-right: 2.75rem;
+  }
+}
+
+.pw-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: $text-muted;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 4px;
+  transition: color 0.15s;
+  &:hover {
+    color: $primary;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PASSWORD STRENGTH BAR
+// ─────────────────────────────────────────────────────────────────────────────
+.pw-strength {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+
+  &__bar {
+    flex: 1;
+    height: 4px;
+    background: $border;
+    border-radius: 100px;
+    overflow: hidden;
+
+    span {
+      display: block;
+      height: 100%;
+      border-radius: 100px;
+      transition: width 0.3s ease;
+    }
+
+    &--weak span {
+      background: $danger;
+    }
+    &--fair span {
+      background: $accent;
+    }
+    &--strong span {
+      background: $primary;
+    }
+  }
+
+  &__label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    min-width: 40px;
+    &--weak {
+      color: $danger;
+    }
+    &--fair {
+      color: $accent;
+    }
+    &--strong {
+      color: $primary;
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NOTIFICATIONS / TOGGLES
+// ─────────────────────────────────────────────────────────────────────────────
+.notif-list {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.5rem;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  overflow: hidden;
+}
+
+.notif-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1.1rem;
+  background: $bg-card;
+  border-bottom: 1px solid $border;
+  transition: background 0.15s;
+  &:last-child {
+    border-bottom: none;
+  }
+  &:hover {
+    background: $bg-main;
+  }
+
+  &__text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: $text;
+    margin: 0 0 2px;
+  }
+
+  &__sub {
+    font-size: 0.775rem;
+    color: $text-muted;
+    margin: 0;
+  }
+}
+
+.notif-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.8rem;
+  color: $border;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+  flex-shrink: 0;
+
+  &--on {
+    color: $primary;
+  }
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DATABASE SECTION
+// ─────────────────────────────────────────────────────────────────────────────
+.db-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 1.5rem;
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.db-info-item {
+  padding: 0.85rem 1rem;
+  background: $bg-main;
+  border-radius: $radius-sm;
+  border: 1px solid $border;
+
+  &__label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 4px;
+  }
+
+  &__val {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: $text;
+    margin: 0;
+  }
+}
+
+.db-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.backup-history {
+  margin-bottom: 1.5rem;
+
+  &__title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 0.6rem;
+  }
+}
+
+.backup-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.65rem 0.85rem;
+  background: $bg-main;
+  border-radius: $radius-sm;
+  border: 1px solid $border;
+  margin-bottom: 6px;
+  font-size: 0.78rem;
+
+  &__date {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex: 1;
+    color: $text;
+    svg {
+      font-size: 0.68rem;
+      color: $primary;
+    }
+  }
+
+  &__size {
+    color: $text-muted;
+    flex-shrink: 0;
+  }
+
+  &__status {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: $green;
+    font-weight: 600;
+    flex-shrink: 0;
+    svg {
+      font-size: 0.65rem;
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DANGER ZONE
+// ─────────────────────────────────────────────────────────────────────────────
+.danger-zone {
+  border: 1px solid rgba($danger, 0.3);
+  border-radius: $radius-sm;
+  padding: 1.25rem;
+  background: $danger-lt;
+
+  &__title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: $danger;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 1rem;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  &__label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: $text;
+    margin: 0 0 2px;
+  }
+
+  &__sub {
+    font-size: 0.775rem;
+    color: $text-muted;
+    margin: 0;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SAVE BAR + BUTTONS
+// ─────────────────────────────────────────────────────────────────────────────
+.settings-save-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 1.25rem;
+  border-top: 1px solid $border;
+  margin-top: 0.5rem;
+}
+
+.settings-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.55rem 1.35rem;
+  border-radius: $radius-sm;
+  font-family: $ff-body;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition:
+    background 0.18s,
+    box-shadow 0.18s,
+    transform 0.12s;
+  &:active {
+    transform: scale(0.98);
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &--save {
+    background: linear-gradient(135deg, $primary 0%, $primary-dk 100%);
+    color: $white;
+    &:hover {
+      box-shadow: 0 6px 18px rgba($primary, 0.4);
+    }
+  }
+
+  &--test {
+    background: $navy-lt;
+    color: $navy;
+    border: 1px solid rgba($navy, 0.2);
+    &:hover {
+      background: $navy;
+      color: $white;
+    }
+  }
+
+  &--backup {
+    background: $primary-lt;
+    color: $primary-dk;
+    border: 1px solid rgba($primary, 0.3);
+    &:hover {
+      background: $primary;
+      color: $white;
+    }
+  }
+
+  &--export {
+    background: $navy-lt;
+    color: $navy;
+    border: 1px solid rgba($navy, 0.2);
+    &:hover {
+      background: $navy;
+      color: $white;
+    }
+  }
+
+  &--danger {
+    background: $danger;
+    color: $white;
+    &:hover {
+      box-shadow: 0 4px 12px rgba($danger, 0.35);
+    }
+  }
+
+  &--danger-outline {
+    background: $bg-card;
+    color: $danger;
+    border: 1px solid rgba($danger, 0.3);
+    &:hover {
+      background: $danger;
+      color: $white;
+    }
+  }
+}
+
+// Spinner animation
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Error message
+.settings-error {
+  font-size: 0.8rem;
+  color: $danger;
+  background: $danger-lt;
+  border: 1px solid rgba($danger, 0.2);
+  border-radius: $radius-sm;
+  padding: 8px 12px;
+  margin: 0;
+}
