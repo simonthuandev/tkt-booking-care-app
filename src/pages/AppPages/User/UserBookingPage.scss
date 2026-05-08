@@ -1,0 +1,999 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// UserBookingPage.scss
+// ─────────────────────────────────────────────────────────────────────────────
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap");
+
+// ── Tokens ──────────────────────────────────────────────────────────────────
+$primary:    #0ba3a3;  $primary-dk: #077d7d;  $primary-lt: #e6f7f7;
+$accent:     #ff6b35;  $accent-lt:  #fff1ec;
+$navy:       #0d2b45;  $navy-lt:    #e6eef5;
+$text:       #1a2b3c;  $text-muted: #6b7f8e;
+$border:     #e2ebf0;  $bg-main:    #f7fafb;  $bg-card: #ffffff;
+$white:      #ffffff;
+$green:      #1a9e5c;  $green-lt:   #e6f9f0;
+$danger:     #e24b4a;  $danger-lt:  #fef2f2;
+$star:       #f5a623;  $star-lt:    #fff8e6;
+$ff-head:    "Playfair Display", serif;
+$ff-body:    "DM Sans", sans-serif;
+$radius:     16px;  $radius-sm: 10px;
+$shadow:     0 4px 24px rgba(13,43,69,.08);
+$shadow-hov: 0 12px 40px rgba(13,43,69,.14);
+
+@mixin card { background:$bg-card; border-radius:$radius; box-shadow:$shadow; border:1px solid $border; }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PAGE
+// ─────────────────────────────────────────────────────────────────────────────
+.booking-page {
+  font-family: $ff-body;
+  max-width: 1100px;
+}
+
+.booking-page__header { margin-bottom: 1.5rem; }
+
+.booking-page__title {
+  font-family: $ff-head;
+  font-size: 2rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 4px;
+  @media (max-width:576px) { font-size:1.5rem; }
+}
+
+.booking-page__sub { font-size:.875rem; color:$text-muted; margin:0; }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STEP INDICATOR
+// ─────────────────────────────────────────────────────────────────────────────
+.step-indicator {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2rem;
+  @include card;
+  padding: 1.25rem 2rem;
+
+  @media (max-width:576px) { padding:1rem; }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    position: relative;
+  }
+
+  &__circle {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 2px solid $border;
+    background: $bg-main;
+    color: $text-muted;
+    font-size: .85rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all .25s;
+    z-index: 1;
+
+    &.active {
+      border-color: $primary;
+      background: $primary;
+      color: $white;
+    }
+
+    &.done {
+      border-color: $green;
+      background: $green-lt;
+      color: $green;
+      font-size: .9rem;
+    }
+  }
+
+  &__label {
+    font-size: .78rem;
+    font-weight: 500;
+    color: $text-muted;
+    margin-left: 8px;
+    white-space: nowrap;
+    @media (max-width:576px) { display:none; }
+
+    &.active { color:$primary; font-weight:700; }
+  }
+
+  // Connector line between steps
+  &__line {
+    flex: 1;
+    height: 2px;
+    background: $border;
+    margin: 0 12px;
+    transition: background .25s;
+
+    &.done { background: $green; }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BOOKING STEP WRAPPER
+// ─────────────────────────────────────────────────────────────────────────────
+.booking-step {
+  @include card;
+  padding: 2rem;
+  margin-bottom: 1.25rem;
+  @media (max-width:576px) { padding:1.25rem; }
+
+  &--fade {
+    animation: fadeInUp .25s ease;
+  }
+
+  &__header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid $border;
+  }
+
+  &__title {
+    font-family: $ff-head;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: $text;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    svg { color:$primary; font-size:1rem; }
+  }
+}
+
+@keyframes fadeInUp {
+  from { opacity:0; transform:translateY(12px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STEP 1 — Doctor selection
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Filters toolbar
+.booking-filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.booking-search {
+  flex: 1;
+  min-width: 180px;
+  position: relative;
+
+  &__icon {
+    position: absolute;
+    left: 12px; top: 50%;
+    transform: translateY(-50%);
+    color: $text-muted;
+    font-size: .78rem;
+    pointer-events: none;
+  }
+
+  input {
+    width: 100%;
+    padding: .52rem 1rem .52rem 2.2rem;
+    border: 1px solid $border;
+    border-radius: $radius-sm;
+    font-family: $ff-body;
+    font-size: .83rem;
+    color: $text;
+    background: $bg-card;
+    outline: none;
+    transition: border-color .18s, box-shadow .18s;
+    &::placeholder { color:$text-muted; }
+    &:focus { border-color:$primary; box-shadow:0 0 0 3px rgba($primary,.1); }
+  }
+}
+
+.toolbar-select {
+  position: relative;
+  flex-shrink: 0;
+
+  &__icon {
+    position: absolute;
+    left: 10px; top: 50%;
+    transform: translateY(-50%);
+    color: $text-muted;
+    font-size: .75rem;
+    pointer-events: none;
+  }
+
+  select {
+    padding: .52rem 1rem .52rem 2rem;
+    border: 1px solid $border;
+    border-radius: $radius-sm;
+    font-family: $ff-body;
+    font-size: .83rem;
+    color: $text;
+    background: $bg-card;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    transition: border-color .18s;
+    &:focus { border-color:$primary; }
+  }
+}
+
+// Doctor grid — 2 cột
+.booking-doctors-grid {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 1rem;
+  @media (max-width:768px) { grid-template-columns:1fr; }
+}
+
+// Doctor card
+.booking-doctor-card {
+  @include card;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  cursor: pointer;
+  position: relative;
+  transition: box-shadow .2s, transform .2s, border-color .2s;
+
+  &:hover { box-shadow:$shadow-hov; transform:translateY(-2px); }
+
+  &--selected {
+    border-color: $primary;
+    background: $primary-lt;
+  }
+
+  &__check {
+    position: absolute;
+    top: 10px; right: 10px;
+    font-size: .9rem;
+    color: $primary;
+  }
+
+  &__avatar {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid $border;
+    flex-shrink: 0;
+  }
+
+  &__info { flex:1; min-width:0; }
+
+  &__name {
+    font-size: .9rem;
+    font-weight: 700;
+    color: $text;
+    margin: 0 0 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__spec, &__hospital {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: .74rem;
+    color: $text-muted;
+    margin: 0 0 2px;
+    svg { font-size:.65rem; color:$primary; flex-shrink:0; }
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  &__rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: .75rem;
+    font-weight: 600;
+    color: darken($star,10%);
+    svg { font-size:.65rem; }
+  }
+
+  &__fee {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: .75rem;
+    font-weight: 600;
+    color: $navy;
+    svg { font-size:.65rem; color:$primary; }
+  }
+
+  &__btn {
+    flex-shrink: 0;
+    padding: 5px 14px;
+    border-radius: $radius-sm;
+    border: 1.5px solid rgba($primary,.3);
+    background: $bg-card;
+    font-family: $ff-body;
+    font-size: .75rem;
+    font-weight: 600;
+    color: $primary;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+
+    &.selected { background:$primary; color:$white; border-color:$primary; }
+    &:not(.selected):hover { background:$primary-lt; }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STEP 2 — Date & Time
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Mini doctor banner
+.booking-selected-doctor {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: .85rem 1rem;
+  background: $bg-main;
+  border-radius: $radius-sm;
+  border: 1px solid $border;
+  margin-bottom: 1.5rem;
+
+  &__avatar {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid $primary-lt;
+    flex-shrink: 0;
+  }
+
+  &__name {
+    font-size: .9rem;
+    font-weight: 700;
+    color: $text;
+    margin: 0 0 3px;
+  }
+
+  &__spec {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: .75rem;
+    color: $text-muted;
+    margin: 0;
+    svg { font-size:.65rem; color:$primary; }
+  }
+}
+
+// 2-col layout for calendar + time
+.booking-datetime-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  @media (max-width:768px) { grid-template-columns:1fr; }
+}
+
+.booking-section-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .8rem;
+  font-weight: 700;
+  color: $text;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin: 0 0 .85rem;
+  svg { color:$primary; font-size:.75rem; }
+}
+
+.booking-hint {
+  font-size: .82rem;
+  color: $text-muted;
+  background: $bg-main;
+  padding: 1rem;
+  border-radius: $radius-sm;
+  border: 1px dashed $border;
+  text-align: center;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MINI CALENDAR
+// ─────────────────────────────────────────────────────────────────────────────
+.mini-cal {
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  overflow: hidden;
+
+  &__nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .75rem 1rem;
+    background: $bg-main;
+    border-bottom: 1px solid $border;
+  }
+
+  &__month {
+    font-size: .85rem;
+    font-weight: 700;
+    color: $text;
+  }
+
+  &__nav-btn {
+    width: 28px; height: 28px;
+    border-radius: $radius-sm;
+    border: 1px solid $border;
+    background: $bg-card;
+    color: $text-muted;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: .72rem;
+    transition: background .15s, color .15s;
+    &:hover { background:$primary-lt; color:$primary; }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(7,1fr);
+    gap: 0;
+    padding: .5rem;
+  }
+
+  &__day-header {
+    text-align: center;
+    font-size: .65rem;
+    font-weight: 700;
+    color: $text-muted;
+    padding: .3rem 0;
+    text-transform: uppercase;
+  }
+
+  &__day {
+    aspect-ratio: 1;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    font-size: .78rem;
+    font-weight: 500;
+    color: $text;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .15s, color .15s;
+    margin: 2px auto;
+    width: 32px; height: 32px;
+
+    &:hover:not(:disabled):not(.selected) { background:$primary-lt; color:$primary; }
+
+    &.today { font-weight:700; color:$primary; }
+
+    &.selected {
+      background: $primary;
+      color: $white;
+      font-weight: 700;
+    }
+
+    &.past, &:disabled {
+      color: $border;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TIME SLOT GRID
+// ─────────────────────────────────────────────────────────────────────────────
+.time-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 8px;
+  @media (max-width:480px) { grid-template-columns:repeat(3,1fr); }
+}
+
+.time-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: .6rem .5rem;
+  border-radius: $radius-sm;
+  border: 1.5px solid $border;
+  background: $bg-card;
+  font-family: $ff-body;
+  font-size: .75rem;
+  font-weight: 600;
+  color: $text;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+  svg { font-size:.65rem; color:$primary; }
+
+  &:hover:not(:disabled) { border-color:$primary; background:$primary-lt; color:$primary; }
+
+  &--selected {
+    background: $primary;
+    border-color: $primary;
+    color: $white;
+    svg { color:$white; }
+  }
+
+  &--booked {
+    background: $bg-main;
+    border-color: $border;
+    color: $text-muted;
+    cursor: not-allowed;
+    opacity: .6;
+    text-decoration: line-through;
+    svg { color:$border; }
+  }
+
+  &__booked-label {
+    font-size: .6rem;
+    font-weight: 500;
+    color: $text-muted;
+    text-decoration: none;
+  }
+}
+
+// Appointment type pills
+.booking-type-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.booking-type-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: .5rem 1rem;
+  border-radius: 100px;
+  border: 1.5px solid $border;
+  background: $bg-main;
+  font-family: $ff-body;
+  font-size: .82rem;
+  font-weight: 500;
+  color: $text-muted;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+  user-select: none;
+
+  input[type="radio"] { display:none; }
+
+  &:hover { border-color:rgba($primary,.4); color:$primary; }
+
+  &--active {
+    background: $primary-lt;
+    border-color: $primary;
+    color: $primary-dk;
+    font-weight: 600;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STEP 3 — Confirm
+// ─────────────────────────────────────────────────────────────────────────────
+
+// 2-col: summary left + form right
+.booking-confirm-grid {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 2rem;
+  align-items: start;
+  @media (max-width:900px) { grid-template-columns:1fr; }
+}
+
+// Booking summary card
+.booking-summary {
+  background: $bg-main;
+  border-radius: $radius-sm;
+  border: 1px solid $border;
+  overflow: hidden;
+
+  &__title {
+    font-size: .72rem;
+    font-weight: 700;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    padding: .85rem 1rem .6rem;
+    margin: 0;
+    border-bottom: 1px solid $border;
+    background: $bg-card;
+  }
+
+  &__doctor {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 1rem;
+    border-bottom: 1px solid $border;
+    background: $bg-card;
+  }
+
+  &__avatar {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid $primary-lt;
+    flex-shrink: 0;
+  }
+
+  &__doctor-name {
+    font-size: .9rem;
+    font-weight: 700;
+    color: $text;
+    margin: 0 0 3px;
+  }
+
+  &__doctor-spec {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: .75rem;
+    color: $text-muted;
+    margin: 0;
+    svg { font-size:.65rem; color:$primary; }
+  }
+
+  &__details {
+    padding: .85rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .82rem;
+    color: $text-muted;
+    svg { font-size:.72rem; color:$primary; flex-shrink:0; }
+
+    &--fee {
+      margin-top: 4px;
+      padding-top: 8px;
+      border-top: 1px solid $border;
+      font-size: .95rem;
+      font-weight: 700;
+      color: $navy;
+      svg { color:$primary; }
+    }
+  }
+}
+
+// Patient form
+.booking-patient-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.booking-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  label {
+    font-size: .8rem;
+    font-weight: 600;
+    color: $text;
+  }
+
+  input, textarea {
+    padding: .55rem .85rem;
+    border: 1px solid $border;
+    border-radius: $radius-sm;
+    font-family: $ff-body;
+    font-size: .875rem;
+    color: $text;
+    background: $bg-card;
+    outline: none;
+    width: 100%;
+    transition: border-color .18s, box-shadow .18s;
+    &:focus { border-color:$primary; box-shadow:0 0 0 3px rgba($primary,.12); }
+    &::placeholder { color:$text-muted; }
+  }
+
+  textarea { line-height:1.6; resize:vertical; }
+}
+
+.booking-input-icon {
+  position: relative;
+
+  .input-icon {
+    position: absolute;
+    left: 12px; top: 50%;
+    transform: translateY(-50%);
+    font-size: .75rem;
+    color: $text-muted;
+    pointer-events: none;
+  }
+
+  input { padding-left: 2.2rem; }
+}
+
+.req  { color:$danger; margin-left:2px; }
+.optional { font-size:.72rem; color:$text-muted; font-weight:400; }
+
+// Agree checkbox
+.booking-agree {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: .84rem;
+  color: $text-muted;
+  cursor: pointer;
+  user-select: none;
+  padding: .85rem 1rem;
+  border: 1.5px solid $border;
+  border-radius: $radius-sm;
+  background: $bg-main;
+  transition: border-color .15s, background .15s;
+
+  input[type="checkbox"] { display:none; }
+
+  &__box {
+    width: 20px; height: 20px;
+    border-radius: 5px;
+    border: 2px solid $border;
+    background: $bg-card;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .7rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    color: $white;
+    transition: background .15s, border-color .15s;
+  }
+
+  &--checked {
+    border-color: $primary;
+    background: $primary-lt;
+    color: $text;
+
+    .booking-agree__box {
+      background: $primary;
+      border-color: $primary;
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ERROR + VALIDATION
+// ─────────────────────────────────────────────────────────────────────────────
+.booking-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .8rem;
+  color: $danger;
+  background: $danger-lt;
+  border: 1px solid rgba($danger,.2);
+  border-radius: $radius-sm;
+  padding: 8px 12px;
+  margin: 0 0 .75rem;
+}
+
+.field-error {
+  font-size: .75rem;
+  color: $danger;
+  font-weight: 500;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NAV BUTTONS
+// ─────────────────────────────────────────────────────────────────────────────
+.booking-nav {
+  @include card;
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  gap: 1rem;
+
+  &__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: .6rem 1.25rem;
+    border-radius: $radius-sm;
+    border: 1px solid $border;
+    background: $bg-main;
+    font-family: $ff-body;
+    font-size: .875rem;
+    font-weight: 600;
+    color: $text-muted;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    svg { font-size:.72rem; }
+    &:hover { background:$border; color:$text; }
+  }
+
+  &__next {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: .6rem 1.5rem;
+    border-radius: $radius-sm;
+    border: none;
+    background: linear-gradient(135deg, $primary 0%, $primary-dk 100%);
+    font-family: $ff-body;
+    font-size: .875rem;
+    font-weight: 600;
+    color: $white;
+    cursor: pointer;
+    transition: box-shadow .2s, transform .15s;
+    svg { font-size:.72rem; }
+    &:hover { box-shadow:0 6px 18px rgba($primary,.4); transform:translateY(-1px); }
+    &:active { transform:scale(.98); }
+  }
+
+  &__confirm {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: .65rem 2rem;
+    border-radius: $radius-sm;
+    border: none;
+    background: linear-gradient(135deg, $green 0%, darken($green,8%) 100%);
+    font-family: $ff-body;
+    font-size: .95rem;
+    font-weight: 700;
+    color: $white;
+    cursor: pointer;
+    transition: box-shadow .2s, transform .15s;
+    svg { font-size:.82rem; }
+    &:hover { box-shadow:0 6px 18px rgba($green,.4); transform:translateY(-1px); }
+    &:active { transform:scale(.98); }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUCCESS MODAL
+// ─────────────────────────────────────────────────────────────────────────────
+.modal-backdrop-success {
+  position: fixed;
+  inset: 0;
+  background: rgba($navy,.55);
+  z-index: 1000;
+  animation: fadeIn .2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity:0; }
+  to   { opacity:1; }
+}
+
+.success-modal {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  z-index: 1001;
+  background: $bg-card;
+  border-radius: $radius;
+  box-shadow: $shadow-hov;
+  padding: 2.5rem 2rem 2rem;
+  width: 100%;
+  max-width: 440px;
+  text-align: center;
+  animation: scaleIn .25s ease;
+
+  @media (max-width:480px) { padding:2rem 1.25rem; max-width:95vw; }
+
+  &__icon {
+    font-size: 3.5rem;
+    margin-bottom: .75rem;
+    line-height: 1;
+  }
+
+  &__title {
+    font-family: $ff-head;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $text;
+    margin: 0 0 .5rem;
+  }
+
+  &__ref {
+    font-size: .82rem;
+    color: $text-muted;
+    margin: 0 0 1.5rem;
+
+    strong {
+      font-family: monospace;
+      font-size: .95rem;
+      color: $primary;
+      background: $primary-lt;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+  }
+
+  &__info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: .85rem 1rem;
+    background: $bg-main;
+    border-radius: $radius-sm;
+    border: 1px solid $border;
+    margin-bottom: 1rem;
+    text-align: left;
+  }
+
+  &__avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid $primary-lt;
+    flex-shrink: 0;
+  }
+
+  &__doctor {
+    font-size: .87rem;
+    font-weight: 700;
+    color: $text;
+    margin: 0 0 3px;
+  }
+
+  &__datetime {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .75rem;
+    color: $text-muted;
+    margin: 0;
+    svg { font-size:.65rem; color:$primary; }
+  }
+
+  &__note {
+    font-size: .78rem;
+    color: $text-muted;
+    margin: 0 0 1.5rem;
+    line-height: 1.5;
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+@keyframes scaleIn {
+  from { transform:translate(-50%,-50%) scale(.92); opacity:0; }
+  to   { transform:translate(-50%,-50%) scale(1);   opacity:1; }
+}
+
+.success-btn {
+  width: 100%;
+  padding: .65rem 1rem;
+  border-radius: $radius-sm;
+  font-family: $ff-body;
+  font-size: .875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background .15s, box-shadow .15s;
+
+  &--primary {
+    background: linear-gradient(135deg, $primary 0%, $primary-dk 100%);
+    color: $white;
+    &:hover { box-shadow:0 4px 14px rgba($primary,.4); }
+  }
+
+  &--secondary {
+    background: $bg-main;
+    color: $text-muted;
+    border: 1px solid $border;
+    &:hover { background:$border; color:$text; }
+  }
+}
