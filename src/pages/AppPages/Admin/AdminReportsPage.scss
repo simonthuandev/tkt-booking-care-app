@@ -1,0 +1,858 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// AdminReportsPage.scss
+// ─────────────────────────────────────────────────────────────────────────────
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap");
+
+// ── Tokens ──────────────────────────────────────────────────────────────────
+$primary: #0ba3a3;
+$primary-dk: #077d7d;
+$primary-lt: #e6f7f7;
+$accent: #ff6b35;
+$accent-lt: #fff1ec;
+$navy: #0d2b45;
+$navy-lt: #e6eef5;
+$text: #1a2b3c;
+$text-muted: #6b7f8e;
+$border: #e2ebf0;
+$bg-main: #f7fafb;
+$bg-card: #ffffff;
+$white: #ffffff;
+$green: #1a9e5c;
+$green-lt: #e6f9f0;
+$danger: #e24b4a;
+$danger-lt: #fef2f2;
+$star: #f5a623;
+$star-lt: #fff8e6;
+$purple: #534ab7;
+$purple-lt: #eeedfe;
+$ff-head: "Playfair Display", serif;
+$ff-body: "DM Sans", sans-serif;
+$radius: 16px;
+$radius-sm: 10px;
+$shadow: 0 4px 24px rgba(13, 43, 69, 0.08);
+$shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
+
+@mixin card {
+  background: $bg-card;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  border: 1px solid $border;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PAGE
+// ─────────────────────────────────────────────────────────────────────────────
+.admin-rep {
+  font-family: $ff-body;
+  max-width: 1400px;
+}
+
+.rep-section {
+  margin-bottom: 1.75rem;
+
+  &.rep-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &.rep-three-col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    align-items: start;
+    @media (max-width: 900px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    @media (max-width: 576px) {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HEADER
+// ─────────────────────────────────────────────────────────────────────────────
+.rep-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
+
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+}
+
+.rep-title {
+  font-family: $ff-head;
+  font-size: 2rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 4px;
+  @media (max-width: 576px) {
+    font-size: 1.5rem;
+  }
+}
+
+.rep-sub {
+  font-size: 0.875rem;
+  color: $text-muted;
+  margin: 0;
+}
+
+// Shared toolbar select
+.toolbar-select {
+  position: relative;
+  flex-shrink: 0;
+
+  &__icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $text-muted;
+    font-size: 0.75rem;
+    pointer-events: none;
+  }
+
+  select {
+    padding: 0.52rem 1rem 0.52rem 2rem;
+    border: 1px solid $border;
+    border-radius: $radius-sm;
+    font-family: $ff-body;
+    font-size: 0.83rem;
+    color: $text;
+    background: $bg-card;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    transition: border-color 0.18s;
+    &:focus {
+      border-color: $primary;
+    }
+  }
+}
+
+.btn-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.52rem 1.1rem;
+  border-radius: $radius-sm;
+  border: 1px solid $border;
+  background: $bg-card;
+  font-family: $ff-body;
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: $text-muted;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+  svg {
+    font-size: 0.75rem;
+  }
+  &:hover {
+    background: $navy;
+    color: $white;
+    border-color: $navy;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// KPI GRID
+// ─────────────────────────────────────────────────────────────────────────────
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kpi-card {
+  @include card;
+  padding: 1.25rem 1.5rem 1rem;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
+  &:hover {
+    box-shadow: $shadow-hov;
+    transform: translateY(-3px);
+  }
+
+  &__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 0.6rem;
+  }
+
+  &__icon {
+    width: 42px;
+    height: 42px;
+    border-radius: $radius-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  &__value {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: $text;
+    line-height: 1;
+    margin: 0 0 4px;
+  }
+
+  &__label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 0.75rem;
+  }
+
+  // Color variants
+  &--teal .kpi-card__icon {
+    background: $primary-lt;
+    color: $primary;
+  }
+  &--green .kpi-card__icon {
+    background: $green-lt;
+    color: $green;
+  }
+  &--navy .kpi-card__icon {
+    background: $navy-lt;
+    color: $navy;
+  }
+  &--gold .kpi-card__icon {
+    background: $star-lt;
+    color: darken($star, 10%);
+  }
+  &--amber .kpi-card__icon {
+    background: $star-lt;
+    color: darken($star, 10%);
+  }
+  &--danger .kpi-card__icon {
+    background: $danger-lt;
+    color: $danger;
+  }
+  &--purple .kpi-card__icon {
+    background: $purple-lt;
+    color: $purple;
+  }
+}
+
+// KPI badge ↑↓
+.kpi-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 100px;
+  svg {
+    font-size: 0.6rem;
+  }
+
+  &--up {
+    background: $green-lt;
+    color: $green;
+    border: 1px solid rgba($green, 0.2);
+  }
+  &--down {
+    background: $danger-lt;
+    color: $danger;
+    border: 1px solid rgba($danger, 0.2);
+  }
+}
+
+// Sparkline mini bars
+.kpi-spark {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 28px;
+
+  &__bar {
+    flex: 1;
+    min-height: 2px;
+    background: linear-gradient(180deg, $primary 0%, $primary-dk 100%);
+    border-radius: 2px 2px 0 0;
+    opacity: 0.6;
+    transition: height 0.4s ease;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REPORT CARD (wrapper chung)
+// ─────────────────────────────────────────────────────────────────────────────
+.rep-card {
+  @include card;
+  overflow: hidden;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid $border;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  &__title {
+    font-family: $ff-head;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: $text;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    svg {
+      color: $primary;
+      font-size: 0.9rem;
+    }
+  }
+
+  &__sub {
+    font-size: 0.75rem;
+    color: $text-muted;
+  }
+
+  &__body {
+    padding: 1.25rem;
+
+    &--scroll {
+      overflow-x: auto;
+      scrollbar-width: thin;
+      scrollbar-color: $border transparent;
+      &::-webkit-scrollbar {
+        height: 4px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: $border;
+        border-radius: 2px;
+      }
+    }
+
+    &--center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.25rem;
+    }
+
+    &--list {
+      padding: 0;
+    }
+  }
+}
+
+// Chart legend
+.chart-legend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    color: $text-muted;
+
+    &::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    &--completed::before {
+      background: $primary;
+    }
+    &--pending::before {
+      background: $star;
+    }
+    &--cancelled::before {
+      background: $danger;
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 12-MONTH BAR CHART
+// ─────────────────────────────────────────────────────────────────────────────
+.rep-bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 160px;
+  min-width: 700px; // scroll ngang trên mobile
+
+  &__col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+  }
+
+  &__count {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: $text-muted;
+    margin-bottom: 4px;
+    flex-shrink: 0;
+  }
+
+  &__bar-wrap {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  &__bar {
+    width: 100%;
+    background: linear-gradient(180deg, $primary 0%, $primary-dk 100%);
+    border-radius: 4px 4px 0 0;
+    min-height: 4px;
+    transition: height 0.5s ease;
+    opacity: 0.85;
+    cursor: pointer;
+    position: relative;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  &__month {
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: $text-muted;
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REVENUE CHART (SVG)
+// ─────────────────────────────────────────────────────────────────────────────
+.rev-chart-wrap {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.rev-chart-y {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px 0;
+
+  span {
+    font-size: 0.62rem;
+    color: $text-muted;
+    text-align: right;
+    white-space: nowrap;
+  }
+}
+
+.rev-chart {
+  flex: 1;
+
+  &__svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  &__x-labels {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 24px;
+
+    span {
+      font-size: 0.65rem;
+      color: $text-muted;
+      flex: 1;
+      text-align: center;
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DOCTOR RANK ROW
+// ─────────────────────────────────────────────────────────────────────────────
+.rank-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.8rem 1.25rem;
+  border-bottom: 1px solid $border;
+  transition: background 0.15s;
+
+  &:last-child {
+    border-bottom: none;
+  }
+  &:hover {
+    background: $bg-main;
+  }
+
+  &__medal {
+    font-size: 1.1rem;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  &__avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid $border;
+    flex-shrink: 0;
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: $text;
+    margin: 0 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__bar-wrap {
+    height: 4px;
+    background: $border;
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  &__bar {
+    height: 100%;
+    background: linear-gradient(90deg, $primary 0%, $primary-dk 100%);
+    border-radius: 100px;
+    transition: width 0.5s ease;
+  }
+
+  &__stats {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+
+  &__rating {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: darken($star, 10%);
+    svg {
+      font-size: 0.65rem;
+    }
+  }
+
+  &__visits {
+    font-size: 0.68rem;
+    color: $text-muted;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DONUT CHART
+// ─────────────────────────────────────────────────────────────────────────────
+.rep-donut {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+
+  &__hole {
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: $bg-card;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 2px 8px rgba(13, 43, 69, 0.06);
+  }
+
+  &__total {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: $text;
+    line-height: 1;
+    margin: 0;
+  }
+
+  &__label {
+    font-size: 0.6rem;
+    color: $text-muted;
+    margin: 2px 0 0;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+}
+
+.rep-donut-legend {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+  }
+
+  &__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  &__label {
+    flex: 1;
+    color: $text-muted;
+  }
+
+  &__pct {
+    font-weight: 700;
+    color: $text;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DEMOGRAPHICS BARS
+// ─────────────────────────────────────────────────────────────────────────────
+.demo-section-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.6rem;
+}
+
+.demo-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.5rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &__label {
+    font-size: 0.75rem;
+    color: $text-muted;
+    min-width: 72px;
+    flex-shrink: 0;
+  }
+
+  &__track {
+    flex: 1;
+    height: 8px;
+    background: $border;
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  &__fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 0.5s ease;
+  }
+
+  &__pct {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: $text;
+    min-width: 32px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HOSPITAL PERFORMANCE
+// ─────────────────────────────────────────────────────────────────────────────
+.hosp-row {
+  padding: 0.85rem 0;
+  border-bottom: 1px solid $border;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &__info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+
+  &__name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: $text;
+    margin: 0;
+  }
+
+  &__meta {
+    display: flex;
+    gap: 10px;
+    font-size: 0.72rem;
+    color: $text-muted;
+
+    span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    svg {
+      font-size: 0.62rem;
+      color: $primary;
+    }
+  }
+
+  &__bar-wrap {
+    height: 6px;
+    background: $border;
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  &__bar {
+    height: 100%;
+    background: linear-gradient(90deg, $primary 0%, $primary-dk 100%);
+    border-radius: 100px;
+    transition: width 0.5s ease;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ACTIVITY LOG
+// ─────────────────────────────────────────────────────────────────────────────
+.act-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.act-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid $border;
+  transition: background 0.15s;
+
+  &:last-child {
+    border-bottom: none;
+  }
+  &:hover {
+    background: $bg-main;
+  }
+
+  &__icon {
+    width: 34px;
+    height: 34px;
+    border-radius: $radius-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+
+    // Type colors
+    &.act-appt {
+      background: $primary-lt;
+      color: $primary;
+    }
+    &.act-cancel {
+      background: $danger-lt;
+      color: $danger;
+    }
+    &.act-patient {
+      background: $green-lt;
+      color: $green;
+    }
+    &.act-payment {
+      background: $star-lt;
+      color: darken($star, 10%);
+    }
+    &.act-doctor {
+      background: $navy-lt;
+      color: $navy;
+    }
+  }
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__text {
+    font-size: 0.82rem;
+    color: $text;
+    margin: 0 0 3px;
+    line-height: 1.5;
+  }
+
+  &__time {
+    font-size: 0.72rem;
+    color: $text-muted;
+  }
+}

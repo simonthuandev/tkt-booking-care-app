@@ -1,0 +1,421 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// UserAppointmentsPage.scss
+// ─────────────────────────────────────────────────────────────────────────────
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap");
+
+// ── Design tokens ──────────────────────────────────────────────────────────
+$primary: #0ba3a3;
+$primary-dk: #077d7d;
+$primary-lt: #e6f7f7;
+$accent: #ff6b35;
+$navy: #0d2b45;
+$text: #1a2b3c;
+$text-muted: #6b7f8e;
+$border: #e2ebf0;
+$bg-main: #f7fafb;
+$bg-card: #ffffff;
+$white: #ffffff;
+$ff-head: "Playfair Display", serif;
+$ff-body: "DM Sans", sans-serif;
+$radius: 16px;
+$radius-sm: 10px;
+$shadow: 0 4px 24px rgba(13, 43, 69, 0.08);
+$shadow-hover: 0 12px 40px rgba(13, 43, 69, 0.14);
+
+// ── Status colors ───────────────────────────────────────────────────────────
+$status-confirmed: #0ba3a3;
+$status-pending: #f5a623;
+$status-completed: #1a9e5c;
+$status-cancelled: #e24b4a;
+
+// ── Mixin card base ─────────────────────────────────────────────────────────
+@mixin card-base {
+  background: $bg-card;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  border: 1px solid $border;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PAGE WRAPPER
+// ─────────────────────────────────────────────────────────────────────────────
+.appt-page {
+  font-family: $ff-body;
+  max-width: 1400px;
+}
+
+// ── Page Header ─────────────────────────────────────────────────────────────
+.appt-page__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
+}
+
+.appt-page__title {
+  font-family: $ff-head;
+  font-size: 2rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 4px;
+
+  @media (max-width: 576px) {
+    font-size: 1.5rem;
+  }
+}
+
+.appt-page__subtitle {
+  font-size: 0.875rem;
+  color: $text-muted;
+  margin: 0;
+}
+
+.appt-page__count {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  color: $text-muted;
+  background: $bg-card;
+  padding: 6px 14px;
+  border-radius: 100px;
+  border: 1px solid $border;
+  white-space: nowrap;
+
+  svg {
+    color: $primary;
+    font-size: 0.85rem;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TABS
+// ─────────────────────────────────────────────────────────────────────────────
+.appt-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid $border;
+  padding-bottom: 0;
+}
+
+.appt-tabs__btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0.6rem 1.25rem;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px; // overlap border-bottom của tabs
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $text-muted;
+  cursor: pointer;
+  border-radius: $radius-sm $radius-sm 0 0;
+  transition:
+    color 0.18s,
+    border-color 0.18s,
+    background 0.18s;
+
+  svg {
+    font-size: 0.85rem;
+  }
+
+  &:hover {
+    color: $primary;
+    background: $primary-lt;
+  }
+
+  &--active {
+    color: $primary;
+    border-bottom-color: $primary;
+    font-weight: 600;
+  }
+}
+
+// Badge số lượng trong tab
+.appt-tabs__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: $border;
+  color: $text-muted;
+  transition:
+    background 0.18s,
+    color 0.18s;
+
+  .appt-tabs__btn--active & {
+    background: $primary-lt;
+    color: $primary;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// APPOINTMENT LIST
+// ─────────────────────────────────────────────────────────────────────────────
+.appt-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// APPOINTMENT CARD
+// ─────────────────────────────────────────────────────────────────────────────
+.appt-card {
+  @include card-base;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.25rem 1.5rem;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
+
+  &:hover {
+    box-shadow: $shadow-hover;
+    transform: translateY(-2px);
+  }
+
+  @media (max-width: 768px) {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  @media (max-width: 576px) {
+    padding: 1rem;
+  }
+}
+
+// ── Avatar ──────────────────────────────────────────────────────────────────
+.appt-card__avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover; // ảnh không bị méo
+  flex-shrink: 0;
+  display: block;
+  border: 2px solid $border;
+}
+
+// ── Info (giữa) ─────────────────────────────────────────────────────────────
+.appt-card__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.appt-card__doctor {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.appt-card__specialty {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: $primary;
+  font-weight: 500;
+  margin: 0 0 10px;
+
+  svg {
+    opacity: 0.75;
+    font-size: 0.75rem;
+  }
+}
+
+.appt-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.appt-card__meta-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  color: $text-muted;
+
+  svg {
+    font-size: 0.72rem;
+    color: $primary;
+    opacity: 0.8;
+  }
+
+  // Location item ẩn trên mobile nhỏ để tránh quá tải
+  &--location {
+    @media (max-width: 480px) {
+      display: none;
+    }
+  }
+}
+
+// ── Right (status + actions) ────────────────────────────────────────────────
+.appt-card__right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+// ── Status Badge ────────────────────────────────────────────────────────────
+.appt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  svg {
+    font-size: 0.7rem;
+  }
+
+  &--confirmed {
+    background: rgba($status-confirmed, 0.1);
+    color: $status-confirmed;
+    border: 1px solid rgba($status-confirmed, 0.25);
+  }
+
+  &--pending {
+    background: rgba($status-pending, 0.12);
+    color: darken($status-pending, 10%);
+    border: 1px solid rgba($status-pending, 0.3);
+  }
+
+  &--completed {
+    background: rgba($status-completed, 0.1);
+    color: $status-completed;
+    border: 1px solid rgba($status-completed, 0.25);
+  }
+
+  &--cancelled {
+    background: rgba($status-cancelled, 0.08);
+    color: $status-cancelled;
+    border: 1px solid rgba($status-cancelled, 0.2);
+  }
+}
+
+// ── Action Buttons ──────────────────────────────────────────────────────────
+.appt-card__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+
+  @media (max-width: 768px) {
+    justify-content: flex-start;
+  }
+}
+
+.appt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: $radius-sm;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    transform 0.15s,
+    box-shadow 0.18s;
+  border: none;
+
+  svg {
+    font-size: 0.75rem;
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+
+  // Reschedule – outline teal
+  &--reschedule {
+    background: $primary-lt;
+    color: $primary-dk;
+    border: 1px solid rgba($primary, 0.3);
+
+    &:hover {
+      background: $primary;
+      color: $white;
+      box-shadow: 0 4px 12px rgba($primary, 0.35);
+    }
+  }
+
+  // Cancel – outline red
+  &--cancel {
+    background: rgba($status-cancelled, 0.07);
+    color: $status-cancelled;
+    border: 1px solid rgba($status-cancelled, 0.25);
+
+    &:hover {
+      background: $status-cancelled;
+      color: $white;
+      box-shadow: 0 4px 12px rgba($status-cancelled, 0.3);
+    }
+  }
+
+  // View Details – outline navy
+  &--view {
+    background: rgba($navy, 0.05);
+    color: $navy;
+    border: 1px solid rgba($navy, 0.2);
+
+    &:hover {
+      background: $navy;
+      color: $white;
+      box-shadow: 0 4px 12px rgba($navy, 0.25);
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EMPTY STATE
+// ─────────────────────────────────────────────────────────────────────────────
+.appt-empty {
+  @include card-base;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.appt-empty__icon {
+  font-size: 2.5rem;
+  color: rgba($primary, 0.25);
+}
+
+.appt-empty__text {
+  font-size: 0.9rem;
+  color: $text-muted;
+  margin: 0;
+}

@@ -1,0 +1,755 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// AdminUsersPage.scss  —  compact list-row style
+// ─────────────────────────────────────────────────────────────────────────────
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap");
+
+// ── Tokens ──────────────────────────────────────────────────────────────────
+$primary: #0ba3a3;
+$primary-dk: #077d7d;
+$primary-lt: #e6f7f7;
+$navy: #0d2b45;
+$navy-lt: #e6eef5;
+$text: #1a2b3c;
+$text-muted: #6b7f8e;
+$border: #e2ebf0;
+$bg-main: #f7fafb;
+$bg-card: #ffffff;
+$white: #ffffff;
+$green: #1a9e5c;
+$green-lt: #e6f9f0;
+$danger: #e24b4a;
+$danger-lt: #fef2f2;
+$star: #f5a623;
+$star-lt: #fff8e6;
+$ff-head: "Playfair Display", serif;
+$ff-body: "DM Sans", sans-serif;
+$radius: 16px;
+$radius-sm: 10px;
+$shadow: 0 4px 24px rgba(13, 43, 69, 0.08);
+$shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
+
+@mixin card {
+  background: $bg-card;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  border: 1px solid $border;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PAGE
+// ─────────────────────────────────────────────────────────────────────────────
+.admin-users {
+  font-family: $ff-body;
+  max-width: 1400px;
+}
+
+// ── Header ───────────────────────────────────────────────────────────────────
+.users-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+}
+
+.users-title {
+  font-family: $ff-head;
+  font-size: 2rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 4px;
+  @media (max-width: 576px) {
+    font-size: 1.5rem;
+  }
+}
+
+.users-sub {
+  font-size: 0.875rem;
+  color: $text-muted;
+  margin: 0;
+}
+
+.users-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: $primary-dk;
+  background: $primary-lt;
+  padding: 6px 14px;
+  border-radius: 100px;
+  border: 1px solid rgba($primary, 0.25);
+  white-space: nowrap;
+  svg {
+    font-size: 0.82rem;
+  }
+}
+
+.btn-add-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0.6rem 1.35rem;
+  border: none;
+  border-radius: $radius-sm;
+  background: linear-gradient(135deg, $primary 0%, $primary-dk 100%);
+  color: $white;
+  font-family: $ff-body;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    box-shadow 0.2s,
+    transform 0.15s;
+  svg {
+    font-size: 0.8rem;
+  }
+  &:hover {
+    box-shadow: 0 6px 18px rgba($primary, 0.4);
+    transform: translateY(-1px);
+  }
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUMMARY — 4 thẻ
+// ─────────────────────────────────────────────────────────────────────────────
+.users-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (max-width: 400px) {
+    grid-template-columns: 1fr;
+  }
+
+  &__card {
+    @include card;
+    padding: 1rem 1.25rem;
+    text-align: center;
+    transition:
+      box-shadow 0.2s,
+      transform 0.2s;
+    &:hover {
+      box-shadow: $shadow-hov;
+      transform: translateY(-2px);
+    }
+    &.s-teal {
+      border-top: 3px solid $primary;
+    }
+    &.s-primary {
+      border-top: 3px solid $primary;
+    }
+    &.s-navy {
+      border-top: 3px solid $navy;
+    }
+    &.s-danger {
+      border-top: 3px solid $danger;
+    }
+  }
+
+  &__value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: $text;
+    margin: 0 0 4px;
+    line-height: 1;
+  }
+
+  &__label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TOOLBAR
+// ─────────────────────────────────────────────────────────────────────────────
+.users-toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.toolbar-search {
+  flex: 1;
+  min-width: 200px;
+  position: relative;
+
+  &__icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $text-muted;
+    font-size: 0.78rem;
+    pointer-events: none;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.52rem 1rem 0.52rem 2.2rem;
+    border: 1px solid $border;
+    border-radius: $radius-sm;
+    font-family: $ff-body;
+    font-size: 0.83rem;
+    color: $text;
+    background: $bg-card;
+    outline: none;
+    transition:
+      border-color 0.18s,
+      box-shadow 0.18s;
+    &::placeholder {
+      color: $text-muted;
+    }
+    &:focus {
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary, 0.1);
+    }
+  }
+}
+
+.toolbar-select {
+  position: relative;
+  flex-shrink: 0;
+
+  &__icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $text-muted;
+    font-size: 0.75rem;
+    pointer-events: none;
+  }
+
+  select {
+    padding: 0.52rem 1rem 0.52rem 2rem;
+    border: 1px solid $border;
+    border-radius: $radius-sm;
+    font-family: $ff-body;
+    font-size: 0.83rem;
+    color: $text;
+    background: $bg-card;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    transition: border-color 0.18s;
+    &:focus {
+      border-color: $primary;
+    }
+  }
+}
+
+.users-count {
+  font-size: 0.8rem;
+  color: $text-muted;
+  margin: 0 0 0.75rem;
+  strong {
+    color: $text;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// USERS LIST — card container
+// ─────────────────────────────────────────────────────────────────────────────
+.users-list {
+  @include card;
+  overflow: hidden;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// USER ROW
+// ─────────────────────────────────────────────────────────────────────────────
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1.25rem;
+  border-bottom: 1px solid $border;
+  transition: background 0.15s;
+
+  &:last-child {
+    border-bottom: none;
+  }
+  &:hover {
+    background: $bg-main;
+  }
+
+  @media (max-width: 900px) {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+}
+
+// Avatar
+.user-row__avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  color: $white;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+// Identity
+.user-row__identity {
+  flex: 1;
+  min-width: 160px;
+}
+
+.user-row__name {
+  font-size: 0.87rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-row__email {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.73rem;
+  color: $text-muted;
+  margin: 0;
+  svg {
+    font-size: 0.62rem;
+    color: $primary;
+  }
+}
+
+// Role badge — color set inline from ROLE_CFG
+.user-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 100px;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  white-space: nowrap;
+  flex-shrink: 0;
+  svg {
+    font-size: 0.65rem;
+  }
+}
+
+// Phone
+.user-row__phone {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: $text-muted;
+  flex-shrink: 0;
+  min-width: 140px;
+  svg {
+    font-size: 0.65rem;
+    color: $primary;
+  }
+}
+
+// Dates
+.user-row__dates {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex-shrink: 0;
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    color: $text-muted;
+    svg {
+      font-size: 0.62rem;
+      color: $primary;
+    }
+  }
+}
+
+.user-row__last-login {
+  color: $text-muted !important;
+  font-style: italic;
+}
+
+// Status badge
+.user-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &.st-active {
+    background: $green-lt;
+    color: $green;
+    border: 1px solid rgba($green, 0.25);
+  }
+  &.st-inactive {
+    background: $star-lt;
+    color: darken($star, 15%);
+    border: 1px solid rgba($star, 0.3);
+  }
+  &.st-banned {
+    background: $danger-lt;
+    color: $danger;
+    border: 1px solid rgba($danger, 0.2);
+  }
+}
+
+// Actions
+.user-row__actions {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.user-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: $radius-sm;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.72rem;
+  transition:
+    background 0.15s,
+    color 0.15s;
+
+  &--view {
+    background: $primary-lt;
+    color: $primary-dk;
+    &:hover {
+      background: $primary;
+      color: $white;
+    }
+  }
+  &--edit {
+    background: $navy-lt;
+    color: $navy;
+    &:hover {
+      background: $navy;
+      color: $white;
+    }
+  }
+  &--ban {
+    background: $star-lt;
+    color: darken($star, 15%);
+    &:hover {
+      background: $star;
+      color: $white;
+    }
+  }
+  &--unban {
+    background: $green-lt;
+    color: $green;
+    &:hover {
+      background: $green;
+      color: $white;
+    }
+  }
+  &--delete {
+    background: $danger-lt;
+    color: $danger;
+    &:hover {
+      background: $danger;
+      color: $white;
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EMPTY STATE
+// ─────────────────────────────────────────────────────────────────────────────
+.users-empty {
+  padding: 3rem 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+
+  &__icon {
+    font-size: 2.5rem;
+    color: rgba($primary, 0.2);
+    margin-bottom: 0.5rem;
+  }
+  p {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: $text;
+    margin: 0;
+  }
+  span {
+    font-size: 0.8rem;
+    color: $text-muted;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BOOTSTRAP MODAL OVERRIDES
+// ─────────────────────────────────────────────────────────────────────────────
+.form-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: $text;
+  margin-bottom: 5px;
+}
+
+.form-control,
+.form-select {
+  font-family: $ff-body;
+  font-size: 0.875rem;
+  border-radius: $radius-sm;
+  border-color: $border;
+  color: $text;
+  &:focus {
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba($primary, 0.12);
+  }
+}
+
+.btn-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.5rem 1.4rem;
+  border: none;
+  border-radius: $radius-sm;
+  background: linear-gradient(135deg, $primary 0%, $primary-dk 100%);
+  color: $white !important;
+  font-family: $ff-body;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+  &:hover {
+    box-shadow: 0 6px 16px rgba($primary, 0.4);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FORM MODAL — Avatar preview + password input
+// ─────────────────────────────────────────────────────────────────────────────
+.user-form-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  background: $bg-main;
+  border-radius: $radius-sm;
+  border: 1px solid $border;
+  margin-bottom: 1rem;
+}
+
+.user-form-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  color: $white;
+  font-size: 0.9rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.user-form-avatar__name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 5px;
+}
+
+// Password input với show/hide toggle
+.pw-input-wrap {
+  position: relative;
+
+  input {
+    padding-right: 2.5rem;
+  }
+}
+
+.pw-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: $text-muted;
+  cursor: pointer;
+  font-size: 0.82rem;
+  padding: 3px;
+  transition: color 0.15s;
+  &:hover {
+    color: $primary;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VIEW MODAL
+// ─────────────────────────────────────────────────────────────────────────────
+.user-view-header {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.85rem 1rem;
+  background: $bg-main;
+  border-radius: $radius-sm;
+  border: 1px solid $border;
+  margin-bottom: 0.75rem;
+}
+
+.user-view-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  color: $white;
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.user-view-name {
+  font-family: $ff-head;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 6px;
+}
+
+// Info items (reuse pattern)
+.user-view-info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 0.6rem 0.75rem;
+  background: $bg-main;
+  border-radius: $radius-sm;
+  border: 1px solid $border;
+
+  .view-info-icon {
+    font-size: 0.85rem;
+    color: $primary;
+    margin-top: 2px;
+    flex-shrink: 0;
+    opacity: 0.85;
+  }
+
+  .view-info-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 2px;
+  }
+
+  .view-info-val {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: $text;
+    margin: 0;
+  }
+}
+
+.user-view-notes {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  background: $bg-main;
+  border-radius: $radius-sm;
+  border: 1px solid $border;
+  border-left: 3px solid $primary;
+
+  &__title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 5px;
+  }
+
+  &__text {
+    font-size: 0.82rem;
+    color: $text-muted;
+    margin: 0;
+    line-height: 1.6;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DELETE MODAL
+// ─────────────────────────────────────────────────────────────────────────────
+.delete-icon-wrap {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: $danger-lt;
+  border: 2px solid rgba($danger, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  color: $danger;
+  margin: 0 auto 1rem;
+}
+
+.delete-title {
+  font-family: $ff-head;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 0.75rem;
+}
+
+.delete-desc {
+  font-size: 0.85rem;
+  color: $text-muted;
+  margin: 0;
+  line-height: 1.6;
+  strong {
+    color: $text;
+  }
+}

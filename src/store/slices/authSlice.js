@@ -12,7 +12,7 @@ const initialState = {
   user: {
     name: "nguyen van de quy",
     role: "admin",
-  }
+  },
 };
 
 const authSlice = createSlice({

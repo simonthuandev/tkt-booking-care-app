@@ -1,0 +1,568 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// DoctorAppointmentsPage.scss
+// ─────────────────────────────────────────────────────────────────────────────
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap");
+
+// ── Design tokens ──────────────────────────────────────────────────────────
+$primary: #0ba3a3;
+$primary-dk: #077d7d;
+$primary-lt: #e6f7f7;
+$accent: #ff6b35;
+$accent-lt: #fff1ec;
+$navy: #0d2b45;
+$navy-lt: #e6eef5;
+$text: #1a2b3c;
+$text-muted: #6b7f8e;
+$border: #e2ebf0;
+$bg-main: #f7fafb;
+$bg-card: #ffffff;
+$white: #ffffff;
+$green: #1a9e5c;
+$green-lt: #e6f9f0;
+$danger: #e24b4a;
+$danger-lt: #fef2f2;
+$star: #f5a623;
+$star-lt: #fff8e6;
+$ff-head: "Playfair Display", serif;
+$ff-body: "DM Sans", sans-serif;
+$radius: 16px;
+$radius-sm: 10px;
+$shadow: 0 4px 24px rgba(13, 43, 69, 0.08);
+$shadow-hover: 0 12px 40px rgba(13, 43, 69, 0.14);
+
+@mixin card-base {
+  background: $bg-card;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  border: 1px solid $border;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PAGE
+// ─────────────────────────────────────────────────────────────────────────────
+.doc-appts-page {
+  font-family: $ff-body;
+  max-width: 1400px;
+}
+
+// ── Header ───────────────────────────────────────────────────────────────────
+.doc-appts-page__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.doc-appts-page__title {
+  font-family: $ff-head;
+  font-size: 2rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 4px;
+
+  @media (max-width: 576px) {
+    font-size: 1.5rem;
+  }
+}
+
+.doc-appts-page__subtitle {
+  font-size: 0.875rem;
+  color: $text-muted;
+  margin: 0;
+}
+
+.doc-appts-page__today-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: $primary-dk;
+  background: $primary-lt;
+  padding: 6px 14px;
+  border-radius: 100px;
+  border: 1px solid rgba($primary, 0.25);
+  white-space: nowrap;
+
+  svg {
+    font-size: 0.82rem;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TABS
+// ─────────────────────────────────────────────────────────────────────────────
+.doc-appts-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid $border;
+  margin-bottom: 1.25rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.doc-appts-tabs__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0.6rem 1.1rem;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  font-family: $ff-body;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: $text-muted;
+  cursor: pointer;
+  white-space: nowrap;
+  border-radius: $radius-sm $radius-sm 0 0;
+  transition:
+    color 0.18s,
+    border-color 0.18s,
+    background 0.18s;
+
+  &:hover {
+    color: $primary;
+    background: $primary-lt;
+  }
+
+  &--active {
+    color: $primary;
+    border-bottom-color: $primary;
+    font-weight: 600;
+
+    .doc-appts-tabs__count {
+      background: $primary-lt;
+      color: $primary;
+    }
+  }
+}
+
+.doc-appts-tabs__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 100px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  background: $border;
+  color: $text-muted;
+  transition:
+    background 0.18s,
+    color 0.18s;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TOOLBAR
+// ─────────────────────────────────────────────────────────────────────────────
+.doc-appts-toolbar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+// ── Search ───────────────────────────────────────────────────────────────────
+.doc-appts-search {
+  flex: 1;
+  min-width: 200px;
+  position: relative;
+
+  &__icon {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $text-muted;
+    font-size: 0.8rem;
+    pointer-events: none;
+  }
+
+  &__input {
+    width: 100%;
+    padding: 0.55rem 1rem 0.55rem 2.35rem;
+    border: 1px solid $border;
+    border-radius: $radius-sm;
+    font-family: $ff-body;
+    font-size: 0.85rem;
+    color: $text;
+    background: $bg-card;
+    outline: none;
+    transition:
+      border-color 0.18s,
+      box-shadow 0.18s;
+
+    &::placeholder {
+      color: $text-muted;
+    }
+    &:focus {
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary, 0.12);
+    }
+  }
+}
+
+// ── Select dropdowns ──────────────────────────────────────────────────────────
+.doc-appts-select-wrap {
+  position: relative;
+  flex-shrink: 0;
+
+  &__icon {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $text-muted;
+    font-size: 0.78rem;
+    pointer-events: none;
+  }
+
+  select {
+    padding: 0.55rem 1rem 0.55rem 2.1rem;
+    border: 1px solid $border;
+    border-radius: $radius-sm;
+    font-family: $ff-body;
+    font-size: 0.85rem;
+    color: $text;
+    background: $bg-card;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    transition: border-color 0.18s;
+
+    &:focus {
+      border-color: $primary;
+    }
+  }
+}
+
+// ── Results count ─────────────────────────────────────────────────────────────
+.doc-appts-results-count {
+  font-size: 0.8rem;
+  color: $text-muted;
+  margin: 0 0 1rem;
+
+  strong {
+    color: $text;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// APPOINTMENT LIST
+// ─────────────────────────────────────────────────────────────────────────────
+.doc-appts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// APPOINTMENT ROW
+// ─────────────────────────────────────────────────────────────────────────────
+.doc-appt-row {
+  @include card-base;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
+
+  &:hover {
+    box-shadow: $shadow-hover;
+    transform: translateY(-2px);
+  }
+
+  @media (max-width: 900px) {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  @media (max-width: 576px) {
+    padding: 1rem;
+  }
+}
+
+// ── Avatar ────────────────────────────────────────────────────────────────────
+.doc-appt-row__avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  color: $white;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+// ── Patient ───────────────────────────────────────────────────────────────────
+.doc-appt-row__patient {
+  flex: 1;
+  min-width: 140px;
+}
+
+.doc-appt-row__name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.doc-appt-row__age {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: $text-muted;
+}
+
+// ── Datetime ──────────────────────────────────────────────────────────────────
+.doc-appt-row__datetime {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+  min-width: 130px;
+}
+
+.doc-appt-row__date,
+.doc-appt-row__time {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  color: $text-muted;
+
+  svg {
+    font-size: 0.7rem;
+    color: $primary;
+  }
+}
+
+// ── Status col ────────────────────────────────────────────────────────────────
+.doc-appt-row__status {
+  flex-shrink: 0;
+  min-width: 100px;
+  display: flex;
+  justify-content: center;
+
+  @media (max-width: 900px) {
+    justify-content: flex-start;
+  }
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+.doc-appt-row__actions {
+  display: flex;
+  gap: 7px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+
+  @media (max-width: 900px) {
+    justify-content: flex-start;
+    width: 100%;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TYPE TAG
+// ─────────────────────────────────────────────────────────────────────────────
+.appt-type-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 600;
+
+  svg {
+    font-size: 0.62rem;
+  }
+
+  &.type--checkup {
+    background: $primary-lt;
+    color: $primary-dk;
+    border: 1px solid rgba($primary, 0.2);
+  }
+
+  &.type--followup {
+    background: $navy-lt;
+    color: $navy;
+    border: 1px solid rgba($navy, 0.15);
+  }
+
+  &.type--consultation {
+    background: $accent-lt;
+    color: darken($accent, 12%);
+    border: 1px solid rgba($accent, 0.25);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATUS BADGE
+// ─────────────────────────────────────────────────────────────────────────────
+.appt-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 11px;
+  border-radius: 100px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  svg {
+    font-size: 0.65rem;
+  }
+
+  &.status--waiting {
+    background: $star-lt;
+    color: darken($star, 15%);
+    border: 1px solid rgba($star, 0.35);
+  }
+
+  &.status--confirmed {
+    background: $primary-lt;
+    color: $primary-dk;
+    border: 1px solid rgba($primary, 0.25);
+  }
+
+  &.status--completed {
+    background: $green-lt;
+    color: $green;
+    border: 1px solid rgba($green, 0.25);
+  }
+
+  &.status--cancelled {
+    background: $danger-lt;
+    color: $danger;
+    border: 1px solid rgba($danger, 0.2);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ACTION BUTTONS
+// ─────────────────────────────────────────────────────────────────────────────
+.doc-appt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: $radius-sm;
+  font-family: $ff-body;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition:
+    background 0.18s,
+    box-shadow 0.15s,
+    transform 0.12s;
+
+  svg {
+    font-size: 0.68rem;
+  }
+  &:active {
+    transform: scale(0.97);
+  }
+
+  // Confirm – teal
+  &--confirm {
+    background: $primary-lt;
+    color: $primary-dk;
+    border: 1px solid rgba($primary, 0.3);
+
+    &:hover {
+      background: $primary;
+      color: $white;
+      box-shadow: 0 4px 12px rgba($primary, 0.35);
+    }
+  }
+
+  // Mark Done – green
+  &--done {
+    background: $green-lt;
+    color: $green;
+    border: 1px solid rgba($green, 0.3);
+
+    &:hover {
+      background: $green;
+      color: $white;
+      box-shadow: 0 4px 12px rgba($green, 0.35);
+    }
+  }
+
+  // Cancel – red
+  &--cancel {
+    background: $danger-lt;
+    color: $danger;
+    border: 1px solid rgba($danger, 0.25);
+
+    &:hover {
+      background: $danger;
+      color: $white;
+      box-shadow: 0 4px 12px rgba($danger, 0.3);
+    }
+  }
+
+  // View Notes – navy
+  &--view {
+    background: $navy-lt;
+    color: $navy;
+    border: 1px solid rgba($navy, 0.2);
+
+    &:hover {
+      background: $navy;
+      color: $white;
+      box-shadow: 0 4px 12px rgba($navy, 0.25);
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EMPTY STATE
+// ─────────────────────────────────────────────────────────────────────────────
+.doc-appts-empty {
+  @include card-base;
+  padding: 3.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.doc-appts-empty__icon {
+  font-size: 2.5rem;
+  color: rgba($primary, 0.2);
+  margin-bottom: 0.5rem;
+}
+
+.doc-appts-empty__text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: $text;
+  margin: 0;
+}
+
+.doc-appts-empty__hint {
+  font-size: 0.8rem;
+  color: $text-muted;
+  margin: 0;
+}

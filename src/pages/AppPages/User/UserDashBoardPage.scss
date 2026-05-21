@@ -1,0 +1,413 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// UserDashboardPage.scss
+// ─────────────────────────────────────────────────────────────────────────────
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap");
+
+// ── Design tokens ──────────────────────────────────────────────────────────
+$primary: #0ba3a3;
+$primary-dk: #077d7d;
+$primary-lt: #e6f7f7;
+$accent: #ff6b35;
+$navy: #0d2b45;
+$navy-lt: #1a3a5c;
+$text: #1a2b3c;
+$text-muted: #6b7f8e;
+$border: #e2ebf0;
+$bg-main: #f7fafb;
+$bg-card: #ffffff;
+$white: #ffffff;
+$star: #f5a623;
+$ff-head: "Playfair Display", serif;
+$ff-body: "DM Sans", sans-serif;
+$radius: 16px;
+$radius-sm: 10px;
+$shadow: 0 4px 24px rgba(13, 43, 69, 0.08);
+$shadow-hover: 0 12px 40px rgba(13, 43, 69, 0.14);
+
+// ── Mixin card base ─────────────────────────────────────────────────────────
+@mixin card-base {
+  background: $bg-card;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  border: 1px solid $border;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PAGE
+// ─────────────────────────────────────────────────────────────────────────────
+.dashboard-page {
+  font-family: $ff-body;
+  max-width: 1400px;
+}
+
+// ── Page header ─────────────────────────────────────────────────────────────
+.dashboard-page__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.dashboard-page__title {
+  font-family: $ff-head;
+  font-size: 2rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 4px;
+
+  @media (max-width: 576px) {
+    font-size: 1.5rem;
+  }
+}
+
+.dashboard-page__subtitle {
+  font-size: 0.9rem;
+  color: $text-muted;
+  margin: 0;
+}
+
+.dashboard-page__date {
+  font-size: 0.8rem;
+  color: $text-muted;
+  background: $bg-card;
+  padding: 6px 14px;
+  border-radius: 100px;
+  border: 1px solid $border;
+  white-space: nowrap;
+}
+
+// ── Section wrapper ─────────────────────────────────────────────────────────
+.dashboard-section {
+  margin-bottom: 2.25rem;
+}
+
+// ── Section header ──────────────────────────────────────────────────────────
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+
+  &__title {
+    font-family: $ff-head;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: $text;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    svg {
+      color: $primary;
+      font-size: 1rem;
+    }
+  }
+
+  &__link {
+    background: none;
+    border: none;
+    color: $primary;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.15s;
+
+    &:hover {
+      color: $primary-dk;
+      text-decoration: underline;
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STAT CARDS
+// ─────────────────────────────────────────────────────────────────────────────
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+
+  @media (max-width: 992px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stat-card {
+  @include card-base;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
+
+  &:hover {
+    box-shadow: $shadow-hover;
+    transform: translateY(-3px);
+  }
+
+  // ── Icon wrapper per color ──────────────────────────
+  &--teal .stat-card__icon-wrap {
+    background: $primary-lt;
+    color: $primary;
+  }
+  &--green .stat-card__icon-wrap {
+    background: #e6f9f0;
+    color: #1a9e5c;
+  }
+  &--navy .stat-card__icon-wrap {
+    background: #e6eef5;
+    color: $navy;
+  }
+  &--accent .stat-card__icon-wrap {
+    background: #fff1ec;
+    color: $accent;
+  }
+}
+
+.stat-card__icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: $radius-sm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.stat-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.stat-card__label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 4px;
+}
+
+.stat-card__value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: $text;
+  line-height: 1;
+  margin: 0 0 4px;
+}
+
+.stat-card__note {
+  font-size: 0.75rem;
+  color: $text-muted;
+  margin: 0;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// APPOINTMENTS LIST
+// ─────────────────────────────────────────────────────────────────────────────
+.appointments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.appointment-row {
+  @include card-base;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
+
+  &:hover {
+    box-shadow: $shadow-hover;
+    transform: translateY(-2px);
+  }
+
+  @media (max-width: 576px) {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+}
+
+.appointment-row__avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  object-fit: cover; // ảnh không bị méo
+  flex-shrink: 0;
+  display: block;
+  border: 2px solid $border;
+}
+
+.appointment-row__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.appointment-row__doctor {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $text;
+  margin: 0 0 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.appointment-row__specialty {
+  font-size: 0.78rem;
+  color: $text-muted;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.appointment-row__time {
+  text-align: right;
+  flex-shrink: 0;
+
+  @media (max-width: 576px) {
+    text-align: left;
+  }
+}
+
+.appointment-row__date {
+  font-size: 0.78rem;
+  color: $text-muted;
+  margin: 0 0 2px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  @media (max-width: 576px) {
+    justify-content: flex-start;
+  }
+}
+
+.appointment-row__hour {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: $text;
+  margin: 0;
+  text-align: right;
+
+  @media (max-width: 576px) {
+    text-align: left;
+  }
+}
+
+// ── Status badge ────────────────────────────────────────────────────────────
+.appointment-row__status {
+  padding: 5px 12px;
+  border-radius: 100px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &--confirmed {
+    background: #e6f9f0;
+    color: #1a9e5c;
+    border: 1px solid #b3efd3;
+  }
+
+  &--pending {
+    background: #fff8e6;
+    color: #b07a00;
+    border: 1px solid #ffe099;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// QUICK ACTIONS
+// ─────────────────────────────────────────────────────────────────────────────
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.quick-action {
+  @include card-base;
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+
+  &:hover {
+    box-shadow: $shadow-hover;
+    transform: translateY(-4px);
+  }
+
+  // ── Trạng thái khi nhấn ─────────────────────────────
+  &:active {
+    transform: translateY(-1px);
+  }
+
+  // ── Màu icon theo type ──────────────────────────────
+  &--primary .quick-action__icon {
+    background: $primary-lt;
+    color: $primary;
+  }
+
+  &--navy .quick-action__icon {
+    background: #e6eef5;
+    color: $navy;
+  }
+
+  &--accent .quick-action__icon {
+    background: #fff1ec;
+    color: $accent;
+  }
+}
+
+.quick-action__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: $radius-sm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  margin-bottom: 4px;
+}
+
+.quick-action__label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $text;
+  margin: 0;
+}
+
+.quick-action__desc {
+  font-size: 0.75rem;
+  color: $text-muted;
+  margin: 0;
+}
