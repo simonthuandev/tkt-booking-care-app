@@ -1,0 +1,173 @@
+.unauthorized-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0d2b45 0%, #0a4a6b 55%, #077d7d 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.unauthorized-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  color: white;
+  padding: 40px 20px;
+  max-width: 600px;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Grass Decoration
+.grass-decoration {
+  position: relative;
+  height: 80px;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 20px;
+}
+
+.grass {
+  width: 3px;
+  height: 60px;
+  background: linear-gradient(to top, #2d5016 0%, #4caf50 100%);
+  border-radius: 50%;
+  position: relative;
+  animation: grass-sway 2s ease-in-out infinite;
+
+  &:nth-child(1) {
+    animation-delay: 0s;
+  }
+  &:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  &:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    background: inherit;
+    border-radius: 50%;
+    bottom: 0;
+  }
+
+  &::before {
+    width: 2px;
+    height: 50px;
+    left: -8px;
+    transform: rotate(-20deg);
+  }
+
+  &::after {
+    width: 2px;
+    height: 50px;
+    right: -8px;
+    transform: rotate(20deg);
+  }
+}
+
+@keyframes grass-sway {
+  0%,
+  100% {
+    transform: skew(0deg) scaleY(1);
+  }
+  50% {
+    transform: skew(2deg) scaleY(0.98);
+  }
+}
+
+// Error Description
+.error-description {
+  font-size: 18px;
+  margin-bottom: 40px;
+  opacity: 0.95;
+  line-height: 1.6;
+  font-weight: 300;
+
+  @media (max-width: 768px) {
+    font-size: 16px;
+  }
+}
+
+// 404 Number
+.error-number {
+  font-size: 180px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  margin: 20px 0;
+  letter-spacing: 20px;
+  animation: scaleIn 0.6s ease-out;
+
+  // Outline style
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 3px white;
+
+  @media (max-width: 768px) {
+    font-size: 120px;
+    letter-spacing: 10px;
+  }
+}
+
+// Responsive
+@media (max-width: 480px) {
+  .unauthorized-content {
+    padding: 20px 15px;
+  }
+
+  .restricted-sign {
+    font-size: 18px;
+    padding: 12px 24px;
+    margin: 15px 0 30px;
+
+    &::before {
+      top: -12px;
+    }
+
+    &::after {
+      bottom: -15px;
+      height: 30px;
+    }
+  }
+
+  .grass-decoration {
+    height: 60px;
+    gap: 15px;
+  }
+
+  .grass {
+    height: 50px;
+
+    &::before,
+    &::after {
+      height: 40px;
+    }
+  }
+
+  .btn-home {
+    padding: 12px 30px;
+    font-size: 14px;
+  }
+
+  .error-number {
+    font-size: 80px;
+    letter-spacing: 5px;
+    margin: 15px 0;
+  }
+}
