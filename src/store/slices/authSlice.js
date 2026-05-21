@@ -1,55 +1,162 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import authService from "../../api/authService";
 
-// const initialState = {
-//   isAuthenticated: !!localStorage.getItem("rememberMe"),
-//   user: localStorage.getItem("user2")
-//     ? JSON.parse(localStorage.getItem("user2"))
-//     : null,
-// };
+// ─── Async Thunks ────────────────────────────────────────────────────────────
 
-const initialState = {
-  isAuthenticated: false,
-  user: {
-    name: "nguyen van de quy",
-    role: "admin",
-  },
-};
+export const fetchCurrentUser = createAsyncThunk(
+  "auth/fetchCurrentUser",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await authService.getMe();
+      return res.data.user;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message ?? "Chưa đăng nhập");
+    }
+  }
+);
+
+export const login = createAsyncThunk(
+  "auth/login",
+  async (data, { rejectWithValue }) => {
+    try {
+      const res = await authService.login(data);
+      return res.data.user;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message ?? "Email hoặc mật khẩu không chính xác"
+      );
+    }
+  }
+);
+
+export const register = createAsyncThunk(
+  "auth/register",
+  async (data, { rejectWithValue }) => {
+    try {
+      const res = await authService.register(data);
+      return res.data.user;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message ?? "Đăng ký thất bại"
+      );
+    }
+  }
+);
+
+export const logout = createAsyncThunk(
+  "auth/logout",
+  async (_, { rejectWithValue }) => {
+    try {
+      await authService.logout();
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message ?? "Đăng xuất thất bại");
+    }
+  }
+);
+
+export const logoutAll = createAsyncThunk(
+  "auth/logoutAll",
+  async (_, { rejectWithValue }) => {
+    try {
+      await authService.logoutAll();
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message ?? "Đăng xuất thất bại");
+    }
+  }
+);
+
+// ─── Slice ───────────────────────────────────────────────────────────────────
 
 const authSlice = createSlice({
   name: "auth",
-  initialState,
+  initialState: {
+    user: null,           // { id, email, firstName, lastName, role }
+    isLoading: false,
+    isInitializing: true, // true khi app mới load, chờ check session
+    error: null,
+  },
   reducers: {
-    // Login success
-    loginSuccess: (state, action) => {
-      state.isAuthenticated = true;
-      state.user = action.payload.user;
-      localStorage.setItem("user", JSON.stringify(action.payload.user));
+    // Dùng sau khi Google OAuth redirect về và đã fetch được user
+    setUser(state, action) {
+      state.user = action.payload;
+      state.isInitializing = false;
     },
+    clearError(state) {
+      state.error = null;
+    },
+  },
+  extraReducers: (builder) => {
+    // ── fetchCurrentUser ──────────────────────────────────────────────────
+    builder
+      .addCase(fetchCurrentUser.pending, (state) => {
+        state.isInitializing = true;
+        state.error = null;
+      })
+      .addCase(fetchCurrentUser.fulfilled, (state, action) => {
+        state.user = action.payload;
+        state.isInitializing = false;
+      })
+      .addCase(fetchCurrentUser.rejected, (state) => {
+        state.user = null;
+        state.isInitializing = false;
+        // Không set error ở đây — 401 là trạng thái bình thường khi chưa login
+      });
 
-    // Login failure
-    loginFailure: (state) => {
-      state.isAuthenticated = false;
-      state.user = null;
-      localStorage.removeItem("rememberMe");
-      localStorage.removeItem("user");
-    },
+    // ── login ─────────────────────────────────────────────────────────────
+    builder
+      .addCase(login.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.user = action.payload;
+        state.isLoading = false;
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      });
 
-    // Logout
-    logout: (state) => {
-      state.isAuthenticated = false;
+    // ── register ──────────────────────────────────────────────────────────
+    builder
+      .addCase(register.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(register.fulfilled, (state, action) => {
+        state.user = action.payload;
+        state.isLoading = false;
+      })
+      .addCase(register.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      });
+
+    // ── logout + logoutAll ────────────────────────────────────────────────
+    const handleLogout = (state) => {
       state.user = null;
-      localStorage.removeItem("rememberMe");
-      localStorage.removeItem("user");
-    },
-    resetAuth: (state) => {
-      if (!localStorage.getItem("rememberMe")) {
-        localStorage.removeItem("user");
-      }
-    },
+      state.isLoading = false;
+      state.error = null;
+    };
+    builder
+      .addCase(logout.pending, (state) => { state.isLoading = true; })
+      .addCase(logout.fulfilled, handleLogout)
+      .addCase(logout.rejected, handleLogout); // Dù lỗi vẫn clear user ở client
+
+    builder
+      .addCase(logoutAll.pending, (state) => { state.isLoading = true; })
+      .addCase(logoutAll.fulfilled, handleLogout)
+      .addCase(logoutAll.rejected, handleLogout);
   },
 });
 
-export const { loginSuccess, loginFailure, logout, resetAuth } =
-  authSlice.actions;
+export const { setUser, clearError } = authSlice.actions;
+
+// ─── Selectors ───────────────────────────────────────────────────────────────
+export const selectUser = (state) => state.auth.user;
+export const selectIsAuthenticated = (state) => !!state.auth.user;
+export const selectIsLoading = (state) => state.auth.isLoading;
+export const selectIsInitializing = (state) => state.auth.isInitializing;
+export const selectAuthError = (state) => state.auth.error;
 
 export default authSlice.reducer;
