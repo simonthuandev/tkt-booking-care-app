@@ -1,0 +1,160 @@
+@use "../../styles/variables" as *;
+
+.services-page {
+  width: 100%;
+  min-height: 100vh;
+  padding: 60px 20px;
+  background: $bg-main;
+
+  @media (max-width: $bp-md) {
+    padding: 40px 16px;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 60px;
+
+    h1 {
+      font-family: $ff-head;
+      font-size: 40px;
+      font-weight: 700;
+      color: $navy;
+      margin-bottom: 16px;
+
+      @media (max-width: $bp-md) {
+        font-size: 28px;
+      }
+    }
+
+    p {
+      font-family: $ff-body;
+      font-size: 16px;
+      color: $text-muted;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+  }
+
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 28px;
+    max-width: 1200px;
+    margin: 0 auto;
+
+    @media (max-width: $bp-lg) {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    @media (max-width: $bp-md) {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: $bp-sm) {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+  }
+
+  .service-card {
+    background: $bg-card;
+    border-radius: $radius;
+    padding: 32px 24px;
+    text-align: center;
+    box-shadow: $shadow;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 280px;
+
+    &:hover {
+      transform: translateY(-8px);
+      box-shadow: $shadow-hover;
+      background: linear-gradient(
+        135deg,
+        rgba(11, 163, 163, 0.04) 0%,
+        rgba(255, 107, 53, 0.04) 100%
+      );
+    }
+
+    .icon-wrapper {
+      width: 100px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(
+        135deg,
+        $primary-lt 0%,
+        rgba(255, 107, 53, 0.08) 100%
+      );
+      border-radius: 12px;
+      margin-bottom: 20px;
+      transition: transform 0.3s ease;
+
+      img {
+        width: 70%;
+        height: 70%;
+        object-fit: contain;
+      }
+    }
+
+    &:hover .icon-wrapper {
+      transform: scale(1.1);
+    }
+
+    h3 {
+      font-family: $ff-head;
+      font-size: 18px;
+      font-weight: 700;
+      color: $navy;
+      margin: 0;
+      line-height: 1.4;
+
+      @media (max-width: $bp-md) {
+        font-size: 16px;
+      }
+    }
+
+    .service-description {
+      font-family: $ff-body;
+      font-size: 13px;
+      color: $text-muted;
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+
+    .arrow {
+      margin-top: 16px;
+      font-size: 18px;
+      color: $primary;
+      transition: transform 0.3s ease;
+    }
+
+    &:hover .arrow {
+      transform: translateX(4px);
+    }
+  }
+
+  .service-card.disabled {
+    opacity: 0.85;
+    pointer-events: none;
+
+    &:hover {
+      transform: none;
+      box-shadow: $shadow;
+      background: $bg-card;
+    }
+
+    .arrow {
+      color: $text-muted;
+    }
+  }
+}

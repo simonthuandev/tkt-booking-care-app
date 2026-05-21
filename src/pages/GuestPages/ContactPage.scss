@@ -1,0 +1,220 @@
+// ContactPage Styles
+@use "../../styles/variables" as *;
+
+.header-contact {
+  padding: 60px 20px;
+  background: rgb(244, 242, 242);
+  color: linear-gradient(135deg, #0d2b45 0%, #1a3a5c 100%);
+  text-align: center;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 40px;
+
+  h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+
+    @media (max-width: 768px) {
+      font-size: 2rem;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 1.5rem;
+    }
+  }
+
+  > p {
+    font-size: 1.3rem;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+    margin-bottom: 30px;
+
+    @media (max-width: 768px) {
+      font-size: 1.1rem;
+    }
+  }
+
+  // Stats section
+  > div:nth-of-type(1) {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+    margin: 40px 0;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
+      gap: 15px;
+    }
+
+    h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+
+      @media (max-width: 768px) {
+        font-size: 2rem;
+      }
+
+      @media (max-width: 480px) {
+        font-size: 1.5rem;
+      }
+    }
+
+    h3 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      font-size: 0.9rem;
+      @media (max-width: 480px) {
+        font-size: 0.8rem;
+      }
+    }
+  }
+
+  // Body contact section
+  .body-contact {
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+    padding: 50px 40px;
+    border-radius: 15px;
+    max-width: 1200px;
+    margin: 0 auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+
+    @media (max-width: 768px) {
+      padding: 30px 20px;
+    }
+
+    // Benefits section
+    > div:first-of-type {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+      margin-bottom: 40px;
+
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      > div {
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-align: center;
+        transition:
+          transform 0.3s ease,
+          box-shadow 0.3s ease;
+
+        &:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        @media (max-width: 480px) {
+          font-size: 1rem;
+          padding: 15px;
+        }
+      }
+    }
+
+    // Title
+    h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 40px;
+      color: #333;
+
+      @media (max-width: 768px) {
+        font-size: 1.3rem;
+      }
+
+      @media (max-width: 480px) {
+        font-size: 1.1rem;
+      }
+    }
+
+    // Partners grid
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+
+    > img {
+      max-width: 100%;
+      height: auto;
+    }
+  }
+
+  // Images grid
+  img {
+    max-width: 150px;
+    height: auto;
+    object-fit: contain;
+    transition:
+      transform 0.3s ease,
+      filter 0.3s ease;
+
+    &:hover {
+      transform: scale(1.1);
+      filter: brightness(1.2);
+    }
+
+    @media (max-width: 768px) {
+      max-width: 120px;
+    }
+
+    @media (max-width: 480px) {
+      max-width: 100px;
+    }
+  }
+}
+
+// Container for images grid
+.body-contact {
+  // Add a wrapper style for images if needed
+  img {
+    margin: 15px;
+  }
+}
+
+.info {
+  width: 100vw;
+  position: relative;
+  display: flex;
+  justify-content: space-around;
+  padding: 40px 0;
+
+  background: url("https://img.freepik.com/free-photo/medical-banner-with-doctor-wearing-goggles_23-2149611193.jpg")
+    center/cover no-repeat;
+}
+
+/* lớp phủ làm mờ */
+.info::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.8); /* chỉnh độ mờ ở đây */
+  backdrop-filter: blur(4px); /* optional: blur nhẹ */
+}
+
+/* đảm bảo content nằm trên lớp mờ */
+.info > div {
+  position: relative;
+  z-index: 1;
+}

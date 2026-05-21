@@ -1,0 +1,66 @@
+@use "../../styles/variables" as v;
+
+.doctors-page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.btn-book-doc {
+  flex-shrink: 0;
+  background: linear-gradient(135deg, v.$primary 0%, #0fa39b 100%);
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(15, 160, 155, 0.3);
+  }
+
+  a {
+    color: white;
+    text-decoration: none;
+    display: block;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .doctors-page-container {
+    padding: 24px 16px;
+  }
+
+  .doctor-item {
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 16px 12px;
+  }
+
+  .btn-book-doc {
+    padding: 10px 24px;
+    font-size: 13px;
+    flex-basis: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .doctors-page-container {
+    padding: 16px 12px;
+  }
+
+  .doctor-item {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .btn-book-doc {
+    flex-basis: 100%;
+  }
+}

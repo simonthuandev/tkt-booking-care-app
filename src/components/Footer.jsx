@@ -43,11 +43,11 @@ export default function Footer() {
   ];
 
   const infoList = [
-    {text: 'Về chúng tôi', link: "/#!"},
-    {text: 'Điều khoản dịch vụ', link: "/#!"},
-    {text: 'Chính sách bảo mật', link: "/#!"},
-    {text: 'Tuyển dụng', link: "/#!"},
-    {text: 'Tin tức', link: "/#!"},
+    { text: "Về chúng tôi", link: "/about" },
+    { text: "Điều khoản dịch vụ", link: "/#!" },
+    { text: "Chính sách bảo mật", link: "/#!" },
+    { text: "Tuyển dụng", link: "/#!" },
+    { text: "Tin tức", link: "/#!" },
   ];
 
   return (
