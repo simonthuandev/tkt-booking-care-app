@@ -1,0 +1,12 @@
+// src/pages/AuthPages/LoginPage.scss
+@use "../../styles/variables" as v;
+
+.login-container {
+  background: linear-gradient(135deg, #0d2b45 0%, #0a4a6b 55%, #077d7d 100%);
+  min-height: 100vh;
+}
+
+.login-wrapper {
+  position: relative;
+  z-index: 1;
+}

@@ -8,7 +8,7 @@ import { createSlice } from "@reduxjs/toolkit";
 // };
 
 const initialState = {
-  isAuthenticated: true,
+  isAuthenticated: false,
   user: {
     name: "nguyen van de quy",
     role: "admin",
