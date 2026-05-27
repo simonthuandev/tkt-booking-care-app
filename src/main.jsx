@@ -5,11 +5,14 @@ import { Provider } from "react-redux";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles/global.scss";
 import App from "./App";
+import setupInterceptors from "./api/setupInterceptors";
+
+setupInterceptors(store);
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <Provider store={store}>
-      <App />
-    </Provider>
-  </StrictMode>,
+  // <StrictMode>
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  {/* </StrictMode>, */ }
 );

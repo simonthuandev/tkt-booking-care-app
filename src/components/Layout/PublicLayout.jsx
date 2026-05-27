@@ -1,6 +1,7 @@
 import { Outlet } from "react-router";
 import NavBar from "../NavBar";
 import Footer from "../Footer";
+import Chatbot from "../Common/Chatbot";
 
 const PublicLayout = () => {
   return (
@@ -10,6 +11,8 @@ const PublicLayout = () => {
         <Outlet />
       </main>
       <Footer />
+
+      <Chatbot />
     </>
   );
 };

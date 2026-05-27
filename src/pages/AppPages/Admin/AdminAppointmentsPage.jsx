@@ -1,308 +1,132 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// AdminAppointmentsPage.jsx  —  Appointments Management
-// Style compact như AdminDashboardPage
+// AdminAppointmentsPage.jsx  —  Appointments Management CRUD
 // ─────────────────────────────────────────────────────────────────────────────
-import { useState, useMemo } from "react";
-import { BsCalendar2WeekFill, BsClockFill } from "react-icons/bs";
+import { useState, useEffect } from "react";
 import {
-  FaUserMd,
-  FaUserInjured,
+  FaCalendarAlt,
   FaSearch,
-  FaFilter,
-  FaSortAmountDown,
   FaEye,
-  FaCheck,
-  FaTimes,
-  FaCheckCircle,
-  FaClock,
+  FaEdit,
   FaBan,
+  FaClock,
+  FaCheckCircle,
+  FaCheckDouble,
+  FaTimesCircle,
+  FaUser,
+  FaUserMd,
   FaHospital,
-  FaStethoscope,
-  FaDownload,
+  FaChevronLeft,
+  FaChevronRight,
 } from "react-icons/fa";
+import { appointmentService } from "../../../api/appService";
+import LoadingSpinner from "../../../components/Common/LoadingSpinner";
 import "./AdminAppointmentsPage.scss";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MOCK DATA
+// CONFIG
 // ─────────────────────────────────────────────────────────────────────────────
-const today = new Date();
-const fmt = (d) =>
-  d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
+const PAGE_LIMIT = 12;
+
+const STATUS_CFG = {
+  pending: { label: "Pending", color: "#f5a623", bg: "#fff8e6", icon: FaClock },
+  confirmed: { label: "Confirmed", color: "#0ba3a3", bg: "#e6f7f7", icon: FaCheckCircle },
+  completed: { label: "Completed", color: "#1a9e5c", bg: "#e6f9f0", icon: FaCheckDouble },
+  // no_show: { label: "No_show", color: "#1a9e5c", bg: "#e6f9f0", icon: FaCheckDouble },
+  cancelled: { label: "Cancelled", color: "#e24b4a", bg: "#fef2f2", icon: FaTimesCircle },
+};
+
+const PAYMENT_STATUS_CFG = {
+  pending: { label: "Pending", color: "#f5a623" },
+  completed: { label: "Completed", color: "#1a9e5c" },
+  refunded: { label: "Refunded", color: "#6b7f8e" },
+  failed: { label: "Failed", color: "#e24b4a" },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+const formatCurrency = (amount) => {
+  if (!amount && amount !== 0) return "N/A";
+  return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
+};
+
+const formatDateTime = (dateStr, startTime, endTime) => {
+  if (!dateStr) return "N/A";
+  const date = new Date(dateStr).toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
   });
-const addDays = (n) => {
-  const d = new Date(today);
-  d.setDate(d.getDate() + n);
-  return fmt(d);
+  if (startTime && endTime) {
+    return `${startTime} - ${endTime} | ${date}`;
+  }
+  return date;
 };
-
-const INIT_DATA = [
-  {
-    id: 1,
-    patient: "Tran Thi Mai",
-    age: 45,
-    initials: "TM",
-    color: "#0ba3a3",
-    doctor: "Dr. Nguyen Van An",
-    specialty: "Cardiology",
-    hospital: "TKT Medical",
-    date: addDays(0),
-    time: "08:00 AM",
-    type: "Check-up",
-    status: "confirmed",
-  },
-  {
-    id: 2,
-    patient: "Le Van Binh",
-    age: 62,
-    initials: "LB",
-    color: "#534ab7",
-    doctor: "Dr. Le Thi Bich",
-    specialty: "Neurology",
-    hospital: "City Hospital",
-    date: addDays(0),
-    time: "09:00 AM",
-    type: "Follow-up",
-    status: "pending",
-  },
-  {
-    id: 3,
-    patient: "Pham Duc Thanh",
-    age: 38,
-    initials: "PT",
-    color: "#f5a623",
-    doctor: "Dr. Tran Quoc Hung",
-    specialty: "Dermatology",
-    hospital: "Riverside",
-    date: addDays(0),
-    time: "10:00 AM",
-    type: "Consultation",
-    status: "completed",
-  },
-  {
-    id: 4,
-    patient: "Nguyen Thi Lan",
-    age: 55,
-    initials: "NL",
-    color: "#1a9e5c",
-    doctor: "Dr. Pham Duc Minh",
-    specialty: "Orthopedics",
-    hospital: "TKT Medical",
-    date: addDays(0),
-    time: "11:00 AM",
-    type: "Check-up",
-    status: "cancelled",
-  },
-  {
-    id: 5,
-    patient: "Vo Minh Khoa",
-    age: 29,
-    initials: "VK",
-    color: "#e24b4a",
-    doctor: "Dr. Vo Thi Lan",
-    specialty: "Ophthalmology",
-    hospital: "City Hospital",
-    date: addDays(2),
-    time: "02:00 PM",
-    type: "Follow-up",
-    status: "pending",
-  },
-  {
-    id: 6,
-    patient: "Hoang Thi Thu",
-    age: 48,
-    initials: "HT",
-    color: "#077d7d",
-    doctor: "Dr. Nguyen Van An",
-    specialty: "Cardiology",
-    hospital: "TKT Medical",
-    date: addDays(3),
-    time: "09:30 AM",
-    type: "Consultation",
-    status: "confirmed",
-  },
-  {
-    id: 7,
-    patient: "Dang Van Long",
-    age: 33,
-    initials: "DL",
-    color: "#ff6b35",
-    doctor: "Dr. Tran Quoc Hung",
-    specialty: "Dermatology",
-    hospital: "Riverside",
-    date: addDays(5),
-    time: "03:00 PM",
-    type: "Check-up",
-    status: "pending",
-  },
-  {
-    id: 8,
-    patient: "Bui Thi Huong",
-    age: 60,
-    initials: "BH",
-    color: "#9b59b6",
-    doctor: "Dr. Le Thi Bich",
-    specialty: "Neurology",
-    hospital: "City Hospital",
-    date: addDays(-2),
-    time: "10:00 AM",
-    type: "Follow-up",
-    status: "completed",
-  },
-  {
-    id: 9,
-    patient: "Cao Minh Tri",
-    age: 41,
-    initials: "CT",
-    color: "#e67e22",
-    doctor: "Dr. Pham Duc Minh",
-    specialty: "Orthopedics",
-    hospital: "TKT Medical",
-    date: addDays(-3),
-    time: "08:30 AM",
-    type: "Consultation",
-    status: "completed",
-  },
-  {
-    id: 10,
-    patient: "Dinh Thi Nga",
-    age: 52,
-    initials: "DN",
-    color: "#16a085",
-    doctor: "Dr. Vo Thi Lan",
-    specialty: "Ophthalmology",
-    hospital: "Riverside",
-    date: addDays(-1),
-    time: "04:00 PM",
-    type: "Check-up",
-    status: "cancelled",
-  },
-];
-
-const todayStr = fmt(today);
-
-// ── Tabs config ──────────────────────────────────────────────────────────────
-const TABS = ["All", "Today", "Upcoming", "Completed", "Cancelled"];
-
-// ── Status display ────────────────────────────────────────────────────────────
-const STATUS = {
-  pending: { label: "Pending", cls: "badge-pending" },
-  confirmed: { label: "Confirmed", cls: "badge-confirmed" },
-  completed: { label: "Completed", cls: "badge-completed" },
-  cancelled: { label: "Cancelled", cls: "badge-cancelled" },
-};
-
-// ── Type display ──────────────────────────────────────────────────────────────
-const TYPE_CLS = {
-  "Check-up": "type-checkup",
-  "Follow-up": "type-followup",
-  Consultation: "type-consult",
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: SummaryCard
-// ─────────────────────────────────────────────────────────────────────────────
-const SummaryCard = ({ icon: Icon, label, value, cls }) => (
-  <div className={`summary-card ${cls}`}>
-    <div className="summary-card__icon">
-      <Icon />
-    </div>
-    <div>
-      <p className="summary-card__value">{value}</p>
-      <p className="summary-card__label">{label}</p>
-    </div>
-  </div>
-);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SUB-COMPONENT: AppointmentRow
 // ─────────────────────────────────────────────────────────────────────────────
-const AppointmentRow = ({ appt, onConfirm, onDone, onCancel }) => {
-  const {
-    patient,
-    age,
-    initials,
-    color,
-    doctor,
-    specialty,
-    hospital,
-    date,
-    time,
-    type,
-    status,
-  } = appt;
-  const s = STATUS[status];
+const AppointmentRow = ({ appt, onView, onEditStatus, onCancel }) => {
+  const statusCfg = STATUS_CFG[appt.status] || STATUS_CFG.pending;
+  const StatusIcon = statusCfg.icon;
+
+  const paymentStatus = PAYMENT_STATUS_CFG[appt.paymentStatus] || PAYMENT_STATUS_CFG.pending;
 
   return (
     <div className="appt-row">
-      {/* Avatar */}
-      <div className="appt-avatar" style={{ background: color }}>
-        {initials}
-      </div>
-
-      {/* Patient */}
-      <div className="appt-patient">
-        <p className="appt-patient__name">
-          {patient} <span className="appt-patient__age">{age}y</span>
+      <div className="appt-row__patient">
+        <p className="appt-row__name">
+          <FaUser className="me-1 text-muted" /> {appt.patientProfile?.fullName || "N/A"}
         </p>
-        <span className={`appt-type ${TYPE_CLS[type]}`}>{type}</span>
-      </div>
-
-      {/* Doctor */}
-      <div className="appt-doctor">
-        <p className="appt-doctor__name">
-          <FaUserMd /> {doctor}
-        </p>
-        <p className="appt-doctor__spec">
-          <FaStethoscope /> {specialty}
+        <p className="appt-row__phone">
+          {appt.patientProfile?.phoneNumber || "N/A"}
         </p>
       </div>
 
-      {/* Hospital */}
-      <div className="appt-hospital">
-        <FaHospital /> {hospital}
-      </div>
-
-      {/* Date & Time */}
-      <div className="appt-datetime">
-        <p>
-          <BsCalendar2WeekFill /> {date}
+      <div className="appt-row__doctor">
+        <p className="appt-row__name">
+          <FaUserMd className="me-1 text-primary" /> {appt.doctor?.user?.lastName} {appt.doctor?.user?.firstName}
         </p>
-        <p>
-          <BsClockFill /> {time}
+        <p className="appt-row__hospital text-truncate" title={appt.hospital?.name}>
+          <FaHospital className="me-1 text-muted" /> {appt.hospital?.name || "N/A"}
         </p>
       </div>
 
-      {/* Status */}
-      <span className={`appt-badge ${s.cls}`}>{s.label}</span>
+      <div className="appt-row__datetime">
+        <span className="fw-semibold text-dark">
+          {appt.timeSlot?.startTime} - {appt.timeSlot?.endTime}
+        </span>
+        <span className="text-muted small">
+          {appt.timeSlot?.date ? new Date(appt.timeSlot.date).toLocaleDateString("vi-VN") : "N/A"}
+        </span>
+      </div>
 
-      {/* Actions */}
-      <div className="appt-actions">
-        {status === "pending" && (
-          <>
-            <button className="btn-confirm" onClick={() => onConfirm(appt.id)}>
-              <FaCheck /> Confirm
-            </button>
-            <button className="btn-cancel" onClick={() => onCancel(appt.id)}>
-              <FaTimes />
-            </button>
-          </>
-        )}
-        {status === "confirmed" && (
-          <>
-            <button className="btn-done" onClick={() => onDone(appt.id)}>
-              <FaCheckCircle /> Done
-            </button>
-            <button className="btn-cancel" onClick={() => onCancel(appt.id)}>
-              <FaTimes />
-            </button>
-          </>
-        )}
-        {status === "completed" && (
-          <button className="btn-view">
-            <FaEye /> View
+      <div className="appt-row__payment">
+        <span className="fw-semibold">{formatCurrency(appt.totalAmount)}</span>
+        <span className="small fw-semibold" style={{ color: paymentStatus.color }}>
+          {paymentStatus.label}
+        </span>
+      </div>
+
+      <div className="appt-row__status">
+        <span
+          className="appt-status-badge"
+          style={{ color: statusCfg.color, background: statusCfg.bg }}
+        >
+          <StatusIcon /> {statusCfg.label}
+        </span>
+      </div>
+
+      <div className="appt-row__actions">
+        <button className="appt-btn appt-btn--view" onClick={() => onView(appt)} title="View Detail">
+          <FaEye />
+        </button>
+        <button className="appt-btn appt-btn--edit" onClick={() => onEditStatus(appt)} title="Change Status">
+          <FaEdit />
+        </button>
+        {appt.status !== 'cancelled' && (
+          <button className="appt-btn appt-btn--ban" onClick={() => onCancel(appt)} title="Force Cancel">
+            <FaBan />
           </button>
         )}
       </div>
@@ -311,223 +135,497 @@ const AppointmentRow = ({ appt, onConfirm, onDone, onCancel }) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// SUB-COMPONENT: StatusModal
+// ─────────────────────────────────────────────────────────────────────────────
+const StatusModal = ({ appt, onSave, onClose, saving }) => {
+  if (!appt) return null;
+  const [status, setStatus] = useState(appt.status || "pending");
+  const currentStatusCfg = STATUS_CFG[appt.status] || STATUS_CFG.pending;
+
+  return (
+    <>
+      <div className="modal-backdrop fade show" onClick={onClose} />
+      <div className="modal fade show d-block" tabIndex="-1">
+        <div className="modal-dialog modal-sm modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Change Status</h5>
+              <button className="btn-close" onClick={onClose} disabled={saving} />
+            </div>
+            <div className="modal-body">
+              <div className="text-center mb-3">
+                <span className="appt-status-badge mb-2 d-inline-flex" style={{ color: currentStatusCfg.color, background: currentStatusCfg.bg }}>
+                  Current: {currentStatusCfg.label}
+                </span>
+                <p className="mb-0 fw-semibold">{appt.patientProfile?.fullName}</p>
+                <small className="text-muted">ID: {appt.id.substring(0, 8)}...</small>
+              </div>
+              <label className="form-label">New Status</label>
+              <select className="form-select" value={status} onChange={e => setStatus(e.target.value)} disabled={saving}>
+                {Object.entries(STATUS_CFG).map(([key, cfg]) => (
+                  <option key={key} value={key}>{cfg.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="modal-footer border-0 pt-0">
+              <button className="btn btn-light border w-100 mb-2" onClick={onClose} disabled={saving}>Cancel</button>
+              <button className="btn btn-save w-100 m-0" onClick={() => onSave(appt.id, status)} disabled={saving}>
+                {saving ? "Saving..." : "Save Status"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUB-COMPONENT: CancelModal
+// ─────────────────────────────────────────────────────────────────────────────
+const CancelModal = ({ appt, onConfirm, onClose, saving }) => {
+  if (!appt) return null;
+  const [cancelReason, setCancelReason] = useState("");
+
+  return (
+    <>
+      <div className="modal-backdrop fade show" onClick={onClose} />
+      <div className="modal fade show d-block" tabIndex="-1">
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title text-danger">Force Cancel Appointment</h5>
+              <button className="btn-close" onClick={onClose} disabled={saving} />
+            </div>
+            <div className="modal-body py-4">
+              <div className="alert alert-danger">
+                Are you sure you want to cancel this appointment for <strong>{appt.patientProfile?.fullName}</strong>?
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Cancel Reason (Optional)</label>
+                <textarea
+                  className="form-control"
+                  rows="3"
+                  placeholder="Enter reason for cancellation..."
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  maxLength={500}
+                  disabled={saving}
+                ></textarea>
+                <div className="form-text text-end">{cancelReason.length}/500</div>
+              </div>
+            </div>
+            <div className="modal-footer border-0 pt-0">
+              <button className="btn btn-light border" onClick={onClose} disabled={saving}>Close</button>
+              <button className="btn btn-danger" onClick={() => onConfirm(appt.id, cancelReason)} disabled={saving}>
+                {saving ? "Processing..." : "Confirm Cancel"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUB-COMPONENT: AppointmentViewModal
+// ─────────────────────────────────────────────────────────────────────────────
+const AppointmentViewModal = ({ appt, onClose }) => {
+  if (!appt) return null;
+  const statusCfg = STATUS_CFG[appt.status] || STATUS_CFG.pending;
+
+  return (
+    <>
+      <div className="modal-backdrop fade show" onClick={onClose} />
+      <div className="modal fade show d-block" tabIndex="-1">
+        <div className="modal-dialog modal-lg modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Appointment Details</h5>
+              <button className="btn-close" onClick={onClose} />
+            </div>
+
+            <div className="modal-body">
+              <div className="d-flex justify-content-between align-items-center mb-4 p-3 bg-light rounded border">
+                <div>
+                  <small className="text-muted d-block">Appointment ID</small>
+                  <strong className="text-dark">{appt.id}</strong>
+                </div>
+                <div>
+                  <span className="appt-status-badge px-3 py-2 fs-6" style={{ color: statusCfg.color, background: statusCfg.bg }}>
+                    <statusCfg.icon className="me-2" /> {statusCfg.label}
+                  </span>
+                </div>
+              </div>
+
+              <div className="row g-4">
+                {/* Patient Info */}
+                <div className="col-md-6">
+                  <h6 className="fw-bold text-primary mb-3 border-bottom pb-2"><FaUser className="me-2" />Patient Information</h6>
+                  <div className="mb-2">
+                    <small className="text-muted d-block">Full Name</small>
+                    <div className="fw-semibold">{appt.patientProfile?.fullName || "N/A"}</div>
+                  </div>
+                  <div className="mb-2">
+                    <small className="text-muted d-block">Phone Number</small>
+                    <div>{appt.patientProfile?.phoneNumber || "N/A"}</div>
+                  </div>
+                  <div className="mb-2">
+                    <small className="text-muted d-block">Date of Birth</small>
+                    <div>{appt.patientProfile?.dob ? new Date(appt.patientProfile.dob).toLocaleDateString('vi-VN') : "N/A"}</div>
+                  </div>
+                  <div className="mb-2">
+                    <small className="text-muted d-block">Gender</small>
+                    <div className="text-capitalize">{appt.patientProfile?.gender || "N/A"}</div>
+                  </div>
+                </div>
+
+                {/* Doctor Info */}
+                <div className="col-md-6">
+                  <h6 className="fw-bold text-primary mb-3 border-bottom pb-2"><FaUserMd className="me-2" />Doctor Information</h6>
+                  <div className="mb-2">
+                    <small className="text-muted d-block">Doctor Name</small>
+                    <div className="fw-semibold">{appt.doctor?.user?.lastName} {appt.doctor?.user?.firstName}</div>
+                  </div>
+                  <div className="mb-2">
+                    <small className="text-muted d-block">Hospital</small>
+                    <div>{appt.hospital?.name}</div>
+                    <div className="small text-muted">{appt.hospital?.address}, {appt.hospital?.city}</div>
+                  </div>
+                  <div className="mb-2">
+                    <small className="text-muted d-block">Specialties</small>
+                    <div>
+                      {appt.doctor?.specialties?.map(s => s.specialty.name).join(', ') || "N/A"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Schedule Info */}
+                <div className="col-md-6">
+                  <h6 className="fw-bold text-primary mb-3 border-bottom pb-2"><FaCalendarAlt className="me-2" />Schedule & Payment</h6>
+                  <div className="mb-2">
+                    <small className="text-muted d-block">Date & Time</small>
+                    <div className="fw-semibold">
+                      {formatDateTime(appt.timeSlot?.date, appt.timeSlot?.startTime, appt.timeSlot?.endTime)}
+                    </div>
+                  </div>
+                  <div className="mb-2">
+                    <small className="text-muted d-block">Total Amount</small>
+                    <div className="fw-bold text-success">{formatCurrency(appt.totalAmount)}</div>
+                  </div>
+                  <div className="mb-2">
+                    <small className="text-muted d-block">Payment Status</small>
+                    <div className="text-capitalize fw-semibold">
+                      {appt.paymentStatus}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Info */}
+                <div className="col-md-6">
+                  <h6 className="fw-bold text-primary mb-3 border-bottom pb-2"><FaEdit className="me-2" />Additional Details</h6>
+                  <div className="mb-2">
+                    <small className="text-muted d-block">Reason for visit</small>
+                    <div className="p-2 bg-light rounded border">{appt.reason || "None"}</div>
+                  </div>
+                  {appt.cancelReason && (
+                    <div className="mb-2 mt-3">
+                      <small className="text-danger d-block fw-semibold">Cancel Reason</small>
+                      <div className="p-2 bg-danger-subtle text-danger rounded border border-danger">{appt.cancelReason}</div>
+                    </div>
+                  )}
+                  <div className="mb-2 mt-3">
+                    <small className="text-muted d-block">Created At</small>
+                    <div>{appt.createdAt ? new Date(appt.createdAt).toLocaleString('vi-VN') : "N/A"}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-footer border-0 justify-content-end">
+              <button className="btn btn-light border px-4" onClick={onClose}>Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // MAIN PAGE
 // ─────────────────────────────────────────────────────────────────────────────
 export default function AdminAppointmentsPage() {
-  const [data, setData] = useState(INIT_DATA);
-  const [activeTab, setActiveTab] = useState("All");
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
+  // Search & Filters
   const [search, setSearch] = useState("");
-  const [filterType, setFilterType] = useState("all");
-  const [filterHosp, setFilterHosp] = useState("all");
-  const [sortBy, setSortBy] = useState("date-desc");
+  const [inputSearch, setInputSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
-  // ── Actions ────────────────────────────────────────────────────────────────
-  const update = (id, status) =>
-    setData((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)));
+  // Modals
+  const [modal, setModal] = useState(null); // 'view' | 'status' | 'cancel'
+  const [selectedAppt, setSelectedAppt] = useState(null);
+  const [saving, setSaving] = useState(false);
 
-  // ── Tab counter ───────────────────────────────────────────────────────────
-  const count = (tab) => {
-    if (tab === "All") return data.length;
-    if (tab === "Today") return data.filter((a) => a.date === todayStr).length;
-    if (tab === "Upcoming")
-      return data.filter((a) => new Date(a.date) > today && a.date !== todayStr)
-        .length;
-    if (tab === "Completed")
-      return data.filter((a) => a.status === "completed").length;
-    if (tab === "Cancelled")
-      return data.filter((a) => a.status === "cancelled").length;
-    return 0;
+  // 1. Fetch Appointments
+  const fetchAppointments = async () => {
+    try {
+      setLoading(true);
+      const params = {
+        page: currentPage + 1, // backend 1-indexed
+        limit: PAGE_LIMIT,
+      };
+
+      if (search) params.search = search;
+      if (filterStatus) params.status = filterStatus;
+      if (fromDate) params.fromDate = fromDate;
+      if (toDate) params.toDate = toDate;
+
+      const res = await appointmentService.adminGetAppointments(params);
+
+      const respData = res.data?.data;
+
+      if (Array.isArray(respData)) {
+        setAppointments(respData);
+        setTotalPages(res.data?.meta?.totalPages ?? 1);
+        setTotalCount(res.data?.meta?.total ?? 0);
+      } else {
+        setAppointments(respData?.items || respData?.appointments || []);
+        const metaObj = respData?.meta || respData?.pagination || res.data?.meta || {};
+        setTotalPages(metaObj.totalPages ?? 1);
+        setTotalCount(metaObj.totalItems ?? metaObj.total ?? 0);
+      }
+    } catch (err) {
+      console.error("Failed to fetch appointments", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // ── Summary counts ────────────────────────────────────────────────────────
-  const todayData = data.filter((a) => a.date === todayStr);
-  const summary = [
-    {
-      label: "Total Today",
-      value: todayData.length,
-      icon: BsCalendar2WeekFill,
-      cls: "s-teal",
-    },
-    {
-      label: "Confirmed",
-      value: todayData.filter((a) => a.status === "confirmed").length,
-      icon: FaCheckCircle,
-      cls: "s-green",
-    },
-    {
-      label: "Pending",
-      value: todayData.filter((a) => a.status === "pending").length,
-      icon: FaClock,
-      cls: "s-amber",
-    },
-    {
-      label: "Cancelled",
-      value: todayData.filter((a) => a.status === "cancelled").length,
-      icon: FaBan,
-      cls: "s-danger",
-    },
-  ];
+  useEffect(() => {
+    fetchAppointments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, search, filterStatus, fromDate, toDate]);
 
-  // ── Filter + sort pipeline ────────────────────────────────────────────────
-  const filtered = useMemo(() => {
-    let list = [...data];
+  // 2. Handlers
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setSearch(inputSearch);
+    setCurrentPage(0);
+  };
 
-    // Tab
-    if (activeTab === "Today") list = list.filter((a) => a.date === todayStr);
-    if (activeTab === "Upcoming")
-      list = list.filter(
-        (a) => new Date(a.date) > today && a.date !== todayStr,
-      );
-    if (activeTab === "Completed")
-      list = list.filter((a) => a.status === "completed");
-    if (activeTab === "Cancelled")
-      list = list.filter((a) => a.status === "cancelled");
+  const handleFilterChange = () => {
+    setCurrentPage(0);
+    // Filters are already tracked in state and trigger useEffect
+  };
 
-    // Type
-    if (filterType !== "all") list = list.filter((a) => a.type === filterType);
+  const handlePageChange = (pageIndex) => {
+    setCurrentPage(pageIndex);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
-    // Hospital
-    if (filterHosp !== "all")
-      list = list.filter((a) => a.hospital === filterHosp);
+  const closeModal = () => {
+    setModal(null);
+    setSelectedAppt(null);
+  };
 
-    // Search
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(
-        (a) =>
-          a.patient.toLowerCase().includes(q) ||
-          a.doctor.toLowerCase().includes(q),
-      );
+  const openModal = (type, appt) => {
+    setSelectedAppt(appt);
+    setModal(type);
+  };
+
+  // 3. API Actions
+  const handleSaveStatus = async (id, newStatus) => {
+    setSaving(true);
+    try {
+      await appointmentService.adminUpdateAppointmentStatus(id, { status: newStatus });
+      closeModal();
+      fetchAppointments();
+    } catch (err) {
+      console.error("Failed to update status", err);
+      alert(err?.response?.data?.message || "Failed to update status. See console.");
+    } finally {
+      setSaving(false);
     }
+  };
 
-    // Sort
-    if (sortBy === "date-desc")
-      list.sort((a, b) => new Date(b.date) - new Date(a.date));
-    if (sortBy === "date-asc")
-      list.sort((a, b) => new Date(a.date) - new Date(b.date));
-    if (sortBy === "name-asc")
-      list.sort((a, b) => a.patient.localeCompare(b.patient));
-
-    return list;
-  }, [data, activeTab, filterType, filterHosp, search, sortBy]);
+  const handleConfirmCancel = async (id, reason) => {
+    setSaving(true);
+    try {
+      await appointmentService.adminCancelAppointment(id, { cancelReason: reason });
+      closeModal();
+      fetchAppointments();
+    } catch (err) {
+      console.error("Failed to cancel appointment", err);
+      alert(err?.response?.data?.message || "Failed to cancel appointment. See console.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="admin-appts">
       {/* Header */}
       <div className="appts-header">
         <div>
-          <h1 className="appts-title">Appointments Management</h1>
+          <h1 className="appts-title">Quản lý Lịch hẹn</h1>
           <p className="appts-sub">
-            Monitor and manage all patient appointments.
+            Quản lý toàn bộ lịch hẹn hệ thống, cập nhật trạng thái và hủy lịch.
           </p>
         </div>
-        <span className="appts-today-badge">
-          <BsCalendar2WeekFill /> {count("Today")} today
-        </span>
+        <div className="appts-header__right">
+          <span className="appts-badge">
+            <FaCalendarAlt /> {totalCount} lịch hẹn
+          </span>
+        </div>
       </div>
 
-      {/* Summary */}
-      <div className="summary-row">
-        {summary.map((s) => (
-          <SummaryCard key={s.label} {...s} />
-        ))}
+      {/* Toolbar / Search */}
+      <div className="card shadow-sm border-0 mb-4 p-3 bg-white">
+        <div className="row g-2 align-items-center">
+          <div className="col-md-4">
+            <form onSubmit={handleSearchSubmit}>
+              <div className="input-group">
+                <span className="input-group-text bg-light border-end-0"><FaSearch className="text-muted" /></span>
+                <input
+                  type="text"
+                  className="form-control border-start-0 bg-light"
+                  placeholder="Tìm kiếm bệnh nhân, bác sĩ..."
+                  value={inputSearch}
+                  onChange={e => setInputSearch(e.target.value)}
+                />
+                <button type="submit" className="btn btn-primary px-3" style={{ backgroundColor: "#0ba3a3", borderColor: "#0ba3a3" }}>Tìm</button>
+              </div>
+            </form>
+          </div>
+          <div className="col-md-2">
+            <select className="form-select" value={filterStatus} onChange={(e) => { setFilterStatus(e.target.value); handleFilterChange(); }}>
+              <option value="">Tất cả trạng thái</option>
+              {Object.entries(STATUS_CFG).map(([key, cfg]) => (
+                <option key={key} value={key}>{cfg.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="col-md-3">
+            <div className="input-group">
+              <span className="input-group-text bg-light text-muted">Từ</span>
+              <input type="date" className="form-control" value={fromDate} onChange={(e) => { setFromDate(e.target.value); handleFilterChange(); }} />
+            </div>
+          </div>
+          <div className="col-md-3">
+            <div className="input-group">
+              <span className="input-group-text bg-light text-muted">Đến</span>
+              <input type="date" className="form-control" value={toDate} onChange={(e) => { setToDate(e.target.value); handleFilterChange(); }} />
+            </div>
+          </div>
+        </div>
       </div>
-
-      {/* Tabs */}
-      <div className="appts-tabs">
-        {TABS.map((tab) => (
-          <button
-            key={tab}
-            className={`appts-tab ${activeTab === tab ? "active" : ""}`}
-            onClick={() => setActiveTab(tab)}
-          >
-            {tab} <span className="tab-count">{count(tab)}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Toolbar */}
-      <div className="appts-toolbar">
-        {/* Search */}
-        <div className="toolbar-search">
-          <FaSearch className="toolbar-search__icon" />
-          <input
-            placeholder="Search patient or doctor..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-
-        {/* Type filter */}
-        <div className="toolbar-select">
-          <FaFilter className="toolbar-select__icon" />
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-          >
-            <option value="all">All Types</option>
-            <option value="Check-up">Check-up</option>
-            <option value="Follow-up">Follow-up</option>
-            <option value="Consultation">Consultation</option>
-          </select>
-        </div>
-
-        {/* Hospital filter */}
-        <div className="toolbar-select">
-          <FaHospital className="toolbar-select__icon" />
-          <select
-            value={filterHosp}
-            onChange={(e) => setFilterHosp(e.target.value)}
-          >
-            <option value="all">All Hospitals</option>
-            <option value="TKT Medical">TKT Medical</option>
-            <option value="City Hospital">City Hospital</option>
-            <option value="Riverside">Riverside</option>
-          </select>
-        </div>
-
-        {/* Sort */}
-        <div className="toolbar-select">
-          <FaSortAmountDown className="toolbar-select__icon" />
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-            <option value="date-desc">Newest first</option>
-            <option value="date-asc">Oldest first</option>
-            <option value="name-asc">Patient A→Z</option>
-          </select>
-        </div>
-
-        {/* Export */}
-        <button className="btn-export">
-          <FaDownload /> Export
-        </button>
-      </div>
-
-      {/* Result count */}
-      <p className="appts-count">
-        Showing <strong>{filtered.length}</strong> appointment
-        {filtered.length !== 1 ? "s" : ""}
-      </p>
 
       {/* List */}
-      <div className="appts-list">
-        {filtered.length === 0 ? (
-          <div className="appts-empty">
-            <BsCalendar2WeekFill className="appts-empty__icon" />
-            <p>No appointments found.</p>
-            <span>Try adjusting your search or filters.</span>
+      <div className="appts-list position-relative" style={{ minHeight: "200px" }}>
+        {loading && (
+          <div className="position-absolute w-100 h-100 d-flex justify-content-center align-items-center" style={{ backgroundColor: "rgba(255,255,255,0.7)", zIndex: 10 }}>
+            <LoadingSpinner />
+          </div>
+        )}
+
+        {!loading && appointments.length === 0 ? (
+          <div className="appts-empty py-5 text-center text-muted">
+            <FaCalendarAlt className="appts-empty__icon mb-3" style={{ fontSize: '3rem', opacity: 0.2 }} />
+            <p className="mb-0 fs-5">Không tìm thấy lịch hẹn nào.</p>
+            <span className="small">Vui lòng thay đổi bộ lọc tìm kiếm.</span>
           </div>
         ) : (
-          filtered.map((appt) => (
+          appointments.map((appt) => (
             <AppointmentRow
               key={appt.id}
               appt={appt}
-              onConfirm={(id) => update(id, "confirmed")}
-              onDone={(id) => update(id, "completed")}
-              onCancel={(id) => update(id, "cancelled")}
+              onView={(a) => openModal("view", a)}
+              onEditStatus={(a) => openModal("status", a)}
+              onCancel={(a) => openModal("cancel", a)}
             />
           ))
         )}
       </div>
+
+      {/* Pagination */}
+      {!loading && totalPages > 1 && (
+        <div className="mt-4">
+          <nav aria-label="Page navigation">
+            <ul className="pagination justify-content-center mb-3">
+              <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 0}
+                >
+                  <FaChevronLeft className="me-1" /> Trước
+                </button>
+              </li>
+
+              {Array.from({ length: totalPages }, (_, i) => {
+                const start = Math.max(0, currentPage - 2);
+                const end = Math.min(totalPages, start + 5);
+                const adjustedStart = Math.max(0, end - 5);
+
+                if (i < adjustedStart || i >= end) return null;
+
+                return (
+                  <li
+                    key={i}
+                    className={`page-item ${i === currentPage ? "active" : ""}`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(i)}
+                    >
+                      {i + 1}
+                    </button>
+                  </li>
+                );
+              })}
+
+              <li className={`page-item ${currentPage === totalPages - 1 ? "disabled" : ""}`}>
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages - 1}
+                >
+                  Sau <FaChevronRight className="ms-1" />
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      )}
+
+      {/* Modals */}
+      <AppointmentViewModal
+        appt={modal === "view" ? selectedAppt : null}
+        onClose={closeModal}
+      />
+      <StatusModal
+        appt={modal === "status" ? selectedAppt : null}
+        onSave={handleSaveStatus}
+        onClose={closeModal}
+        saving={saving}
+      />
+      <CancelModal
+        appt={modal === "cancel" ? selectedAppt : null}
+        onConfirm={handleConfirmCancel}
+        onClose={closeModal}
+        saving={saving}
+      />
     </div>
   );
 }

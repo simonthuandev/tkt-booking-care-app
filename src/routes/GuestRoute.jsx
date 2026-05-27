@@ -24,6 +24,8 @@ const GuestRoute = {
         { path: "search", element: <Guest.SearchPage /> },
         { path: "about", element: <Guest.AboutPage /> },
         { path: "contact", element: <Guest.ContactPage /> },
+        { path: "payment-result", element: <Guest.PaymentResult /> },
+        { path: "test-payment", element: <Guest.TestPayment /> },
       ],
     },
   ]

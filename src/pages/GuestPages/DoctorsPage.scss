@@ -1,66 +1,372 @@
 @use "../../styles/variables" as v;
 
+// ─────────────────────────────────────────
+// Page wrapper
+// ─────────────────────────────────────────
 .doctors-page-container {
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 40px 20px 60px;
 }
 
-.btn-book-doc {
-  flex-shrink: 0;
-  background: linear-gradient(135deg, v.$primary 0%, #0fa39b 100%);
-  color: white;
-  border: none;
-  padding: 12px 32px;
-  border-radius: 50px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  white-space: nowrap;
+// ─────────────────────────────────────────
+// Page header
+// ─────────────────────────────────────────
+.doctors-page-header {
+  text-align: center;
+  margin-bottom: 40px;
+
+  .doctors-page-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #1a1a2e;
+    margin-bottom: 8px;
+
+    .highlight {
+      color: v.$primary;
+    }
+  }
+
+  .doctors-page-sub {
+    color: #6b7280;
+    font-size: 1rem;
+    margin: 0;
+  }
+}
+
+// ─────────────────────────────────────────
+// Doctors list
+// ─────────────────────────────────────────
+.doctors-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// ─────────────────────────────────────────
+// Doctor card row
+// ─────────────────────────────────────────
+.doctor-item {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 24px;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
 
   &:hover {
+    box-shadow: 0 8px 28px rgba(15, 163, 155, 0.14);
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(15, 160, 155, 0.3);
   }
 
-  a {
-    color: white;
-    text-decoration: none;
-    display: block;
+  // Avatar column
+  .doctor-item-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+
+    .doctor-item-avatar {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #e0faf8;
+    }
+
+    .doctor-item-badge {
+      position: absolute;
+      bottom: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+      white-space: nowrap;
+
+      &.available {
+        background: #d1fae5;
+        color: #065f46;
+      }
+
+      &.busy {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+    }
+  }
+
+  // Info column
+  .doctor-item-info {
+    flex: 1;
+    min-width: 0;
+
+    .doctor-item-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 6px;
+    }
+
+    .doctor-item-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 6px;
+      font-size: 0.875rem;
+      color: #6b7280;
+
+      .icon {
+        color: v.$primary;
+        margin-right: 4px;
+        flex-shrink: 0;
+      }
+
+      .doctor-item-spec,
+      .doctor-item-hospital {
+        display: flex;
+        align-items: center;
+      }
+    }
+
+    .doctor-item-schedule {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-bottom: 8px;
+
+      .working-days {
+        font-style: italic;
+      }
+    }
+
+    .doctor-item-footer {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+
+      .doctor-item-rating {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        .rating-text {
+          font-size: 0.8rem;
+          color: #6b7280;
+        }
+      }
+
+      .doctor-item-exp {
+        font-size: 0.8rem;
+        background: #eff6ff;
+        color: #1d4ed8;
+        padding: 2px 10px;
+        border-radius: 20px;
+        font-weight: 600;
+      }
+    }
+  }
+
+  // Right column – price + button
+  .doctor-item-right {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 120px;
+
+    .doctor-item-price {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: v.$primary;
+    }
+
+    .doctor-item-price-label {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-bottom: 4px;
+    }
+
+    .btn-view-doctor {
+      display: inline-block;
+      background: linear-gradient(135deg, v.$primary 0%, #0fa39b 100%);
+      color: #fff;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 50px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(15, 160, 155, 0.3);
+        color: #fff;
+      }
+    }
   }
 }
 
+// ─────────────────────────────────────────
+// Skeleton loading
+// ─────────────────────────────────────────
+.doctors-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.doctor-item-skeleton {
+  height: 130px;
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 16px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+// ─────────────────────────────────────────
+// Empty state
+// ─────────────────────────────────────────
+.doctors-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 20px;
+  color: #9ca3af;
+
+  .empty-icon {
+    margin-bottom: 16px;
+    opacity: 0.4;
+  }
+
+  p {
+    font-size: 1rem;
+    margin: 0;
+  }
+}
+
+// ─────────────────────────────────────────
+// Pagination
+// ─────────────────────────────────────────
+.doctors-pagination-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 48px;
+
+  .pagination-info {
+    font-size: 0.875rem;
+    color: #9ca3af;
+  }
+}
+
+.doctors-pagination {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+
+  .page-item {
+    .page-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      color: #374151;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+
+      &:hover {
+        background: #f0fdfb;
+        border-color: v.$primary;
+        color: v.$primary;
+      }
+    }
+
+    &.active .page-link {
+      background: linear-gradient(135deg, v.$primary 0%, #0fa39b 100%);
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(15, 163, 155, 0.3);
+    }
+
+    &.disabled .page-link {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    &.page-prev .page-link,
+    &.page-next .page-link {
+      font-size: 12px;
+    }
+  }
+}
+
+// ─────────────────────────────────────────
 // Responsive
+// ─────────────────────────────────────────
 @media (max-width: 768px) {
   .doctors-page-container {
-    padding: 24px 16px;
+    padding: 24px 16px 48px;
   }
 
   .doctor-item {
     flex-wrap: wrap;
     gap: 16px;
-    padding: 16px 12px;
-  }
+    padding: 16px;
 
-  .btn-book-doc {
-    padding: 10px 24px;
-    font-size: 13px;
-    flex-basis: 100%;
+    .doctor-item-right {
+      flex-direction: row;
+      align-items: center;
+      flex-basis: 100%;
+      justify-content: space-between;
+      padding-top: 12px;
+      border-top: 1px solid #f3f4f6;
+    }
   }
 }
 
 @media (max-width: 480px) {
-  .doctors-page-container {
-    padding: 16px 12px;
-  }
-
   .doctor-item {
     flex-direction: column;
-    text-align: center;
-  }
+    align-items: flex-start;
 
-  .btn-book-doc {
-    flex-basis: 100%;
+    .doctor-item-right {
+      flex-direction: column;
+      align-items: flex-start;
+      width: 100%;
+
+      .btn-view-doctor {
+        width: 100%;
+        text-align: center;
+      }
+    }
   }
 }

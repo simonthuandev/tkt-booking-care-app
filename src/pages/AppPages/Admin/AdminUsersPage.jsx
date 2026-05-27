@@ -1,36 +1,34 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // AdminUsersPage.jsx  —  Users Management CRUD
 // ─────────────────────────────────────────────────────────────────────────────
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import {
   FaUser,
-  FaPlus,
   FaEdit,
-  FaTrash,
   FaSearch,
-  FaFilter,
-  FaSortAmountDown,
   FaEye,
   FaUserMd,
   FaUserInjured,
   FaUserShield,
-  FaCheckCircle,
-  FaTimesCircle,
   FaBan,
   FaUnlock,
   FaEnvelope,
-  FaPhone,
   FaCalendarAlt,
   FaExclamationTriangle,
-  FaLock,
-  FaEyeSlash,
+  FaUserCheck,
+  FaChevronLeft,
+  FaChevronRight
 } from "react-icons/fa";
 import { BsPersonBadgeFill } from "react-icons/bs";
+import { adminSystemService } from "../../../api/appService";
+import LoadingSpinner from "../../../components/Common/LoadingSpinner";
 import "./AdminUsersPage.scss";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONFIG
 // ─────────────────────────────────────────────────────────────────────────────
+const PAGE_LIMIT = 12;
+
 const ROLE_CFG = {
   admin: {
     label: "Admin",
@@ -46,13 +44,6 @@ const ROLE_CFG = {
     avatarBg: "#0ba3a3",
     icon: FaUserMd,
   },
-  patient: {
-    label: "Patient",
-    color: "#0d2b45",
-    bg: "#e6eef5",
-    avatarBg: "#534ab7",
-    icon: FaUserInjured,
-  },
   user: {
     label: "User",
     color: "#6b7f8e",
@@ -62,182 +53,42 @@ const ROLE_CFG = {
   },
 };
 
-const STATUS_CFG = {
-  active: { label: "Active", cls: "st-active" },
-  inactive: { label: "Inactive", cls: "st-inactive" },
-  banned: { label: "Banned", cls: "st-banned" },
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MOCK DATA — 10 users
-// ─────────────────────────────────────────────────────────────────────────────
-const INIT_USERS = [
-  {
-    id: 1,
-    firstName: "Nguyen Van",
-    lastName: "An",
-    email: "dr.an@tkt.com",
-    phone: "+84 912 345 678",
-    role: "doctor",
-    status: "active",
-    created: "Jan 15, 2024",
-    lastLogin: "Apr 20, 2026",
-    notes: "Senior cardiologist. Top rated.",
-    appointments: 312,
-  },
-  {
-    id: 2,
-    firstName: "Le Thi",
-    lastName: "Bich",
-    email: "dr.bich@tkt.com",
-    phone: "+84 909 876 543",
-    role: "doctor",
-    status: "active",
-    created: "Mar 10, 2024",
-    lastLogin: "Apr 19, 2026",
-    notes: "Neurology specialist. Excellent patient reviews.",
-    appointments: 287,
-  },
-  {
-    id: 3,
-    firstName: "Admin",
-    lastName: "TKT",
-    email: "admin@tkt.com",
-    phone: "+84 900 000 001",
-    role: "admin",
-    status: "active",
-    created: "Jan 1, 2024",
-    lastLogin: "Apr 20, 2026",
-    notes: "System administrator. Full access.",
-    appointments: 0,
-  },
-  {
-    id: 4,
-    firstName: "Tran Thi",
-    lastName: "Mai",
-    email: "mai.tran@email.com",
-    phone: "+84 912 111 222",
-    role: "patient",
-    status: "active",
-    created: "Feb 20, 2024",
-    lastLogin: "Apr 17, 2026",
-    notes: "Regular patient. Hypertension management.",
-    appointments: 18,
-  },
-  {
-    id: 5,
-    firstName: "Le Van",
-    lastName: "Binh",
-    email: "binh.le@email.com",
-    phone: "+84 909 333 444",
-    role: "patient",
-    status: "active",
-    created: "Mar 5, 2024",
-    lastLogin: "Apr 17, 2026",
-    notes: "Cardiac patient. Requires close monitoring.",
-    appointments: 12,
-  },
-  {
-    id: 6,
-    firstName: "Pham Duc",
-    lastName: "Thanh",
-    email: "thanh@email.com",
-    phone: "+84 936 555 666",
-    role: "user",
-    status: "inactive",
-    created: "Apr 1, 2024",
-    lastLogin: "Apr 10, 2026",
-    notes: "Registered but no bookings yet.",
-    appointments: 0,
-  },
-  {
-    id: 7,
-    firstName: "Hoang Thi",
-    lastName: "Thu",
-    email: "thu.hoang@email.com",
-    phone: "+84 903 777 888",
-    role: "patient",
-    status: "active",
-    created: "Jan 28, 2024",
-    lastLogin: "Apr 15, 2026",
-    notes: "Valve disease monitoring patient.",
-    appointments: 9,
-  },
-  {
-    id: 8,
-    firstName: "Dang Van",
-    lastName: "Long",
-    email: "long.dang@email.com",
-    phone: "+84 945 999 000",
-    role: "user",
-    status: "banned",
-    created: "Feb 14, 2024",
-    lastLogin: "Mar 1, 2026",
-    notes: "Banned: repeated no-shows and abusive behavior.",
-    appointments: 2,
-  },
-  {
-    id: 9,
-    firstName: "Bui Thi",
-    lastName: "Huong",
-    email: "huong.bui@email.com",
-    phone: "+84 908 112 233",
-    role: "patient",
-    status: "active",
-    created: "Mar 22, 2024",
-    lastLogin: "Apr 10, 2026",
-    notes: "Long-term AF management patient.",
-    appointments: 14,
-  },
-  {
-    id: 10,
-    firstName: "Tran Van",
-    lastName: "Nam",
-    email: "nam.admin@tkt.com",
-    phone: "+84 900 000 002",
-    role: "admin",
-    status: "active",
-    created: "Jan 1, 2024",
-    lastLogin: "Apr 20, 2026",
-    notes: "Content and news manager.",
-    appointments: 0,
-  },
-];
-
-const EMPTY_FORM = {
-  firstName: "",
-  lastName: "",
-  email: "",
-  phone: "",
-  role: "user",
-  status: "active",
-  password: "",
-  confirmPassword: "",
-  notes: "",
-};
-
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
 const getInitials = (firstName, lastName) =>
-  `${firstName.trim().split(" ").pop().charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  `${firstName?.trim().split(" ").pop().charAt(0) || ""}${lastName?.charAt(0) || ""}`.toUpperCase() || "?";
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return "N/A";
+  return new Date(dateStr).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  });
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SUB-COMPONENT: UserRow
 // ─────────────────────────────────────────────────────────────────────────────
-const UserRow = ({ u, onView, onEdit, onBan, onUnban, onDelete }) => {
+const UserRow = ({ u, onView, onEditRole, onToggleBan }) => {
   const role = ROLE_CFG[u.role] || ROLE_CFG.user;
-  const status = STATUS_CFG[u.status] || STATUS_CFG.active;
   const initials = getInitials(u.firstName, u.lastName);
+
+  // isActive mapping
+  const statusCls = u.isActive ? "st-active" : "st-banned";
+  const statusLabel = u.isActive ? "Active" : "Banned";
 
   return (
     <div className="user-row">
-      {/* Avatar */}
-      <div className="user-row__avatar" style={{ background: role.avatarBg }}>
-        {initials}
-      </div>
+      {u.avatar ? (
+        <img src={u.avatar} alt="Avatar" className="user-row__avatar" style={{ objectFit: "cover" }} />
+      ) : (
+        <div className="user-row__avatar" style={{ background: role.avatarBg }}>
+          {initials}
+        </div>
+      )}
 
-      {/* Name + email */}
       <div className="user-row__identity">
         <p className="user-row__name">
           {u.firstName} {u.lastName}
@@ -247,7 +98,6 @@ const UserRow = ({ u, onView, onEdit, onBan, onUnban, onDelete }) => {
         </p>
       </div>
 
-      {/* Role badge */}
       <span
         className="user-role-badge"
         style={{ color: role.color, background: role.bg }}
@@ -255,266 +105,109 @@ const UserRow = ({ u, onView, onEdit, onBan, onUnban, onDelete }) => {
         <role.icon /> {role.label}
       </span>
 
-      {/* Phone */}
-      <span className="user-row__phone">
-        <FaPhone /> {u.phone}
-      </span>
-
-      {/* Created */}
       <div className="user-row__dates">
         <span>
-          <FaCalendarAlt /> {u.created}
+          <FaCalendarAlt /> Joined: {formatDate(u.createdAt)}
         </span>
-        <span className="user-row__last-login">Login: {u.lastLogin}</span>
       </div>
 
-      {/* Status */}
-      <span className={`user-status-badge ${status.cls}`}>{status.label}</span>
+      <span className={`user-status-badge ${statusCls}`}>{statusLabel}</span>
 
-      {/* Actions */}
       <div className="user-row__actions">
-        <button
-          className="user-btn user-btn--view"
-          onClick={() => onView(u)}
-          title="View"
-        >
+        <button className="user-btn user-btn--view" onClick={() => onView(u)} title="View Detail">
           <FaEye />
         </button>
-        <button
-          className="user-btn user-btn--edit"
-          onClick={() => onEdit(u)}
-          title="Edit"
-        >
+        <button className="user-btn user-btn--edit" onClick={() => onEditRole(u)} title="Change Role">
           <FaEdit />
         </button>
-        {u.status !== "banned" ? (
-          <button
-            className="user-btn user-btn--ban"
-            onClick={() => onBan(u.id)}
-            title="Ban"
-          >
+        {u.isActive ? (
+          <button className="user-btn user-btn--ban" onClick={() => onToggleBan(u)} title="Ban User">
             <FaBan />
           </button>
         ) : (
-          <button
-            className="user-btn user-btn--unban"
-            onClick={() => onUnban(u.id)}
-            title="Unban"
-          >
+          <button className="user-btn user-btn--unban" onClick={() => onToggleBan(u)} title="Unban User">
             <FaUnlock />
           </button>
         )}
-        <button
-          className="user-btn user-btn--delete"
-          onClick={() => onDelete(u)}
-          title="Delete"
-        >
-          <FaTrash />
-        </button>
       </div>
     </div>
   );
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: UserFormModal (Add / Edit)
+// SUB-COMPONENT: UserRoleModal (Change Role)
 // ─────────────────────────────────────────────────────────────────────────────
-const UserFormModal = ({ mode, form, onChange, onSave, onClose }) => {
-  if (mode !== "add" && mode !== "edit") return null;
-  const isEdit = mode === "edit";
-  const role = ROLE_CFG[form.role] || ROLE_CFG.user;
-  const initials =
-    form.firstName || form.lastName
-      ? getInitials(form.firstName || "?", form.lastName || "?")
-      : "?";
-
-  const [showPw, setShowPw] = useState(false);
+const UserRoleModal = ({ u, onSave, onClose, saving }) => {
+  if (!u) return null;
+  const [role, setRole] = useState(u.role || "user");
+  const currentRoleCfg = ROLE_CFG[u.role] || ROLE_CFG.user;
 
   return (
     <>
       <div className="modal-backdrop fade show" onClick={onClose} />
       <div className="modal fade show d-block" tabIndex="-1">
-        <div className="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+        <div className="modal-dialog modal-sm modal-dialog-centered">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">
-                <BsPersonBadgeFill
-                  className="me-2"
-                  style={{ color: "#0ba3a3" }}
-                />
-                {isEdit ? "Edit User" : "Add New User"}
-              </h5>
-              <button className="btn-close" onClick={onClose} />
+              <h5 className="modal-title">Change User Role</h5>
+              <button className="btn-close" onClick={onClose} disabled={saving} />
             </div>
-
             <div className="modal-body">
-              {/* Avatar preview */}
-              <div className="user-form-avatar-row">
-                <div
-                  className="user-form-avatar"
-                  style={{ background: role.avatarBg }}
-                >
-                  {initials}
-                </div>
-                <div>
-                  <p className="user-form-avatar__name">
-                    {form.firstName || form.lastName
-                      ? `${form.firstName} ${form.lastName}`.trim()
-                      : "Preview Name"}
-                  </p>
-                  <span
-                    className="user-role-badge"
-                    style={{ color: role.color, background: role.bg }}
-                  >
-                    <role.icon /> {role.label}
-                  </span>
-                </div>
+              <div className="text-center mb-3">
+                <span className="user-role-badge mb-2 d-inline-flex" style={{ color: currentRoleCfg.color, background: currentRoleCfg.bg }}>
+                   Current: {currentRoleCfg.label}
+                </span>
+                <p className="mb-0 fw-semibold">{u.firstName} {u.lastName}</p>
+                <small className="text-muted">{u.email}</small>
               </div>
-
-              <div className="row g-3">
-                {/* Name */}
-                <div className="col-md-6">
-                  <label className="form-label">First Name</label>
-                  <input
-                    className="form-control"
-                    name="firstName"
-                    value={form.firstName}
-                    onChange={onChange}
-                    placeholder="Nguyen Van"
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label">Last Name</label>
-                  <input
-                    className="form-control"
-                    name="lastName"
-                    value={form.lastName}
-                    onChange={onChange}
-                    placeholder="An"
-                  />
-                </div>
-
-                {/* Email + Phone */}
-                <div className="col-md-6">
-                  <label className="form-label">Email</label>
-                  <input
-                    className="form-control"
-                    name="email"
-                    type="email"
-                    value={form.email}
-                    onChange={onChange}
-                    placeholder="user@email.com"
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label">Phone</label>
-                  <input
-                    className="form-control"
-                    name="phone"
-                    value={form.phone}
-                    onChange={onChange}
-                    placeholder="+84 912 345 678"
-                  />
-                </div>
-
-                {/* Role + Status */}
-                <div className="col-md-6">
-                  <label className="form-label">Role</label>
-                  <select
-                    className="form-select"
-                    name="role"
-                    value={form.role}
-                    onChange={onChange}
-                  >
-                    {Object.entries(ROLE_CFG).map(([key, cfg]) => (
-                      <option key={key} value={key}>
-                        {cfg.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label">Status</label>
-                  <select
-                    className="form-select"
-                    name="status"
-                    value={form.status}
-                    onChange={onChange}
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="banned">Banned</option>
-                  </select>
-                </div>
-
-                {/* Password — chỉ hiện khi Add */}
-                {!isEdit && (
-                  <>
-                    <div className="col-md-6">
-                      <label className="form-label">Password</label>
-                      <div className="pw-input-wrap">
-                        <input
-                          className="form-control"
-                          name="password"
-                          type={showPw ? "text" : "password"}
-                          value={form.password}
-                          onChange={onChange}
-                          placeholder="Min. 8 characters"
-                        />
-                        <button
-                          type="button"
-                          className="pw-toggle"
-                          onClick={() => setShowPw(!showPw)}
-                        >
-                          {showPw ? <FaEyeSlash /> : <FaEye />}
-                        </button>
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label">Confirm Password</label>
-                      <input
-                        className="form-control"
-                        name="confirmPassword"
-                        type="password"
-                        value={form.confirmPassword}
-                        onChange={onChange}
-                        placeholder="Repeat password"
-                      />
-                    </div>
-                  </>
-                )}
-
-                {/* Notes */}
-                <div className="col-12">
-                  <label className="form-label">Notes</label>
-                  <textarea
-                    className="form-control"
-                    name="notes"
-                    rows={2}
-                    value={form.notes}
-                    onChange={onChange}
-                    placeholder="Optional notes about this user..."
-                  />
-                </div>
-              </div>
+              <label className="form-label">New Role</label>
+              <select className="form-select" value={role} onChange={e => setRole(e.target.value)} disabled={saving}>
+                {Object.entries(ROLE_CFG).map(([key, cfg]) => (
+                  <option key={key} value={key}>{cfg.label}</option>
+                ))}
+              </select>
             </div>
-
-            <div className="modal-footer">
-              <button className="btn btn-light border" onClick={onClose}>
-                Cancel
+            <div className="modal-footer border-0 pt-0">
+              <button className="btn btn-light border w-100 mb-2" onClick={onClose} disabled={saving}>Cancel</button>
+              <button className="btn btn-save w-100 m-0" onClick={() => onSave(u.id, role)} disabled={saving}>
+                {saving ? "Saving..." : "Save Role"}
               </button>
-              <button className="btn btn-save" onClick={onSave}>
-                {isEdit ? (
-                  <>
-                    <FaEdit className="me-1" />
-                    Update
-                  </>
-                ) : (
-                  <>
-                    <FaPlus className="me-1" />
-                    Save User
-                  </>
-                )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUB-COMPONENT: BanConfirmModal
+// ─────────────────────────────────────────────────────────────────────────────
+const BanConfirmModal = ({ u, onConfirm, onClose, saving }) => {
+  if (!u) return null;
+  const isBanning = u.isActive;
+
+  return (
+    <>
+      <div className="modal-backdrop fade show" onClick={onClose} />
+      <div className="modal fade show d-block" tabIndex="-1">
+        <div className="modal-dialog modal-sm modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-body text-center py-4">
+              <div className="delete-icon-wrap" style={{ background: isBanning ? '#fef2f2' : '#e6f9f0', color: isBanning ? '#e24b4a' : '#1a9e5c' }}>
+                {isBanning ? <FaBan /> : <FaUnlock />}
+              </div>
+              <h5 className="delete-title mt-3">{isBanning ? "Ban User?" : "Unban User?"}</h5>
+              <p className="delete-desc">
+                {isBanning ? "Are you sure you want to ban this user?" : "Are you sure you want to restore access to this user?"}
+                <br />
+                <strong>{u.firstName} {u.lastName}</strong>
+              </p>
+            </div>
+            <div className="modal-footer justify-content-center gap-2 border-0 pt-0 pb-4">
+              <button className="btn btn-light border px-4" onClick={onClose} disabled={saving}>Cancel</button>
+              <button className={`btn px-4 ${isBanning ? 'btn-danger' : 'btn-success'}`} onClick={() => onConfirm(u)} disabled={saving}>
+                {saving ? "Processing..." : (isBanning ? "Yes, Ban" : "Yes, Unban")}
               </button>
             </div>
           </div>
@@ -527,11 +220,10 @@ const UserFormModal = ({ mode, form, onChange, onSave, onClose }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // SUB-COMPONENT: UserViewModal
 // ─────────────────────────────────────────────────────────────────────────────
-const UserViewModal = ({ u, onEdit, onClose }) => {
+const UserViewModal = ({ u, onClose }) => {
   if (!u) return null;
   const role = ROLE_CFG[u.role] || ROLE_CFG.user;
-  const status = STATUS_CFG[u.status] || STATUS_CFG.active;
-  const initials = getInitials(u.firstName, u.lastName);
+  const defaultInitial = getInitials(u.firstName, u.lastName);
 
   return (
     <>
@@ -540,127 +232,66 @@ const UserViewModal = ({ u, onEdit, onClose }) => {
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">User Profile</h5>
+              <h5 className="modal-title">User Profile Details</h5>
               <button className="btn-close" onClick={onClose} />
             </div>
 
             <div className="modal-body">
-              {/* Avatar + name */}
               <div className="user-view-header">
-                <div
-                  className="user-view-avatar"
-                  style={{ background: role.avatarBg }}
-                >
-                  {initials}
-                </div>
+                {u.avatar ? (
+                  <img src={u.avatar} alt="Avatar" className="user-view-avatar" style={{ objectFit: "cover" }} />
+                ) : (
+                  <div className="user-view-avatar" style={{ background: role.avatarBg }}>
+                    {defaultInitial}
+                  </div>
+                )}
                 <div>
-                  <h4 className="user-view-name">
-                    {u.firstName} {u.lastName}
-                  </h4>
-                  <div className="d-flex align-items-center gap-2 flex-wrap">
-                    <span
-                      className="user-role-badge"
-                      style={{ color: role.color, background: role.bg }}
-                    >
+                  <h4 className="user-view-name">{u.firstName} {u.lastName}</h4>
+                  <div className="d-flex align-items-center gap-2 mt-1">
+                    <span className="user-role-badge" style={{ color: role.color, background: role.bg }}>
                       <role.icon /> {role.label}
                     </span>
-                    <span className={`user-status-badge ${status.cls}`}>
-                      {status.label}
+                    <span className={`user-status-badge ${u.isActive ? "st-active" : "st-banned"}`}>
+                      {u.isActive ? "Active" : "Banned"}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Info grid */}
-              <div className="row g-2 mt-3">
-                {[
-                  { icon: FaEnvelope, label: "Email", val: u.email },
-                  { icon: FaPhone, label: "Phone", val: u.phone },
-                  {
-                    icon: FaCalendarAlt,
-                    label: "Member Since",
-                    val: u.created,
-                  },
-                  {
-                    icon: FaCalendarAlt,
-                    label: "Last Login",
-                    val: u.lastLogin,
-                  },
-                  {
-                    icon: BsPersonBadgeFill,
-                    label: "Appointments",
-                    val: `${u.appointments} total`,
-                  },
-                ].map(({ icon: Icon, label, val }) => (
-                  <div key={label} className="col-12">
-                    <div className="user-view-info-item">
-                      <Icon className="view-info-icon" />
-                      <div>
-                        <p className="view-info-label">{label}</p>
-                        <p className="view-info-val">{val}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Notes */}
-              {u.notes && (
-                <div className="user-view-notes">
-                  <p className="user-view-notes__title">Notes</p>
-                  <p className="user-view-notes__text">{u.notes}</p>
+              <div className="row g-3 mt-4">
+                <div className="col-12">
+                  <small className="text-muted d-block mb-1">Email</small>
+                  <div className="p-2 border rounded bg-light">{u.email}</div>
                 </div>
-              )}
-            </div>
+                
+                <div className="col-6">
+                  <small className="text-muted d-block mb-1">Account ID</small>
+                  <div className="p-2 border rounded bg-light text-truncate" title={u.id}>
+                    <small>{u.id}</small>
+                  </div>
+                </div>
+                
+                <div className="col-6">
+                  <small className="text-muted d-block mb-1">Provider</small>
+                  <div className="p-2 border rounded bg-light text-capitalize">{u.provider || "Local"}</div>
+                </div>
 
-            <div className="modal-footer">
-              <button className="btn btn-light border" onClick={onClose}>
-                Close
-              </button>
-              <button className="btn btn-save" onClick={onEdit}>
-                <FaEdit className="me-1" /> Edit User
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-};
+                <div className="col-6">
+                  <small className="text-muted d-block mb-1">Email Verified</small>
+                  <div className="p-2 border rounded bg-light">
+                    {u.isEmailVerified ? <span className="text-success"><FaUserCheck className="me-1"/> Yes</span> : <span className="text-danger">No</span>}
+                  </div>
+                </div>
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: DeleteConfirmModal
-// ─────────────────────────────────────────────────────────────────────────────
-const DeleteConfirmModal = ({ u, onConfirm, onClose }) => {
-  if (!u) return null;
-  return (
-    <>
-      <div className="modal-backdrop fade show" onClick={onClose} />
-      <div className="modal fade show d-block" tabIndex="-1">
-        <div className="modal-dialog modal-sm modal-dialog-centered">
-          <div className="modal-content">
-            <div className="modal-body text-center py-4">
-              <div className="delete-icon-wrap">
-                <FaExclamationTriangle />
+                <div className="col-6">
+                  <small className="text-muted d-block mb-1">Joined Date</small>
+                  <div className="p-2 border rounded bg-light">{formatDate(u.createdAt)}</div>
+                </div>
               </div>
-              <h5 className="delete-title">Delete User?</h5>
-              <p className="delete-desc">
-                Are you sure you want to delete
-                <br />
-                <strong>
-                  {u.firstName} {u.lastName}
-                </strong>
-                ?<br />
-                This action cannot be undone.
-              </p>
             </div>
-            <div className="modal-footer justify-content-center gap-2 border-0 pt-0 pb-4">
-              <button className="btn btn-light border px-4" onClick={onClose}>
-                Cancel
-              </button>
-              <button className="btn btn-danger px-4" onClick={onConfirm}>
-                <FaTrash className="me-1" /> Delete
-              </button>
+
+            <div className="modal-footer border-0">
+              <button className="btn btn-light border w-100" onClick={onClose}>Close</button>
             </div>
           </div>
         </div>
@@ -673,253 +304,238 @@ const DeleteConfirmModal = ({ u, onConfirm, onClose }) => {
 // MAIN PAGE
 // ─────────────────────────────────────────────────────────────────────────────
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState(INIT_USERS);
-  const [modal, setModal] = useState(null);
-  const [selected, setSelected] = useState(null);
-  const [form, setForm] = useState(EMPTY_FORM);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
 
+  // Search
   const [search, setSearch] = useState("");
-  const [filterRole, setFilterRole] = useState("all");
-  const [filterStat, setFilterStat] = useState("all");
-  const [sortBy, setSortBy] = useState("name");
+  const [inputSearch, setInputSearch] = useState("");
 
-  // ── Modal helpers ─────────────────────────────────────────────────────────
-  const openAdd = () => {
-    setForm(EMPTY_FORM);
-    setSelected(null);
-    setModal("add");
+  // Modals
+  const [modal, setModal] = useState(null); // 'view' | 'role' | 'ban'
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  // 1. Fetch Users
+  const fetchUsers = async (pageIndex = 0, searchQuery = "") => {
+    try {
+      setLoading(true);
+      const res = await adminSystemService.getUsers({
+        page: pageIndex + 1, // backend 1-indexed
+        limit: PAGE_LIMIT,
+        search: searchQuery
+      });
+      
+      const respData = res.data?.data;
+      
+      // Fallback matching response types
+      if (Array.isArray(respData)) {
+         setUsers(respData);
+         setTotalPages(res.data?.meta?.totalPages ?? 1);
+         setTotalCount(res.data?.meta?.total ?? 0);
+      } else {
+         setUsers(respData?.users || respData?.items || []);
+         const metaObj = respData?.meta || respData?.pagination || res.data?.meta || {};
+         setTotalPages(metaObj.totalPages ?? 1);
+         setTotalCount(metaObj.totalItems ?? metaObj.total ?? 0);
+      }
+    } catch (err) {
+      console.error("Failed to fetch users", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const openEdit = (u) => {
-    setForm({
-      firstName: u.firstName,
-      lastName: u.lastName,
-      email: u.email,
-      phone: u.phone,
-      role: u.role,
-      status: u.status,
-      password: "",
-      confirmPassword: "",
-      notes: u.notes,
-    });
-    setSelected(u);
-    setModal("edit");
+  useEffect(() => {
+    fetchUsers(currentPage, search);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, search]);
+
+  // 2. Handlers
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setSearch(inputSearch);
+    setCurrentPage(0);
   };
 
-  const openView = (u) => {
-    setSelected(u);
-    setModal("view");
+  const handlePageChange = (pageIndex) => {
+    setCurrentPage(pageIndex);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
-  const openDelete = (u) => {
-    setSelected(u);
-    setModal("delete");
-  };
+
   const closeModal = () => {
     setModal(null);
-    setSelected(null);
+    setSelectedUser(null);
   };
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const openModal = (type, u) => {
+    setSelectedUser(u);
+    setModal(type);
+  };
 
-  // ── Save ──────────────────────────────────────────────────────────────────
-  const handleSave = () => {
-    const { password, confirmPassword, ...rest } = form;
-    if (modal === "add") {
-      setUsers((prev) => [
-        ...prev,
-        {
-          ...rest,
-          id: Date.now(),
-          appointments: 0,
-          created: new Date().toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          }),
-          lastLogin: "Never",
-        },
-      ]);
-    } else {
-      setUsers((prev) =>
-        prev.map((u) => (u.id === selected.id ? { ...u, ...rest } : u)),
-      );
+  // 3. API Actions
+  const handleSaveRole = async (userId, newRole) => {
+    setSaving(true);
+    try {
+      await adminSystemService.updateUserRole(userId, { role: newRole });
+      closeModal();
+      fetchUsers(currentPage, search);
+    } catch (err) {
+      console.error("Failed to update role", err);
+      alert(err?.response?.data?.message || "Failed to update role. See console.");
+    } finally {
+      setSaving(false);
     }
-    closeModal();
   };
 
-  // ── Ban / Unban ───────────────────────────────────────────────────────────
-  const handleBan = (id) =>
-    setUsers((prev) =>
-      prev.map((u) => (u.id === id ? { ...u, status: "banned" } : u)),
-    );
-  const handleUnban = (id) =>
-    setUsers((prev) =>
-      prev.map((u) => (u.id === id ? { ...u, status: "active" } : u)),
-    );
-
-  // ── Delete ────────────────────────────────────────────────────────────────
-  const handleDelete = () => {
-    setUsers((prev) => prev.filter((u) => u.id !== selected.id));
-    closeModal();
-  };
-
-  // ── Filter pipeline ───────────────────────────────────────────────────────
-  const filtered = useMemo(() => {
-    let list = [...users];
-    if (filterRole !== "all") list = list.filter((u) => u.role === filterRole);
-    if (filterStat !== "all")
-      list = list.filter((u) => u.status === filterStat);
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(
-        (u) =>
-          `${u.firstName} ${u.lastName}`.toLowerCase().includes(q) ||
-          u.email.toLowerCase().includes(q),
-      );
+  const handleConfirmBan = async (u) => {
+    setSaving(true);
+    try {
+      const newStatus = !u.isActive; // Toggle target
+      await adminSystemService.banUser(u.id, { isActive: newStatus });
+      closeModal();
+      fetchUsers(currentPage, search);
+    } catch (err) {
+      console.error("Failed to toggle ban", err);
+      alert(err?.response?.data?.message || "Failed to change user ban status. See console.");
+    } finally {
+      setSaving(false);
     }
-    if (sortBy === "name")
-      list.sort((a, b) => a.lastName.localeCompare(b.lastName));
-    if (sortBy === "newest") list.sort((a, b) => b.id - a.id);
-    if (sortBy === "login")
-      list.sort((a, b) => b.lastLogin.localeCompare(a.lastLogin));
-    return list;
-  }, [users, filterRole, filterStat, search, sortBy]);
-
-  // ── Summary ───────────────────────────────────────────────────────────────
-  const total = users.length;
-  const doctors = users.filter((u) => u.role === "doctor").length;
-  const patients = users.filter((u) => u.role === "patient").length;
-  const admins = users.filter((u) => u.role === "admin").length;
+  };
 
   return (
     <div className="admin-users">
       {/* Header */}
       <div className="users-header">
         <div>
-          <h1 className="users-title">Users Management</h1>
+          <h1 className="users-title">Quản lý tài khoản</h1>
           <p className="users-sub">
-            Manage system users, roles, and access control.
+            Quản lý tài khoản của người dùng, thay đổi quyền hoặc ban tài khoản
           </p>
         </div>
         <div className="users-header__right">
           <span className="users-badge">
-            <FaUser /> {total} users
+            <FaUser /> {totalCount} tài khoản
           </span>
-          <button className="btn-add-user" onClick={openAdd}>
-            <FaPlus /> Add User
-          </button>
         </div>
       </div>
 
-      {/* Summary */}
-      <div className="users-summary">
-        {[
-          { label: "Total Users", value: total, cls: "s-teal" },
-          { label: "Doctors", value: doctors, cls: "s-primary" },
-          { label: "Patients", value: patients, cls: "s-navy" },
-          { label: "Admins", value: admins, cls: "s-danger" },
-        ].map((s) => (
-          <div key={s.label} className={`users-summary__card ${s.cls}`}>
-            <p className="users-summary__value">{s.value}</p>
-            <p className="users-summary__label">{s.label}</p>
+      {/* Toolbar / Search */}
+      <div className="card shadow-sm border-0 mb-4 p-3 bg-white">
+        <form onSubmit={handleSearchSubmit} className="d-flex gap-2" style={{ maxWidth: '400px' }}>
+          <div className="input-group">
+            <span className="input-group-text bg-light border-end-0"><FaSearch className="text-muted"/></span>
+            <input 
+              type="text" 
+              className="form-control border-start-0 bg-light" 
+              placeholder="Search by name or email..." 
+              value={inputSearch}
+              onChange={e => setInputSearch(e.target.value)}
+            />
           </div>
-        ))}
+          <button type="submit" className="btn btn-primary px-4" style={{ backgroundColor: "#0ba3a3", borderColor: "#0ba3a3"}}>Find</button>
+        </form>
       </div>
-
-      {/* Toolbar */}
-      <div className="users-toolbar">
-        <div className="toolbar-search">
-          <FaSearch className="toolbar-search__icon" />
-          <input
-            placeholder="Search name or email..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="toolbar-select">
-          <FaFilter className="toolbar-select__icon" />
-          <select
-            value={filterRole}
-            onChange={(e) => setFilterRole(e.target.value)}
-          >
-            <option value="all">All Roles</option>
-            {Object.entries(ROLE_CFG).map(([key, cfg]) => (
-              <option key={key} value={key}>
-                {cfg.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="toolbar-select">
-          <FaCheckCircle className="toolbar-select__icon" />
-          <select
-            value={filterStat}
-            onChange={(e) => setFilterStat(e.target.value)}
-          >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="banned">Banned</option>
-          </select>
-        </div>
-        <div className="toolbar-select">
-          <FaSortAmountDown className="toolbar-select__icon" />
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-            <option value="name">Name A→Z</option>
-            <option value="newest">Newest</option>
-            <option value="login">Last Login</option>
-          </select>
-        </div>
-      </div>
-
-      <p className="users-count">
-        Showing <strong>{filtered.length}</strong> of {total} users
-      </p>
 
       {/* List */}
-      <div className="users-list">
-        {filtered.length === 0 ? (
-          <div className="users-empty">
-            <FaUser className="users-empty__icon" />
-            <p>No users found.</p>
-            <span>Try adjusting your search or filters.</span>
+      <div className="users-list position-relative" style={{ minHeight: "200px" }}>
+        {loading && (
+          <div className="position-absolute w-100 h-100 d-flex justify-content-center align-items-center" style={{ backgroundColor: "rgba(255,255,255,0.7)", zIndex: 10 }}>
+            <LoadingSpinner />
+          </div>
+        )}
+
+        {!loading && users.length === 0 ? (
+          <div className="users-empty py-5 text-center text-muted">
+            <FaUser className="users-empty__icon mb-3" style={{ fontSize: '3rem', opacity: 0.2 }} />
+            <p className="mb-0 fs-5">No users found.</p>
+            <span className="small">Try a different search keyword.</span>
           </div>
         ) : (
-          filtered.map((u) => (
+          users.map((u) => (
             <UserRow
               key={u.id}
               u={u}
-              onView={openView}
-              onEdit={openEdit}
-              onBan={handleBan}
-              onUnban={handleUnban}
-              onDelete={openDelete}
+              onView={(user) => openModal("view", user)}
+              onEditRole={(user) => openModal("role", user)}
+              onToggleBan={(user) => openModal("ban", user)}
             />
           ))
         )}
       </div>
 
+      {/* Pagination */}
+      {!loading && totalPages > 1 && (
+        <div className="mt-4">
+          <nav aria-label="Page navigation">
+            <ul className="pagination justify-content-center mb-3">
+              <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 0}
+                >
+                  <FaChevronLeft className="me-1" /> Trước
+                </button>
+              </li>
+
+              {Array.from({ length: totalPages }, (_, i) => {
+                const start = Math.max(0, currentPage - 2);
+                const end = Math.min(totalPages, start + 5);
+                const adjustedStart = Math.max(0, end - 5);
+
+                if (i < adjustedStart || i >= end) return null;
+
+                return (
+                  <li
+                    key={i}
+                    className={`page-item ${i === currentPage ? "active" : ""}`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(i)}
+                    >
+                      {i + 1}
+                    </button>
+                  </li>
+                );
+              })}
+
+              <li className={`page-item ${currentPage === totalPages - 1 ? "disabled" : ""}`}>
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages - 1}
+                >
+                  Sau <FaChevronRight className="ms-1" />
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      )}
+
       {/* Modals */}
-      <UserFormModal
-        mode={modal}
-        form={form}
-        onChange={handleChange}
-        onSave={handleSave}
-        onClose={closeModal}
-      />
       <UserViewModal
-        u={modal === "view" ? selected : null}
-        onEdit={() => {
-          closeModal();
-          openEdit(selected);
-        }}
+        u={modal === "view" ? selectedUser : null}
         onClose={closeModal}
       />
-      <DeleteConfirmModal
-        u={modal === "delete" ? selected : null}
-        onConfirm={handleDelete}
+      <UserRoleModal
+        u={modal === "role" ? selectedUser : null}
+        onSave={handleSaveRole}
         onClose={closeModal}
+        saving={saving}
+      />
+      <BanConfirmModal
+        u={modal === "ban" ? selectedUser : null}
+        onConfirm={handleConfirmBan}
+        onClose={closeModal}
+        saving={saving}
       />
     </div>
   );

@@ -1,19 +1,36 @@
+import { useState, useEffect } from "react";
 import { Container } from "react-bootstrap";
 import SectionHeader from "../Common/SectionHeader";
 import StarRating from "../Common/StarRating";
 import { FaArrowRight, FaClipboardList, FaHospital } from "react-icons/fa";
 import { BsPersonHeart } from "react-icons/bs";
 import { Link } from "react-router-dom";
-import { toSlug } from "../../utils/helpers";
+import { doctorService } from "../../api/appService";
 
-const DOCTORS = [
-  { img: 'https://randomuser.me/api/portraits/men/32.jpg',   name: 'PGS.TS. Trần Minh Khoa',  spec: 'Tim mạch',     hospital: 'BV Chợ Rẫy, TP.HCM',    rating: 4.9, reviews: 512, price: '350.000đ', avail: true  },
-  { img: 'https://randomuser.me/api/portraits/women/65.jpg', name: 'TS.BS. Lê Thu Hằng',      spec: 'Da liễu',     hospital: 'BV Da Liễu TW, HN',      rating: 4.8, reviews: 389, price: '300.000đ', avail: true  },
-  { img: 'https://randomuser.me/api/portraits/men/54.jpg',   name: 'GS.TS. Nguyễn Đức Tuấn', spec: 'Nhi khoa',    hospital: 'BV Nhi Đồng 1, TP.HCM',  rating: 4.9, reviews: 621, price: '400.000đ', avail: false },
-  { img: 'https://randomuser.me/api/portraits/women/29.jpg', name: 'ThS.BS. Phạm Bích Ngọc',  spec: 'Sản phụ khoa',hospital: 'BV Từ Dũ, TP.HCM',       rating: 4.7, reviews: 278, price: '280.000đ', avail: true  },
-];
+const DEFAULT_AVATAR = "https://ui-avatars.com/api/?background=0fa39b&color=fff&size=200&name=";
 
 export default function DoctorsSection() {
+  const [doctors, setDoctors] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    doctorService
+      .doctors({ page: 1, limit: 4 })
+      .then((res) => {
+        if (!isMounted) return;
+        setDoctors(res.data?.data?.slice(0, 4) || []);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error("Lỗi lấy danh sách bác sĩ:", err);
+        if (isMounted) setIsLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <section className="section-pad" id="doctors">
       <Container>
@@ -22,48 +39,75 @@ export default function DoctorsSection() {
           title="Đội ngũ" titleEm="chuyên gia hàng đầu"
           sub="Được lựa chọn kỹ càng từ các bệnh viện uy tín nhất cả nước"
         />
-        <div className="row g-4">
-          {DOCTORS.map(({ img, name, spec, hospital, rating, reviews, price, avail }) => (
-            <div key={name} className="col-sm-6 col-lg-3">
-              <div className="doc-card">
-                <div className="doc-img-wrap">
-                  <img src={img} alt={name} />
-                  <div className={`doc-avail ${avail ? 'available' : 'busy'}`}>
-                    {avail ? 'Còn lịch hôm nay' : 'Lịch gần nhất: mai'}
-                  </div>
-                </div>
-                <div className="doc-body">
-                  <div className="doc-name">{name}</div>
-                  <div className="doc-spec">
-                    <FaClipboardList className="me-1" />{spec}
-                  </div>
-                  <div className="doc-hospital">
-                    <FaHospital className="me-1" />{hospital}
-                  </div>
-                  <div className="doc-rating">
-                    <span className="rating-num">{rating}</span>
-                    <div className="stars">
-                      <StarRating rating={rating} half={!Number.isInteger(rating)} />
-                    </div>
-                    <span className="rating-cnt">{reviews} đánh giá</span>
-                  </div>
-                  <div className="doc-price-row">
-                    <span className="doc-price">{price}</span>
-                    <button className="btn-book-doc">
-                      <Link to={`doctors/${toSlug(name)}`} >
-                        Xem bác sĩ
-                      </Link>
-                    </button>
-                  </div>
-                </div>
-              </div>
+        {isLoading ? (
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Đang tải...</span>
             </div>
-          ))}
-        </div>
+          </div>
+        ) : (
+          <div className="row g-4">
+            {doctors.map((doctor) => {
+              const { id, slug, user, specialties, hospitals, rating, totalReviews, consultationFee } = doctor;
+              const fullName = `${user?.lastName || ""} ${user?.firstName || ""}`.trim();
+              const avatar = user?.avatar
+                ? user.avatar
+                : `${DEFAULT_AVATAR}${encodeURIComponent(fullName)}`;
+              const primarySpecialty =
+                specialties?.find((s) => s.isPrimary)?.specialty?.name ||
+                specialties?.[0]?.specialty?.name ||
+                "Không có thông tin";
+              const hospitalInfo = hospitals?.[0]?.hospital;
+              const hospitalDisplay = hospitalInfo
+                ? `${hospitalInfo.name}, ${hospitalInfo.city}`
+                : "Không có thông tin";
+              const priceDisplay = consultationFee
+                ? `${consultationFee.toLocaleString("vi-VN")}đ`
+                : "Không có thông tin";
+
+              return (
+                <div key={id} className="col-sm-6 col-lg-3">
+                  <div className="doc-card">
+                    <div className="doc-img-wrap">
+                      <img src={avatar} alt={fullName} />
+                      {/* <div className="doc-avail available">
+                        Còn lịch hôm nay
+                      </div> */}
+                    </div>
+                    <div className="doc-body">
+                      <div className="doc-name">{fullName}</div>
+                      <div className="doc-spec">
+                        <FaClipboardList className="me-1" />{primarySpecialty}
+                      </div>
+                      <div className="doc-hospital">
+                        <FaHospital className="me-1" />{hospitalDisplay}
+                      </div>
+                      <div className="doc-rating">
+                        <span className="rating-num">{rating || 0}</span>
+                        <div className="stars">
+                          <StarRating rating={rating || 0} half={!Number.isInteger(rating)} />
+                        </div>
+                        <span className="rating-cnt">{totalReviews || 0} đánh giá</span>
+                      </div>
+                      <div className="doc-price-row">
+                        <span className="doc-price">{priceDisplay}</span>
+                        <button className="btn-book-doc">
+                          <Link to={`/doctors/${slug}`}>
+                            Xem bác sĩ
+                          </Link>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
         <div className="text-center mt-5">
           <Link to="/doctors" className="btn-outline-main">
-            Xem tất cả bác sĩ 
-            <FaArrowRight/>
+            Xem tất cả bác sĩ
+            <FaArrowRight />
           </Link>
         </div>
       </Container>

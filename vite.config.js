@@ -9,7 +9,10 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] })
   ],
   server: {
-    host: "localhost",
+    // host: "localhost",
+    host: '127.0.0.1',
     port: 3564,
+    // allowedHosts: "all",
+    allowedHosts: ["lanky-spearman-uproar.ngrok-free.dev"],
   },
 })

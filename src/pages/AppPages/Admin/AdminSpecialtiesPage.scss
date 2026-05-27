@@ -7,6 +7,8 @@
 $primary: #0ba3a3;
 $primary-dk: #077d7d;
 $primary-lt: #e6f7f7;
+$accent: #ff6b35;
+$accent-lt: #fff1ec;
 $navy: #0d2b45;
 $navy-lt: #e6eef5;
 $text: #1a2b3c;
@@ -20,6 +22,7 @@ $green-lt: #e6f9f0;
 $danger: #e24b4a;
 $danger-lt: #fef2f2;
 $star: #f5a623;
+$star-lt: #fff8e6;
 $ff-head: "Playfair Display", serif;
 $ff-body: "DM Sans", sans-serif;
 $radius: 16px;
@@ -34,16 +37,12 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
   border: 1px solid $border;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PAGE
-// ─────────────────────────────────────────────────────────────────────────────
-.admin-specs {
+.admin-specialties {
   font-family: $ff-body;
   max-width: 1400px;
 }
 
-// ── Header ───────────────────────────────────────────────────────────────────
-.specs-header {
+.spec-header {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -54,29 +53,26 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
   &__right {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 1rem;
     flex-wrap: wrap;
   }
 }
 
-.specs-title {
+.spec-title {
   font-family: $ff-head;
   font-size: 2rem;
   font-weight: 700;
   color: $text;
   margin: 0 0 4px;
-  @media (max-width: 576px) {
-    font-size: 1.5rem;
-  }
 }
 
-.specs-sub {
+.spec-sub {
   font-size: 0.875rem;
   color: $text-muted;
   margin: 0;
 }
 
-.specs-badge {
+.spec-total-badge {
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -87,10 +83,6 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
   padding: 6px 14px;
   border-radius: 100px;
   border: 1px solid rgba($primary, 0.25);
-  white-space: nowrap;
-  svg {
-    font-size: 0.82rem;
-  }
 }
 
 .btn-add-spec {
@@ -106,166 +98,14 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition:
-    box-shadow 0.2s,
-    transform 0.15s;
-  svg {
-    font-size: 0.8rem;
-  }
+  transition: transform 0.15s;
   &:hover {
-    box-shadow: 0 6px 18px rgba($primary, 0.4);
     transform: translateY(-1px);
-  }
-  &:active {
-    transform: scale(0.98);
+    box-shadow: 0 4px 12px rgba($primary-dk, 0.3);
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SUMMARY — 3 thẻ
-// ─────────────────────────────────────────────────────────────────────────────
-.specs-summary {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  @media (max-width: 600px) {
-    grid-template-columns: 1fr;
-  }
-
-  &__card {
-    @include card;
-    padding: 1rem 1.25rem;
-    text-align: center;
-    transition:
-      box-shadow 0.2s,
-      transform 0.2s;
-    &:hover {
-      box-shadow: $shadow-hov;
-      transform: translateY(-2px);
-    }
-    &.s-teal {
-      border-top: 3px solid $primary;
-    }
-    &.s-green {
-      border-top: 3px solid $green;
-    }
-    &.s-navy {
-      border-top: 3px solid $navy;
-    }
-  }
-
-  &__value {
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: $text;
-    margin: 0 0 4px;
-    line-height: 1;
-  }
-
-  &__label {
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: $text-muted;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin: 0;
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// TOOLBAR
-// ─────────────────────────────────────────────────────────────────────────────
-.specs-toolbar {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.toolbar-search {
-  flex: 1;
-  min-width: 200px;
-  position: relative;
-
-  &__icon {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: $text-muted;
-    font-size: 0.78rem;
-    pointer-events: none;
-  }
-
-  input {
-    width: 100%;
-    padding: 0.52rem 1rem 0.52rem 2.2rem;
-    border: 1px solid $border;
-    border-radius: $radius-sm;
-    font-family: $ff-body;
-    font-size: 0.83rem;
-    color: $text;
-    background: $bg-card;
-    outline: none;
-    transition:
-      border-color 0.18s,
-      box-shadow 0.18s;
-    &::placeholder {
-      color: $text-muted;
-    }
-    &:focus {
-      border-color: $primary;
-      box-shadow: 0 0 0 3px rgba($primary, 0.1);
-    }
-  }
-}
-
-.toolbar-select {
-  position: relative;
-  flex-shrink: 0;
-
-  &__icon {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: $text-muted;
-    font-size: 0.75rem;
-    pointer-events: none;
-  }
-
-  select {
-    padding: 0.52rem 1rem 0.52rem 2rem;
-    border: 1px solid $border;
-    border-radius: $radius-sm;
-    font-family: $ff-body;
-    font-size: 0.83rem;
-    color: $text;
-    background: $bg-card;
-    outline: none;
-    cursor: pointer;
-    appearance: none;
-    transition: border-color 0.18s;
-    &:focus {
-      border-color: $primary;
-    }
-  }
-}
-
-.specs-count {
-  font-size: 0.8rem;
-  color: $text-muted;
-  margin: 0 0 1rem;
-  strong {
-    color: $text;
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SPECIALTY GRID
-// ─────────────────────────────────────────────────────────────────────────────
-.specs-grid {
+.spec-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.25rem;
@@ -277,202 +117,148 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SPECIALTY CARD
-// ─────────────────────────────────────────────────────────────────────────────
 .spec-card {
   @include card;
-  overflow: hidden;
-  transition:
-    box-shadow 0.2s,
-    transform 0.2s;
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
-
+  gap: 0.85rem;
+  transition: transform 0.2s;
   &:hover {
+    transform: translateY(-3px);
     box-shadow: $shadow-hov;
-    transform: translateY(-4px);
   }
 
-  // Gradient header
-  &__header {
-    padding: 1.5rem 1.25rem 1.25rem;
+  &__cover-wrap {
+    width: 100%;
+    height: 140px;
+    border-radius: $radius-sm;
+    background: $bg-main;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
-    position: relative;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
   }
 
-  &__icon {
-    font-size: 2.75rem;
-    line-height: 1;
-    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.2));
+  &__cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   &__name {
-    font-family: $ff-head;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     font-weight: 700;
-    color: $white;
-    margin: 0;
-    text-align: center;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  }
-
-  &__status {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.65rem;
-    font-weight: 700;
-    padding: 3px 8px;
-    border-radius: 100px;
-    backdrop-filter: blur(4px);
-    svg {
-      font-size: 0.6rem;
-    }
-  }
-
-  // Body
-  &__body {
-    padding: 1.1rem 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
-    flex: 1;
-  }
-
-  &__desc {
-    font-size: 0.8rem;
-    color: $text-muted;
-    margin: 0;
-    line-height: 1.6;
+    color: $text;
+    margin: 0 0 4px;
+    line-height: 1.3;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
 
-  &__stats {
-    display: flex;
-    gap: 1rem;
-  }
-
-  &__stat {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex: 1;
-    svg {
-      font-size: 0.9rem;
-      color: $primary;
-      flex-shrink: 0;
-    }
-  }
-
-  &__stat-value {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: $text;
-    margin: 0;
-    line-height: 1;
-  }
-
-  &__stat-label {
-    font-size: 0.65rem;
+  &__address {
+    font-size: 0.85rem;
     color: $text-muted;
     margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  &__badges {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.25rem;
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background: $bg-main;
+    padding: 0.75rem;
+    border-radius: $radius-sm;
+    margin-top: auto;
+  }
+
+  &__info-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: $text;
+    svg {
+      color: $primary;
+      font-size: 0.9rem;
+    }
   }
 
   &__actions {
     display: flex;
-    gap: 6px;
-    margin-top: auto;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid $border;
   }
 }
 
-// Status badges trên nền gradient
-.status-active {
-  background: rgba(255, 255, 255, 0.25);
-  color: $white;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+.badge-active {
+  background: $green-lt;
+  color: $green;
+  border: 1px solid rgba($green, 0.25) !important;
+}
+.badge-inactive {
+  background: $bg-main;
+  color: $text-muted;
+  border: 1px solid $border !important;
+}
+.badge-type {
+  background: $navy-lt;
+  color: $navy;
+  border: 1px solid rgba($navy, 0.25) !important;
 }
 
-.status-inactive {
-  background: rgba(0, 0, 0, 0.2);
-  color: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-// Card buttons
 .spec-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 6px 0;
+  gap: 4px;
+  padding: 5px 0;
   border-radius: $radius-sm;
   font-family: $ff-body;
   font-size: 0.72rem;
   font-weight: 600;
   cursor: pointer;
   border: none;
-  transition:
-    background 0.15s,
-    color 0.15s,
-    box-shadow 0.15s;
-  svg {
-    font-size: 0.65rem;
-  }
-  &:active {
-    transform: scale(0.97);
-  }
-
+  transition: background 0.15s, color 0.15s;
+  
   &--view {
+    color: $primary-dk;
+    background: transparent;
     flex: 1;
     justify-content: center;
-    background: $primary-lt;
-    color: $primary-dk;
-    border: 1px solid rgba($primary, 0.25) !important;
-    &:hover {
-      background: $primary;
-      color: $white;
-      box-shadow: 0 3px 10px rgba($primary, 0.3);
-    }
+    &:hover { background: $primary-lt; }
   }
-
   &--edit {
-    padding: 6px 12px;
-    background: $navy-lt;
-    color: $navy;
-    border: 1px solid rgba($navy, 0.2) !important;
-    &:hover {
-      background: $navy;
-      color: $white;
-    }
+    color: $star;
+    background: transparent;
+    flex: 1;
+    justify-content: center;
+    &:hover { background: $star-lt; }
   }
-
   &--delete {
-    padding: 6px 12px;
-    background: $danger-lt;
     color: $danger;
-    border: 1px solid rgba($danger, 0.2) !important;
-    &:hover {
-      background: $danger;
-      color: $white;
-    }
+    background: transparent;
+    width: 32px;
+    justify-content: center;
+    &:hover { background: $danger-lt; }
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// EMPTY STATE
-// ─────────────────────────────────────────────────────────────────────────────
-.specs-empty {
+.spec-empty {
   @include card;
   padding: 3rem 2rem;
   text-align: center;
@@ -482,291 +268,30 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
   gap: 0.5rem;
 
   &__icon {
-    font-size: 2.5rem;
-    color: rgba($primary, 0.2);
-    margin-bottom: 0.5rem;
+    font-size: 3rem;
+    color: $border;
   }
   p {
-    font-size: 0.95rem;
+    margin: 0;
+    font-size: 1.1rem;
     font-weight: 600;
-    color: $text;
-    margin: 0;
-  }
-  span {
-    font-size: 0.8rem;
     color: $text-muted;
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// BOOTSTRAP MODAL OVERRIDES
-// ─────────────────────────────────────────────────────────────────────────────
-.form-label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: $text;
-  margin-bottom: 5px;
-}
-
-.form-control,
-.form-select {
-  font-family: $ff-body;
-  font-size: 0.875rem;
-  border-radius: $radius-sm;
-  border-color: $border;
-  color: $text;
-  &:focus {
-    border-color: $primary;
-    box-shadow: 0 0 0 3px rgba($primary, 0.12);
-  }
-}
-
-.btn-save {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0.5rem 1.4rem;
-  border: none;
-  border-radius: $radius-sm;
-  background: linear-gradient(135deg, $primary 0%, $primary-dk 100%);
-  color: $white !important;
-  font-family: $ff-body;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: box-shadow 0.2s;
-  &:hover {
-    box-shadow: 0 6px 16px rgba($primary, 0.4);
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// FORM MODAL — Icon + Color pickers
-// ─────────────────────────────────────────────────────────────────────────────
-.icon-picker {
+.view-header {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.icon-swatch {
-  width: 40px;
-  height: 40px;
-  border-radius: $radius-sm;
-  border: 2px solid $border;
-  background: $bg-main;
-  font-size: 1.3rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition:
-    border-color 0.15s,
-    transform 0.15s,
-    background 0.15s;
-
-  &:hover {
-    border-color: $primary;
-    background: $primary-lt;
-    transform: scale(1.1);
-  }
-
-  &--active {
-    border-color: $primary;
-    background: $primary-lt;
-    outline: 2px solid rgba($primary, 0.3);
-  }
-}
-
-.spec-color-picker {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.spec-color-swatch {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 3px solid transparent;
-  cursor: pointer;
-  transition:
-    transform 0.15s,
-    border-color 0.15s;
-
-  &:hover {
-    transform: scale(1.15);
-  }
-
-  &--active {
-    border-color: $text;
-    transform: scale(1.15);
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8);
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// PREVIEW CARD (trong modal)
-// ─────────────────────────────────────────────────────────────────────────────
-.spec-preview {
-  border-radius: $radius;
-  overflow: hidden;
-  border: 1px solid $border;
-  box-shadow: $shadow;
-
-  &__header {
-    padding: 1.25rem 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.4rem;
-    transition: background 0.3s;
-  }
-
-  &__icon {
-    font-size: 2rem;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-  }
-
-  &__name {
-    font-family: $ff-head;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: $white;
-    margin: 0;
-    text-align: center;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  }
-
-  &__body {
-    padding: 0.85rem 1rem;
-    background: $bg-card;
-  }
-
-  &__desc {
-    font-size: 0.75rem;
-    color: $text-muted;
-    margin: 0 0 8px;
-    line-height: 1.5;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  &__status {
-    font-size: 0.68rem;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 100px;
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// VIEW DOCTORS MODAL
-// ─────────────────────────────────────────────────────────────────────────────
-.view-doc-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.view-doc-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0.85rem 1.25rem;
+  gap: 1.5rem;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
   border-bottom: 1px solid $border;
-  transition: background 0.15s;
-
-  &:last-child {
-    border-bottom: none;
-  }
-  &:hover {
-    background: $bg-main;
-  }
 }
-
-.view-doc-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+.view-cover {
+  width: 100px;
+  height: 100px;
+  border-radius: $radius-sm;
   object-fit: cover;
-  border: 2px solid $border;
-  flex-shrink: 0;
-}
-
-.view-doc-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.view-doc-name {
-  font-size: 0.87rem;
-  font-weight: 600;
-  color: $text;
-  margin: 0 0 3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.view-doc-hospital {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.74rem;
-  color: $text-muted;
-  margin: 0;
-  svg {
-    font-size: 0.65rem;
-    color: $primary;
-  }
-}
-
-.view-doc-rating {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: darken($star, 10%);
-  flex-shrink: 0;
-  svg {
-    font-size: 0.72rem;
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// DELETE MODAL
-// ─────────────────────────────────────────────────────────────────────────────
-.delete-icon-wrap {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: $danger-lt;
-  border: 2px solid rgba($danger, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4rem;
-  color: $danger;
-  margin: 0 auto 1rem;
-}
-
-.delete-title {
-  font-family: $ff-head;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: $text;
-  margin: 0 0 0.75rem;
-}
-
-.delete-desc {
-  font-size: 0.85rem;
-  color: $text-muted;
-  margin: 0;
-  line-height: 1.6;
-  strong {
-    color: $text;
-  }
+  border: 4px solid $white;
+  box-shadow: $shadow;
 }

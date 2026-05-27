@@ -71,6 +71,7 @@ const authSlice = createSlice({
   name: "auth",
   initialState: {
     user: null,           // { id, email, firstName, lastName, role }
+    isAuthenticated: false,
     isLoading: false,
     isInitializing: true, // true khi app mới load, chờ check session
     error: null,
@@ -79,6 +80,7 @@ const authSlice = createSlice({
     // Dùng sau khi Google OAuth redirect về và đã fetch được user
     setUser(state, action) {
       state.user = action.payload;
+      state.isAuthenticated = true;
       state.isInitializing = false;
     },
     clearError(state) {
@@ -94,10 +96,12 @@ const authSlice = createSlice({
       })
       .addCase(fetchCurrentUser.fulfilled, (state, action) => {
         state.user = action.payload;
+        state.isAuthenticated = true;
         state.isInitializing = false;
       })
       .addCase(fetchCurrentUser.rejected, (state) => {
         state.user = null;
+        state.isAuthenticated = false;
         state.isInitializing = false;
         // Không set error ở đây — 401 là trạng thái bình thường khi chưa login
       });
@@ -110,10 +114,12 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.user = action.payload;
+        state.isAuthenticated = true;
         state.isLoading = false;
       })
       .addCase(login.rejected, (state, action) => {
         state.isLoading = false;
+        state.isAuthenticated = false;
         state.error = action.payload;
       });
 
@@ -125,16 +131,19 @@ const authSlice = createSlice({
       })
       .addCase(register.fulfilled, (state, action) => {
         state.user = action.payload;
+        state.isAuthenticated = true;
         state.isLoading = false;
       })
       .addCase(register.rejected, (state, action) => {
         state.isLoading = false;
+        state.isAuthenticated = false;
         state.error = action.payload;
       });
 
     // ── logout + logoutAll ────────────────────────────────────────────────
     const handleLogout = (state) => {
       state.user = null;
+      state.isAuthenticated = false;
       state.isLoading = false;
       state.error = null;
     };
@@ -154,7 +163,7 @@ export const { setUser, clearError } = authSlice.actions;
 
 // ─── Selectors ───────────────────────────────────────────────────────────────
 export const selectUser = (state) => state.auth.user;
-export const selectIsAuthenticated = (state) => !!state.auth.user;
+export const selectIsAuthenticated = (state) => state.auth.isAuthenticated;
 export const selectIsLoading = (state) => state.auth.isLoading;
 export const selectIsInitializing = (state) => state.auth.isInitializing;
 export const selectAuthError = (state) => state.auth.error;

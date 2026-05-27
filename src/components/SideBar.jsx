@@ -14,9 +14,10 @@ import {
   FaUserInjured,
   FaHospital,
   FaThList,
-  FaUser,
+  FaUser
 } from "react-icons/fa";
 import { GrSchedules } from "react-icons/gr";
+import { selectIsAuthenticated, selectUser } from "../store/slices/authSlice";
 
 const MENU_ITEMS = [
   {
@@ -37,13 +38,6 @@ const MENU_ITEMS = [
     label: "Appointments",
     path: "/app/user/appointments",
     icon: FaCalendarAlt,
-    roles: ["user"],
-  },
-  {
-    key: "user-records",
-    label: "Medical Records",
-    path: "/app/user/medical-records",
-    icon: FaFileMedical,
     roles: ["user"],
   },
   {
@@ -77,31 +71,10 @@ const MENU_ITEMS = [
     roles: ["admin"],
   },
   {
-    key: "admin-patients",
-    label: "Patients",
-    path: "/app/admin/patients",
-    icon: FaUserInjured,
-    roles: ["admin"],
-  },
-  {
     key: "admin-specialties",
     label: "Specialties",
     path: "/app/admin/specialties",
     icon: FaThList,
-    roles: ["admin"],
-  },
-  {
-    key: "admin-news",
-    label: "News",
-    path: "/app/admin/news",
-    icon: FaNewspaper,
-    roles: ["admin"],
-  },
-  {
-    key: "admin-services",
-    label: "Services",
-    path: "/app/admin/services",
-    icon: FaHospitalUser,
     roles: ["admin"],
   },
   {
@@ -152,7 +125,7 @@ const MENU_ITEMS = [
     key: "doctor-patients",
     label: "Patients",
     path: "/app/doctor/patients",
-    icon: FaUserInjured,
+    icon:   FaUserInjured,
     roles: ["doctor"],
   },
   {
@@ -164,38 +137,24 @@ const MENU_ITEMS = [
   },
 ];
 
-const getPrimaryRole = (authUser) => {
-  if (!authUser) return "user";
-
-  if (Array.isArray(authUser.roles) && authUser.roles.length > 0) {
-    return authUser.roles[0];
-  }
-
-  if (authUser.role) {
-    return authUser.role;
-  }
-
-  return "user";
+const getFullName = (firstName = "", lastName = "") => {
+  const full = `${firstName} ${lastName}`.trim();
+  return full || "Người dùng";
 };
 
 const SideBar = () => {
   const [collapsed, setCollapsed] = useState(false);
 
-  const authState = useSelector((state) => state.auth);
-
   // Safe fallback so the component can still render in mock/demo states.
-  const isAuthenticated = authState?.isAuthenticated ?? true;
-  const user = authState?.user ?? { name: "Guest User", role: "user" };
-
-  const role = getPrimaryRole(user);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const user = useSelector(selectUser);
+  const role = user?.role;
 
   const menu = useMemo(() => {
-    return MENU_ITEMS.filter((item) => item.roles.includes(role)).map(
-      (item) => ({
-        ...item,
-        path: item.path || item.getPathByRole?.(role) || "/app/user/dashboard",
-      }),
-    );
+    return MENU_ITEMS.filter((item) => item.roles.includes(role)).map((item) => ({
+      ...item,
+      path: item.path || item.getPathByRole?.(role) || "/app/user/dashboard",
+    }));
   }, [role]);
 
   if (!isAuthenticated) {
@@ -227,18 +186,13 @@ const SideBar = () => {
               className="rounded-circle bg-secondary-subtle d-inline-flex align-items-center justify-content-center"
               style={{ width: 34, height: 34, flexShrink: 0 }}
             >
-              {String(user?.name || "U")
-                .trim()
-                .charAt(0)
-                .toUpperCase()}
+              {getFullName(user?.firstName, user?.lastName).trim().charAt(0).toUpperCase()}
             </div>
           )}
           {!collapsed && (
             <div className="overflow-hidden">
-              <div className="small fw-semibold text-truncate">
-                {user?.name || "User"}
-              </div>
-              <div className="small text-muted text-capitalize">{role}</div>
+              <div className="small fw-semibold text-truncate">{getFullName(user?.firstName, user?.lastName)}</div>
+              <div className="small text-muted text-capitalize">{user?.role.toUpperCase()}</div>
             </div>
           )}
         </div>
@@ -253,10 +207,7 @@ const SideBar = () => {
         </button>
       </div>
 
-      <nav
-        className="py-2 px-2 d-flex flex-column gap-1"
-        aria-label="Sidebar menu"
-      >
+      <nav className="py-2 px-2 d-flex flex-column gap-1" aria-label="Sidebar menu">
         {menu.map(({ key, label, path, icon: Icon }) => (
           <NavLink
             key={key}
@@ -268,9 +219,7 @@ const SideBar = () => {
               `
             }
             style={({ isActive }) => ({
-              background: isActive
-                ? "linear-gradient(135deg, #0ba3a3 0%, #0a7d8c 100%)"
-                : "transparent",
+              background: isActive ? "linear-gradient(135deg, #0ba3a3 0%, #0a7d8c 100%)" : "transparent",
               fontWeight: isActive ? 600 : 500,
             })}
           >

@@ -1,799 +1,190 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// AdminHospitalsPage.jsx  —  Hospitals Management CRUD
+// AdminHospitalsPage.jsx
 // ─────────────────────────────────────────────────────────────────────────────
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
+import ReactPaginate from "react-paginate";
 import {
   FaHospital,
   FaPlus,
   FaEdit,
   FaTrash,
-  FaSearch,
-  FaFilter,
-  FaSortAmountDown,
   FaEye,
+  FaChevronLeft,
+  FaChevronRight,
   FaMapMarkerAlt,
-  FaPhone,
-  FaEnvelope,
-  FaUserMd,
-  FaStar,
-  FaCheckCircle,
-  FaTimesCircle,
-  FaGlobe,
-  FaBed,
-  FaParking,
-  FaWifi,
-  FaAmbulance,
-  FaExclamationTriangle,
-  FaPills,
-  FaFlask,
-  FaCalendarAlt,
+  FaCity
 } from "react-icons/fa";
 import "./AdminHospitalsPage.scss";
+import { hospitalService } from "../../../api/appService";
+import LoadingSpinner from "../../../components/Common/LoadingSpinner";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AMENITIES CONFIG
+// CONSTANTS
 // ─────────────────────────────────────────────────────────────────────────────
-const AMENITIES_CFG = {
-  parking: { label: "Parking", icon: FaParking },
-  wifi: { label: "Free WiFi", icon: FaWifi },
-  emergency: { label: "24h ER", icon: FaAmbulance },
-  pharmacy: { label: "Pharmacy", icon: FaPills },
-  lab: { label: "Lab", icon: FaFlask },
-};
-
-// Mock doctors per hospital
-const MOCK_DOCS = {
-  "TKT Medical Center": [
-    {
-      name: "Dr. Nguyen Van An",
-      spec: "Cardiology",
-      img: "https://i.pravatar.cc/150?img=11",
-    },
-    {
-      name: "Dr. Pham Duc Minh",
-      spec: "Orthopedics",
-      img: "https://i.pravatar.cc/150?img=12",
-    },
-    {
-      name: "Dr. Hoang Van Nam",
-      spec: "Pediatrics",
-      img: "https://i.pravatar.cc/150?img=57",
-    },
-  ],
-  "City General Hospital": [
-    {
-      name: "Dr. Le Thi Bich",
-      spec: "Neurology",
-      img: "https://i.pravatar.cc/150?img=47",
-    },
-    {
-      name: "Dr. Dang Thi Hoa",
-      spec: "Gynecology",
-      img: "https://i.pravatar.cc/150?img=44",
-    },
-  ],
-  "Riverside Clinic": [
-    {
-      name: "Dr. Tran Quoc Hung",
-      spec: "Dermatology",
-      img: "https://i.pravatar.cc/150?img=15",
-    },
-    {
-      name: "Dr. Vo Thi Lan",
-      spec: "Ophthalmology",
-      img: "https://i.pravatar.cc/150?img=48",
-    },
-  ],
-  "Children's Care Center": [
-    {
-      name: "Dr. Hoang Van Nam",
-      spec: "Pediatrics",
-      img: "https://i.pravatar.cc/150?img=57",
-    },
-  ],
-  "Heart Care Center": [
-    {
-      name: "Dr. Nguyen Van An",
-      spec: "Cardiology",
-      img: "https://i.pravatar.cc/150?img=11",
-    },
-    {
-      name: "Dr. Pham Duc Minh",
-      spec: "Orthopedics",
-      img: "https://i.pravatar.cc/150?img=12",
-    },
-  ],
-  "Sunrise Medical": [
-    {
-      name: "Dr. Bui Minh Khoa",
-      spec: "Oncology",
-      img: "https://i.pravatar.cc/150?img=53",
-    },
-  ],
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MOCK DATA — 6 hospitals
-// ─────────────────────────────────────────────────────────────────────────────
-const INIT_HOSPITALS = [
-  {
-    id: 1,
-    name: "TKT Medical Center",
-    address: "123 Le Loi St, District 1, HCMC",
-    district: "District 1",
-    phone: "+84 28 3821 1234",
-    email: "info@tktmedical.com",
-    website: "www.tktmedical.com",
-    beds: 250,
-    rating: 4.8,
-    established: 2005,
-    doctors: 34,
-    slotFill: 82,
-    status: "active",
-    coverUrl: "",
-    description:
-      "TKT Medical Center is a leading multi-specialty hospital providing world-class healthcare services.",
-    amenities: ["parking", "wifi", "emergency", "pharmacy", "lab"],
-  },
-  {
-    id: 2,
-    name: "City General Hospital",
-    address: "456 Nguyen Hue Blvd, District 5, HCMC",
-    district: "District 5",
-    phone: "+84 28 3822 5678",
-    email: "info@cityhospital.com",
-    website: "www.cityhospital.com",
-    beds: 400,
-    rating: 4.6,
-    established: 1998,
-    doctors: 28,
-    slotFill: 75,
-    status: "active",
-    coverUrl: "",
-    description:
-      "One of the largest public hospitals in HCMC, serving over 2,000 patients daily.",
-    amenities: ["parking", "emergency", "pharmacy", "lab"],
-  },
-  {
-    id: 3,
-    name: "Riverside Clinic",
-    address: "789 Dien Bien Phu, Binh Thanh, HCMC",
-    district: "Binh Thanh",
-    phone: "+84 28 3823 9012",
-    email: "contact@riverside.com",
-    website: "www.riverside.com",
-    beds: 120,
-    rating: 4.7,
-    established: 2012,
-    doctors: 18,
-    slotFill: 63,
-    status: "active",
-    coverUrl: "",
-    description:
-      "A modern private clinic specializing in outpatient care, dermatology and eye care.",
-    amenities: ["parking", "wifi", "pharmacy"],
-  },
-  {
-    id: 4,
-    name: "Children's Care Center",
-    address: "33 Vo Van Tan, District 3, HCMC",
-    district: "District 3",
-    phone: "+84 28 3824 3456",
-    email: "info@childcare.com",
-    website: "www.childcare.com",
-    beds: 180,
-    rating: 4.8,
-    established: 2008,
-    doctors: 22,
-    slotFill: 88,
-    status: "active",
-    coverUrl: "",
-    description:
-      "Dedicated pediatric hospital with state-of-the-art facilities for children's healthcare.",
-    amenities: ["wifi", "emergency", "pharmacy", "lab"],
-  },
-  {
-    id: 5,
-    name: "Heart Care Center",
-    address: "101 Cach Mang T8, District 10, HCMC",
-    district: "District 10",
-    phone: "+84 28 3825 7890",
-    email: "info@heartcare.com",
-    website: "www.heartcare.com",
-    beds: 90,
-    rating: 4.9,
-    established: 2015,
-    doctors: 14,
-    slotFill: 91,
-    status: "active",
-    coverUrl: "",
-    description:
-      "Specialized cardiac care center offering advanced heart surgery and interventional cardiology.",
-    amenities: ["parking", "wifi", "emergency", "pharmacy", "lab"],
-  },
-  {
-    id: 6,
-    name: "Sunrise Medical",
-    address: "22 Ly Thuong Kiet, District 3, HCMC",
-    district: "District 3",
-    phone: "+84 28 3826 1234",
-    email: "info@sunrise.com",
-    website: "www.sunrise.com",
-    beds: 60,
-    rating: 4.3,
-    established: 2020,
-    doctors: 8,
-    slotFill: 40,
-    status: "inactive",
-    coverUrl: "",
-    description:
-      "A newly opened medical center currently undergoing expansion of services.",
-    amenities: ["parking", "wifi"],
-  },
-];
-
-const DISTRICTS = [
-  "District 1",
-  "District 3",
-  "District 5",
-  "Binh Thanh",
-  "District 10",
-];
+const PAGE_LIMIT = 12;
 
 const EMPTY_FORM = {
   name: "",
+  slug: "",
   address: "",
-  district: "District 1",
-  phone: "",
-  email: "",
-  website: "",
-  beds: "",
-  status: "active",
-  rating: "",
-  established: "",
-  amenities: [],
+  city: "",
+  type: "public",
+  imgURL: "",
   description: "",
-  coverUrl: "",
+  isActive: true,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// HELPERS
+// HELPER
 // ─────────────────────────────────────────────────────────────────────────────
-const StarRating = ({ rating }) => (
-  <span className="hosp-rating">
-    <FaStar className="hosp-rating__icon" />
-    <span>{rating}</span>
-  </span>
-);
+const buildPayload = (form, isEdit = false) => {
+  const base = {
+    name: form.name?.trim(),
+    slug: form.slug?.trim() || undefined,
+    address: form.address?.trim(),
+    city: form.city?.trim(),
+    type: form.type,
+    imgURL: form.imgURL?.trim() || undefined,
+    description: form.description?.trim() || undefined,
+  };
+  
+  if (isEdit) {
+    base.isActive = form.isActive;
+  }
+  return base;
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: HospitalCard
+// SUB-COMPONENTS
 // ─────────────────────────────────────────────────────────────────────────────
-const HospitalCard = ({ h, onView, onEdit, onDelete }) => (
-  <div className="hosp-card">
-    {/* Cover */}
-    <div className="hosp-card__cover">
-      {h.coverUrl ? (
-        <img
-          src={h.coverUrl}
-          alt={h.name}
-          className="hosp-card__cover-img"
-          onError={(e) => {
-            e.target.style.display = "none";
-            e.target.nextSibling.style.display = "flex";
-          }}
-        />
-      ) : null}
-      <div
-        className="hosp-card__cover-placeholder"
-        style={{ display: h.coverUrl ? "none" : "flex" }}
-      >
-        🏥
-      </div>
-      <span
-        className={`hosp-card__status ${h.status === "active" ? "st-active" : "st-inactive"}`}
-      >
-        {h.status === "active" ? <FaCheckCircle /> : <FaTimesCircle />}
-        {h.status === "active" ? "Active" : "Inactive"}
-      </span>
-    </div>
-
-    {/* Body */}
-    <div className="hosp-card__body">
-      {/* Name + rating */}
-      <div className="hosp-card__name-row">
-        <h3 className="hosp-card__name">{h.name}</h3>
-        <StarRating rating={h.rating} />
-      </div>
-
-      {/* Address */}
-      <p className="hosp-card__address">
-        <FaMapMarkerAlt /> {h.address}
-      </p>
-
-      {/* Phone + Email */}
-      <div className="hosp-card__contact">
-        <span>
-          <FaPhone /> {h.phone}
-        </span>
-        <span>
-          <FaEnvelope /> <span className="truncate">{h.email}</span>
-        </span>
-      </div>
-
-      {/* Stats */}
-      <div className="hosp-card__stats">
-        <div className="hosp-card__stat">
-          <FaUserMd />
-          <div>
-            <p>{h.doctors}</p>
-            <span>Doctors</span>
-          </div>
-        </div>
-        <div className="hosp-card__stat">
-          <FaBed />
-          <div>
-            <p>{h.beds}</p>
-            <span>Beds</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Amenities */}
-      <div className="hosp-card__amenities">
-        {h.amenities.slice(0, 4).map((key) => {
-          const cfg = AMENITIES_CFG[key];
-          if (!cfg) return null;
-          const Icon = cfg.icon;
-          return (
-            <span key={key} className="amenity-pill">
-              <Icon /> {cfg.label}
-            </span>
-          );
-        })}
-        {h.amenities.length > 4 && (
-          <span className="amenity-pill amenity-pill--more">
-            +{h.amenities.length - 4}
-          </span>
+const HospitalCard = ({ hosp, onView, onEdit, onDelete }) => {
+  return (
+    <div className="hosp-card">
+      <div className="hosp-card__cover-wrap">
+        {hosp.imgURL ? (
+          <img src={hosp.imgURL} alt={hosp.name} className="hosp-card__cover" />
+        ) : (
+          <FaHospital size={48} className="text-secondary opacity-50" />
         )}
       </div>
 
-      {/* Slot fill progress */}
-      <div className="hosp-card__progress">
-        <div className="hosp-card__progress-header">
-          <span>Slot Fill Rate</span>
-          <span className="hosp-card__progress-pct">{h.slotFill}%</span>
-        </div>
-        <div className="hosp-card__progress-bar">
-          <div style={{ width: `${h.slotFill}%` }} />
+      <div>
+        <h3 className="hosp-card__name">{hosp.name}</h3>
+        <p className="hosp-card__address"><FaMapMarkerAlt className="me-1"/>{hosp.address || "Chưa có địa chỉ"}</p>
+        <div className="hosp-card__badges">
+          <span className={`badge ${hosp.isActive ? "badge-active" : "badge-inactive"}`}>
+            {hosp.isActive ? "Đang hoạt động" : "Ngừng hoạt động"}
+          </span>
+          <span className="badge badge-type">
+            {hosp.type === "private" ? "Tư nhân" : "Công lập"}
+          </span>
         </div>
       </div>
 
-      {/* Actions */}
+      <div className="hosp-card__info">
+        <div className="hosp-card__info-item">
+          <FaCity /> {hosp.city || "Chưa có TP"}
+        </div>
+      </div>
+
       <div className="hosp-card__actions">
-        <button className="hosp-btn hosp-btn--view" onClick={() => onView(h)}>
+        <button className="hosp-btn hosp-btn--view" onClick={() => onView(hosp)}>
           <FaEye /> View
         </button>
-        <button className="hosp-btn hosp-btn--edit" onClick={() => onEdit(h)}>
+        <button className="hosp-btn hosp-btn--edit" onClick={() => onEdit(hosp)}>
           <FaEdit /> Edit
         </button>
-        <button
-          className="hosp-btn hosp-btn--delete"
-          onClick={() => onDelete(h)}
-        >
+        <button className="hosp-btn hosp-btn--delete" onClick={() => onDelete(hosp)}>
           <FaTrash />
         </button>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: HospitalFormModal (Add / Edit)
-// ─────────────────────────────────────────────────────────────────────────────
 const HospitalFormModal = ({
-  mode,
-  form,
-  onChange,
-  onAmenityToggle,
-  onSave,
-  onClose,
+  mode, form, onChange, onFormChange, onSave, onClose, saving
 }) => {
   if (mode !== "add" && mode !== "edit") return null;
   const isEdit = mode === "edit";
 
   return (
     <>
-      <div className="modal-backdrop fade show" onClick={onClose} />
-      <div className="modal fade show d-block" tabIndex="-1">
-        <div className="modal-dialog modal-lg modal-dialog-scrollable">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">
-                <FaHospital className="me-2" style={{ color: "#0ba3a3" }} />
-                {isEdit ? "Edit Hospital" : "Add New Hospital"}
+      <div className="modal-backdrop fade show" style={{ zIndex: 1040 }}></div>
+      <div className="modal fade show d-block" tabIndex="-1" style={{ zIndex: 1050 }}>
+        <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+          <div className="modal-content border-0 shadow-lg">
+            <div className="modal-header bg-light border-bottom-0 pb-0">
+              <h5 className="modal-title fs-4 fw-bold">
+                {isEdit ? <><FaEdit className="me-2 text-primary" /> Sửa Bệnh viện</> : <><FaPlus className="me-2 text-primary" /> Thêm Bệnh viện</>}
               </h5>
-              <button className="btn-close" onClick={onClose} />
+              <button type="button" className="btn-close" onClick={onClose}></button>
             </div>
-
-            <div className="modal-body">
+            <div className="modal-body p-4">
               <div className="row g-3">
-                {/* Name */}
-                <div className="col-12">
-                  <label className="form-label">Hospital Name</label>
-                  <input
-                    className="form-control"
-                    name="name"
-                    value={form.name}
-                    onChange={onChange}
-                    placeholder="e.g. TKT Medical Center"
-                  />
-                </div>
-
-                {/* Address */}
-                <div className="col-12">
-                  <label className="form-label">Address</label>
-                  <input
-                    className="form-control"
-                    name="address"
-                    value={form.address}
-                    onChange={onChange}
-                    placeholder="Street, District, City"
-                  />
-                </div>
-
-                {/* District + Phone */}
                 <div className="col-md-6">
-                  <label className="form-label">District / Area</label>
-                  <select
-                    className="form-select"
-                    name="district"
-                    value={form.district}
-                    onChange={onChange}
-                  >
-                    {DISTRICTS.map((d) => (
-                      <option key={d} value={d}>
-                        {d}
-                      </option>
-                    ))}
-                  </select>
+                  <label className="form-label">Tên bệnh viện <span className="text-danger">*</span></label>
+                  <input type="text" className="form-control" name="name" value={form.name} onChange={onChange} />
                 </div>
                 <div className="col-md-6">
-                  <label className="form-label">Phone</label>
-                  <input
-                    className="form-control"
-                    name="phone"
-                    value={form.phone}
-                    onChange={onChange}
-                    placeholder="+84 28 3821 1234"
-                  />
+                  <label className="form-label">Slug (tùy chọn)</label>
+                  <input type="text" className="form-control" name="slug" value={form.slug} onChange={onChange} placeholder="tu-sinh-khi-de-trong" />
                 </div>
 
-                {/* Email + Website */}
-                <div className="col-md-6">
-                  <label className="form-label">Email</label>
-                  <input
-                    className="form-control"
-                    name="email"
-                    type="email"
-                    value={form.email}
-                    onChange={onChange}
-                    placeholder="info@hospital.com"
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label">Website</label>
-                  <input
-                    className="form-control"
-                    name="website"
-                    value={form.website}
-                    onChange={onChange}
-                    placeholder="www.hospital.com"
-                  />
+                <div className="col-md-12">
+                  <label className="form-label">Địa chỉ cụ thể <span className="text-danger">*</span></label>
+                  <input type="text" className="form-control" name="address" value={form.address} onChange={onChange} />
                 </div>
 
-                {/* Beds + Status */}
-                <div className="col-md-4">
-                  <label className="form-label">Total Beds</label>
-                  <input
-                    className="form-control"
-                    name="beds"
-                    type="number"
-                    min="0"
-                    value={form.beds}
-                    onChange={onChange}
-                    placeholder="250"
-                  />
+                <div className="col-md-6">
+                  <label className="form-label">Thành phố <span className="text-danger">*</span></label>
+                  <input type="text" className="form-control" name="city" value={form.city} onChange={onChange} />
                 </div>
-                <div className="col-md-4">
-                  <label className="form-label">Rating</label>
-                  <input
-                    className="form-control"
-                    name="rating"
-                    type="number"
-                    min="0"
-                    max="5"
-                    step="0.1"
-                    value={form.rating}
-                    onChange={onChange}
-                    placeholder="4.8"
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label">Status</label>
-                  <select
-                    className="form-select"
-                    name="status"
-                    value={form.status}
-                    onChange={onChange}
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
+
+                <div className="col-md-6">
+                  <label className="form-label">Loại bệnh viện</label>
+                  <select className="form-select" name="type" value={form.type} onChange={onChange}>
+                    <option value="public">Công lập (Public)</option>
+                    <option value="private">Tư nhân (Private)</option>
                   </select>
                 </div>
 
-                {/* Established + Cover URL */}
-                <div className="col-md-4">
-                  <label className="form-label">Established Year</label>
-                  <input
-                    className="form-control"
-                    name="established"
-                    type="number"
-                    value={form.established}
-                    onChange={onChange}
-                    placeholder="2005"
-                  />
+                <div className="col-12">
+                  <label className="form-label">Hình ảnh minh họa (URL)</label>
+                  <div className="d-flex gap-2">
+                    {form.imgURL && <img src={form.imgURL} alt="Preview" className="avatar-preview rounded" style={{width: 36, height: 36, objectFit: "cover"}} />}
+                    <input type="text" className="form-control" name="imgURL" value={form.imgURL} onChange={onChange} placeholder="https://..." />
+                  </div>
                 </div>
-                <div className="col-md-8">
-                  <label className="form-label">Cover Image URL</label>
-                  <div className="d-flex gap-2 align-items-center">
-                    <input
-                      className="form-control"
-                      name="coverUrl"
-                      value={form.coverUrl}
-                      onChange={onChange}
-                      placeholder="https://..."
-                    />
-                    {form.coverUrl && (
-                      <img
-                        src={form.coverUrl}
-                        alt="cover"
-                        className="cover-preview"
-                        onError={(e) => {
-                          e.target.style.display = "none";
-                        }}
+
+                <div className="col-12">
+                  <label className="form-label">Mô tả chi tiết (Tối đa 2000 ký tự)</label>
+                  <textarea className="form-control" name="description" value={form.description} onChange={onChange} rows="4" />
+                </div>
+
+                {isEdit && (
+                  <div className="col-12">
+                    <div className="form-check form-switch py-2 border rounded bg-light">
+                      <input
+                        className="form-check-input ms-2 me-3"
+                        type="checkbox"
+                        role="switch"
+                        id="isActiveSwitch"
+                        checked={form.isActive}
+                        onChange={(e) => onFormChange({ ...form, isActive: e.target.checked })}
                       />
-                    )}
-                  </div>
-                </div>
-
-                {/* Amenities checkboxes */}
-                <div className="col-12">
-                  <label className="form-label">Amenities</label>
-                  <div className="amenity-checkboxes">
-                    {Object.entries(AMENITIES_CFG).map(([key, cfg]) => {
-                      const Icon = cfg.icon;
-                      const checked = form.amenities.includes(key);
-                      return (
-                        <label
-                          key={key}
-                          className={`amenity-checkbox ${checked ? "amenity-checkbox--checked" : ""}`}
-                          onClick={() => onAmenityToggle(key)}
-                        >
-                          <Icon /> {cfg.label}
-                        </label>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Description */}
-                <div className="col-12">
-                  <label className="form-label">Description</label>
-                  <textarea
-                    className="form-control"
-                    name="description"
-                    rows={3}
-                    value={form.description}
-                    onChange={onChange}
-                    placeholder="Brief description of the hospital..."
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="modal-footer">
-              <button className="btn btn-light border" onClick={onClose}>
-                Cancel
-              </button>
-              <button className="btn btn-save" onClick={onSave}>
-                {isEdit ? (
-                  <>
-                    <FaEdit className="me-1" />
-                    Update
-                  </>
-                ) : (
-                  <>
-                    <FaPlus className="me-1" />
-                    Save Hospital
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: HospitalViewModal
-// ─────────────────────────────────────────────────────────────────────────────
-const HospitalViewModal = ({ h, onEdit, onClose }) => {
-  if (!h) return null;
-  const doctors = MOCK_DOCS[h.name] || [];
-
-  return (
-    <>
-      <div className="modal-backdrop fade show" onClick={onClose} />
-      <div className="modal fade show d-block" tabIndex="-1">
-        <div className="modal-dialog modal-lg modal-dialog-scrollable">
-          <div className="modal-content">
-            <div className="modal-header border-0 pb-0">
-              <button className="btn-close ms-auto" onClick={onClose} />
-            </div>
-
-            <div className="modal-body pt-0">
-              {/* Cover */}
-              <div
-                className="view-hosp-cover"
-                style={{
-                  background:
-                    "linear-gradient(135deg, #1a3a5c 0%, #0d2b45 100%)",
-                }}
-              >
-                {h.coverUrl ? (
-                  <img
-                    src={h.coverUrl}
-                    alt={h.name}
-                    onError={(e) => {
-                      e.target.style.display = "none";
-                    }}
-                  />
-                ) : (
-                  <span>🏥</span>
-                )}
-              </div>
-
-              {/* Name + status + rating */}
-              <div className="view-hosp-header">
-                <h3 className="view-hosp-name">{h.name}</h3>
-                <div className="view-hosp-badges">
-                  <span
-                    className={
-                      h.status === "active" ? "st-active" : "st-inactive"
-                    }
-                  >
-                    {h.status === "active" ? (
-                      <FaCheckCircle />
-                    ) : (
-                      <FaTimesCircle />
-                    )}
-                    {h.status === "active" ? "Active" : "Inactive"}
-                  </span>
-                  <StarRating rating={h.rating} />
-                </div>
-              </div>
-
-              {/* Info grid 2 cột */}
-              <div className="row g-2 mt-2">
-                {[
-                  { icon: FaMapMarkerAlt, label: "Address", val: h.address },
-                  { icon: FaPhone, label: "Phone", val: h.phone },
-                  { icon: FaEnvelope, label: "Email", val: h.email },
-                  { icon: FaGlobe, label: "Website", val: h.website },
-                  { icon: FaBed, label: "Total Beds", val: `${h.beds} beds` },
-                  {
-                    icon: FaCalendarAlt,
-                    label: "Established",
-                    val: h.established,
-                  },
-                  {
-                    icon: FaUserMd,
-                    label: "Doctors",
-                    val: `${h.doctors} on staff`,
-                  },
-                  { icon: FaStar, label: "Rating", val: `${h.rating} / 5.0` },
-                ].map(({ icon: Icon, label, val }) => (
-                  <div key={label} className="col-md-6">
-                    <div className="view-info-item">
-                      <Icon className="view-info-icon" />
-                      <div>
-                        <p className="view-info-label">{label}</p>
-                        <p className="view-info-val">{val}</p>
-                      </div>
+                      <label className="form-check-label fw-semibold" htmlFor="isActiveSwitch">
+                        Trạng thái hoạt động
+                      </label>
                     </div>
                   </div>
-                ))}
-              </div>
-
-              {/* Description */}
-              {h.description && (
-                <div className="view-hosp-desc">
-                  <p>{h.description}</p>
-                </div>
-              )}
-
-              {/* Amenities */}
-              <div className="view-hosp-amenities">
-                <p className="view-hosp-section-title">Amenities</p>
-                <div className="d-flex flex-wrap gap-2">
-                  {h.amenities.map((key) => {
-                    const cfg = AMENITIES_CFG[key];
-                    if (!cfg) return null;
-                    const Icon = cfg.icon;
-                    return (
-                      <span
-                        key={key}
-                        className="amenity-pill amenity-pill--view"
-                      >
-                        <Icon /> {cfg.label}
-                      </span>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Slot fill */}
-              <div className="view-hosp-slot">
-                <div className="view-hosp-slot-header">
-                  <p className="view-hosp-section-title">Slot Fill Rate</p>
-                  <span className="view-hosp-slot-pct">{h.slotFill}%</span>
-                </div>
-                <div className="view-hosp-slot-bar">
-                  <div style={{ width: `${h.slotFill}%` }} />
-                </div>
-              </div>
-
-              {/* Doctors */}
-              <div className="view-hosp-doctors">
-                <p className="view-hosp-section-title">Doctors on Staff</p>
-                {doctors.length === 0 ? (
-                  <p className="text-muted" style={{ fontSize: ".82rem" }}>
-                    No doctors assigned yet.
-                  </p>
-                ) : (
-                  <div className="view-hosp-doc-list">
-                    {doctors.map((doc, i) => (
-                      <div key={i} className="view-hosp-doc-item">
-                        <img
-                          src={doc.img}
-                          alt={doc.name}
-                          className="view-hosp-doc-avatar"
-                          onError={(e) => {
-                            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(doc.name)}&background=0ba3a3&color=fff`;
-                          }}
-                        />
-                        <div>
-                          <p className="view-hosp-doc-name">{doc.name}</p>
-                          <p className="view-hosp-doc-spec">
-                            <FaStethoscope /> {doc.spec}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
                 )}
               </div>
             </div>
-
-            <div className="modal-footer">
-              <button className="btn btn-light border" onClick={onClose}>
-                Close
-              </button>
-              <button className="btn btn-save" onClick={onEdit}>
-                <FaEdit className="me-1" /> Edit Hospital
+            <div className="modal-footer border-top-0 pt-0 bg-light">
+              <button className="btn btn-secondary px-4" onClick={onClose} disabled={saving}>Hủy</button>
+              <button className="btn btn-primary px-4 btn-save" onClick={onSave} disabled={saving}>
+                {saving ? <span className="spinner-border spinner-border-sm"></span> : isEdit ? "Lưu thay đổi" : "Tạo mới"}
               </button>
             </div>
           </div>
@@ -803,39 +194,89 @@ const HospitalViewModal = ({ h, onEdit, onClose }) => {
   );
 };
 
-// Missing import — thêm FaStethoscope
-import { FaStethoscope } from "react-icons/fa";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: DeleteConfirmModal
-// ─────────────────────────────────────────────────────────────────────────────
-const DeleteConfirmModal = ({ h, onConfirm, onClose }) => {
-  if (!h) return null;
+const HospitalViewModal = ({ hosp, onEdit, onClose }) => {
+  if (!hosp) return null;
   return (
     <>
-      <div className="modal-backdrop fade show" onClick={onClose} />
-      <div className="modal fade show d-block" tabIndex="-1">
-        <div className="modal-dialog modal-sm modal-dialog-centered">
-          <div className="modal-content">
-            <div className="modal-body text-center py-4">
-              <div className="delete-icon-wrap">
-                <FaExclamationTriangle />
-              </div>
-              <h5 className="delete-title">Delete Hospital?</h5>
-              <p className="delete-desc">
-                Are you sure you want to delete
-                <br />
-                <strong>{h.name}</strong>?<br />
-                This action cannot be undone.
-              </p>
+      <div className="modal-backdrop fade show" style={{ zIndex: 1040 }}></div>
+      <div className="modal fade show d-block" tabIndex="-1" style={{ zIndex: 1050 }}>
+        <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+          <div className="modal-content border-0 shadow">
+            <div className="modal-header bg-light">
+              <h5 className="modal-title fw-bold">Chi tiết Bệnh viện</h5>
+              <button type="button" className="btn-close" onClick={onClose}></button>
             </div>
-            <div className="modal-footer justify-content-center gap-2 border-0 pt-0 pb-4">
-              <button className="btn btn-light border px-4" onClick={onClose}>
-                Cancel
-              </button>
-              <button className="btn btn-danger px-4" onClick={onConfirm}>
-                <FaTrash className="me-1" /> Delete
-              </button>
+            <div className="modal-body p-4">
+              <div className="view-header">
+                {hosp.imgURL ? (
+                  <img src={hosp.imgURL} alt={hosp.name} className="view-cover" />
+                ) : (
+                  <div className="view-cover d-flex align-items-center justify-content-center bg-secondary bg-opacity-25" style={{ width: 100, height: 100 }}>
+                    <FaHospital size={40} className="text-secondary" />
+                  </div>
+                )}
+                <div>
+                  <h4 className="fw-bold mb-1">{hosp.name}</h4>
+                  <div className="d-flex gap-2 flex-wrap mb-2">
+                    <span className={`badge ${hosp.isActive ? "badge-active" : "badge-inactive"}`}>
+                      {hosp.isActive ? "Đang hoạt động" : "Ngừng hoạt động"}
+                    </span>
+                    <span className="badge badge-type">
+                      {hosp.type === "private" ? "Tư nhân" : "Công lập"}
+                    </span>
+                  </div>
+                  {hosp.slug && <p className="mb-0 text-muted small">Slug: {hosp.slug}</p>}
+                </div>
+              </div>
+
+              <div className="row g-3 mb-4">
+                <div className="col-12">
+                  <p className="mb-1"><FaMapMarkerAlt className="text-primary me-2"/><strong>Địa chỉ:</strong> {hosp.address}</p>
+                  <p className="mb-1"><FaCity className="text-primary me-2"/><strong>Thành phố:</strong> {hosp.city}</p>
+                </div>
+              </div>
+
+              {hosp.description && (
+                <div>
+                  <h6 className="fw-bold mb-2">Mô tả</h6>
+                  <p className="text-secondary small" style={{ whiteSpace: "pre-line" }}>{hosp.description}</p>
+                </div>
+              )}
+            </div>
+            <div className="modal-footer bg-light">
+              <button className="btn btn-secondary" onClick={onClose}>Đóng</button>
+              <button className="btn btn-primary" onClick={onEdit}><FaEdit className="me-1"/> Sửa</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+const DeleteConfirmModal = ({ hosp, onConfirm, onClose, deleting }) => {
+  if (!hosp) return null;
+  return (
+    <>
+      <div className="modal-backdrop fade show" style={{ zIndex: 1040 }}></div>
+      <div className="modal fade show d-block" tabIndex="-1" style={{ zIndex: 1050 }}>
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content border-0 shadow">
+            <div className="modal-body p-4 text-center">
+              <div className="mb-3">
+                 <FaTrash size={48} className="text-danger opacity-75" />
+              </div>
+              <h5 className="fw-bold mb-3">Xác nhận xóa</h5>
+              <p className="text-muted mb-4">
+                Bạn có chắc chắn muốn xóa bệnh viện <strong>{hosp.name}</strong>?<br/>
+                Thao tác này chỉ thực hiện xóa mềm.
+              </p>
+              <div className="d-flex gap-2 justify-content-center">
+                <button className="btn btn-light px-4" onClick={onClose} disabled={deleting}>Hủy</button>
+                <button className="btn btn-danger px-4" onClick={onConfirm} disabled={deleting}>
+                  {deleting ? <span className="spinner-border spinner-border-sm"></span> : "Xóa"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -848,221 +289,172 @@ const DeleteConfirmModal = ({ h, onConfirm, onClose }) => {
 // MAIN PAGE
 // ─────────────────────────────────────────────────────────────────────────────
 export default function AdminHospitalsPage() {
-  const [hospitals, setHospitals] = useState(INIT_HOSPITALS);
-  const [modal, setModal] = useState(null);
+  const [hospitals, setHospitals] = useState([]);
+  const [modal, setModal]       = useState(null); // "add"|"edit"|"view"|"delete"
   const [selected, setSelected] = useState(null);
-  const [form, setForm] = useState(EMPTY_FORM);
+  const [form, setForm]         = useState(EMPTY_FORM);
+  const [meta, setMeta]         = useState({ total: 0, page: 1, totalPages: 1 });
+  const [currentPage, setCurrentPage] = useState(0);
+  const [isLoading, setIsLoading]     = useState(true);
+  const [saving, setSaving]     = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError]       = useState(null);
 
-  const [search, setSearch] = useState("");
-  const [filterDist, setFilterDist] = useState("all");
-  const [filterStat, setFilterStat] = useState("all");
-  const [sortBy, setSortBy] = useState("name");
+  const fetchHospitals = (page) => {
+    setIsLoading(true);
+    setError(null);
+    hospitalService
+      .adminGetHospitals({ page: page + 1, limit: PAGE_LIMIT })
+      .then((res) => {
+        setHospitals(res.data?.data ?? []);
+        setMeta(res.data?.meta ?? {});
+      })
+      .catch((err) => {
+        console.error("Lỗi lấy danh sách bệnh viện:", err);
+        setError("Không thể tải danh sách bệnh viện.");
+      })
+      .finally(() => setIsLoading(false));
+  };
 
-  // ── Modal helpers ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    fetchHospitals(currentPage);
+  }, [currentPage]);
+
+  const mapToForm = (hosp) => ({
+    name: hosp.name ?? "",
+    slug: hosp.slug ?? "",
+    address: hosp.address ?? "",
+    city: hosp.city ?? "",
+    type: hosp.type ?? "public",
+    imgURL: hosp.imgURL ?? "",
+    description: hosp.description ?? "",
+    isActive: hosp.isActive ?? true,
+  });
+
   const openAdd = () => {
     setForm(EMPTY_FORM);
     setSelected(null);
     setModal("add");
   };
 
-  const openEdit = (h) => {
-    setForm({
-      name: h.name,
-      address: h.address,
-      district: h.district,
-      phone: h.phone,
-      email: h.email,
-      website: h.website,
-      beds: String(h.beds),
-      status: h.status,
-      rating: String(h.rating),
-      established: String(h.established),
-      amenities: [...h.amenities],
-      description: h.description,
-      coverUrl: h.coverUrl,
-    });
-    setSelected(h);
-    setModal("edit");
+  const openEdit = async (hosp) => {
+    try {
+      const res = await hospitalService.hospitalDetail(hosp.slug || hosp.id);
+      const data = res.data?.data ?? {};
+      setForm(mapToForm(data));
+      setSelected(data);
+      setModal("edit");
+    } catch (err) {
+      console.error("Lỗi lấy chi tiết bệnh viện:", err);
+      alert("Không thể tải thông tin bệnh viện.");
+    }
   };
 
-  const openView = (h) => {
-    setSelected(h);
-    setModal("view");
+  const openView = async (hosp) => {
+    try {
+      const res = await hospitalService.hospitalDetail(hosp.slug || hosp.id);
+      setSelected(res.data?.data ?? {});
+      setModal("view");
+    } catch (err) {
+      console.error("Lỗi lấy chi tiết bệnh viện:", err);
+      alert("Không thể tải thông tin bệnh viện.");
+    }
   };
-  const openDelete = (h) => {
-    setSelected(h);
+
+  const openDelete = (hosp) => {
+    setSelected(hosp);
     setModal("delete");
   };
+
   const closeModal = () => {
     setModal(null);
     setSelected(null);
   };
 
   const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
-  const handleAmenityToggle = (key) => {
-    setForm((f) => ({
-      ...f,
-      amenities: f.amenities.includes(key)
-        ? f.amenities.filter((a) => a !== key)
-        : [...f.amenities, key],
-    }));
-  };
+  const handleFormChange = (newForm) => setForm(newForm);
 
-  // ── Save ──────────────────────────────────────────────────────────────────
-  const handleSave = () => {
-    const entry = {
-      ...form,
-      beds: Number(form.beds) || 0,
-      rating: Number(form.rating) || 0,
-      established: Number(form.established) || 2000,
-      doctors: selected?.doctors ?? 0,
-      slotFill: selected?.slotFill ?? 0,
-    };
-    if (modal === "add") {
-      setHospitals((prev) => [...prev, { ...entry, id: Date.now() }]);
-    } else {
-      setHospitals((prev) =>
-        prev.map((h) => (h.id === selected.id ? { ...h, ...entry } : h)),
-      );
+  const handleSave = async () => {
+    const isEdit = modal === "edit";
+    const payload = buildPayload(form, isEdit);
+
+    if (!payload.name || !payload.address || !payload.city) {
+      alert("Vui lòng điền các trường bắt buộc (Tên, Địa chỉ, Thành phố)!");
+      return;
     }
-    closeModal();
-  };
 
-  const handleDelete = () => {
-    setHospitals((prev) => prev.filter((h) => h.id !== selected.id));
-    closeModal();
-  };
-
-  // ── Filter pipeline ───────────────────────────────────────────────────────
-  const filtered = useMemo(() => {
-    let list = [...hospitals];
-    if (filterDist !== "all")
-      list = list.filter((h) => h.district === filterDist);
-    if (filterStat !== "all")
-      list = list.filter((h) => h.status === filterStat);
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(
-        (h) =>
-          h.name.toLowerCase().includes(q) ||
-          h.address.toLowerCase().includes(q),
-      );
+    setSaving(true);
+    try {
+      if (!isEdit) {
+        await hospitalService.adminCreateHospital(payload);
+      } else {
+        await hospitalService.adminUpdateHospital(selected.id, payload);
+      }
+      closeModal();
+      fetchHospitals(currentPage);
+    } catch (err) {
+      console.error("Lỗi lưu bệnh viện:", err);
+      alert(err?.response?.data?.message ?? "Có lỗi xảy ra, vui lòng thử lại.");
+    } finally {
+      setSaving(false);
     }
-    if (sortBy === "name") list.sort((a, b) => a.name.localeCompare(b.name));
-    if (sortBy === "doctors") list.sort((a, b) => b.doctors - a.doctors);
-    if (sortBy === "rating") list.sort((a, b) => b.rating - a.rating);
-    if (sortBy === "newest") list.sort((a, b) => b.established - a.established);
-    return list;
-  }, [hospitals, filterDist, filterStat, search, sortBy]);
+  };
 
-  // ── Summary ───────────────────────────────────────────────────────────────
-  const total = hospitals.length;
-  const active = hospitals.filter((h) => h.status === "active").length;
-  const totalDocs = hospitals.reduce((s, h) => s + h.doctors, 0);
-  const avgRating = (
-    hospitals.reduce((s, h) => s + h.rating, 0) / hospitals.length
-  ).toFixed(1);
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await hospitalService.adminDeleteHospital(selected.id);
+      closeModal();
+      const isLastItem = hospitals.length === 1 && currentPage > 0;
+      if (isLastItem) setCurrentPage((p) => p - 1);
+      else fetchHospitals(currentPage);
+    } catch (err) {
+      console.error("Lỗi xóa bệnh viện:", err);
+      alert(err?.response?.data?.message ?? "Không thể xóa, vui lòng thử lại.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handlePageChange = ({ selected: page }) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
-    <div className="admin-hosp">
-      {/* Header */}
+    <div className="admin-hospitals">
       <div className="hosp-header">
         <div>
-          <h1 className="hosp-title">Hospitals Management</h1>
-          <p className="hosp-sub">
-            Manage hospital profiles and affiliated doctors.
-          </p>
+          <h1 className="hosp-title">Quản lý Bệnh viện</h1>
+          <p className="hosp-sub">Quản lý danh sách các cơ sở y tế, bệnh viện, phòng khám.</p>
         </div>
         <div className="hosp-header__right">
-          <span className="hosp-badge">
-            <FaHospital /> {total} hospitals
+          <span className="hosp-total-badge">
+            <FaHospital /> {meta.total ?? 0} bệnh viện
           </span>
           <button className="btn-add-hosp" onClick={openAdd}>
-            <FaPlus /> Add Hospital
+            <FaPlus /> Thêm bệnh viện
           </button>
         </div>
       </div>
 
-      {/* Summary */}
-      <div className="hosp-summary">
-        {[
-          { label: "Total Hospitals", value: total, cls: "s-teal" },
-          { label: "Active", value: active, cls: "s-green" },
-          { label: "Total Doctors", value: totalDocs, cls: "s-navy" },
-          { label: "Avg. Rating", value: avgRating, cls: "s-gold" },
-        ].map((s) => (
-          <div key={s.label} className={`hosp-summary__card ${s.cls}`}>
-            <p className="hosp-summary__value">{s.value}</p>
-            <p className="hosp-summary__label">{s.label}</p>
-          </div>
-        ))}
-      </div>
+      {error && <div className="alert alert-danger" role="alert">{error}</div>}
 
-      {/* Toolbar */}
-      <div className="hosp-toolbar">
-        <div className="toolbar-search">
-          <FaSearch className="toolbar-search__icon" />
-          <input
-            placeholder="Search hospital name or address..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="toolbar-select">
-          <FaMapMarkerAlt className="toolbar-select__icon" />
-          <select
-            value={filterDist}
-            onChange={(e) => setFilterDist(e.target.value)}
-          >
-            <option value="all">All Districts</option>
-            {DISTRICTS.map((d) => (
-              <option key={d} value={d}>
-                {d}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="toolbar-select">
-          <FaFilter className="toolbar-select__icon" />
-          <select
-            value={filterStat}
-            onChange={(e) => setFilterStat(e.target.value)}
-          >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </div>
-        <div className="toolbar-select">
-          <FaSortAmountDown className="toolbar-select__icon" />
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-            <option value="name">Name A→Z</option>
-            <option value="doctors">Most Doctors</option>
-            <option value="rating">Highest Rating</option>
-            <option value="newest">Newest</option>
-          </select>
-        </div>
-      </div>
-
-      <p className="hosp-count">
-        Showing <strong>{filtered.length}</strong> of {total} hospitals
-      </p>
-
-      {/* Grid */}
-      {filtered.length === 0 ? (
+      {isLoading ? (
+        <LoadingSpinner />
+      ) : hospitals.length === 0 ? (
         <div className="hosp-empty">
           <FaHospital className="hosp-empty__icon" />
-          <p>No hospitals found.</p>
-          <span>Try adjusting your search or filters.</span>
+          <p>Không tìm thấy bệnh viện nào</p>
         </div>
       ) : (
         <div className="hosp-grid">
-          {filtered.map((h) => (
+          {hospitals.map((hosp) => (
             <HospitalCard
-              key={h.id}
-              h={h}
+              key={hosp.id}
+              hosp={hosp}
               onView={openView}
               onEdit={openEdit}
               onDelete={openDelete}
@@ -1071,27 +463,77 @@ export default function AdminHospitalsPage() {
         </div>
       )}
 
-      {/* Modals */}
+      {!isLoading && (meta.totalPages ?? 1) > 1 && (
+        <div className="mt-4">
+          <nav aria-label="Page navigation">
+            <ul className="pagination justify-content-center mb-3">
+              <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange({ selected: currentPage - 1 })}
+                  disabled={currentPage === 0}
+                >
+                  <FaChevronLeft /> Trước
+                </button>
+              </li>
+
+              {Array.from({ length: meta.totalPages }, (_, i) => {
+                const start = Math.max(0, currentPage - 2);
+                const end = Math.min(meta.totalPages, start + 5);
+                const adjustedStart = Math.max(0, end - 5);
+
+                if (i < adjustedStart || i >= end) return null;
+
+                return (
+                  <li
+                    key={i}
+                    className={`page-item ${i === currentPage ? "active" : ""}`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange({ selected: i })}
+                    >
+                      {i + 1}
+                    </button>
+                  </li>
+                );
+              })}
+
+              <li className={`page-item ${currentPage === meta.totalPages - 1 ? "disabled" : ""}`}>
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange({ selected: currentPage + 1 })}
+                  disabled={currentPage === meta.totalPages - 1}
+                >
+                  Sau <FaChevronRight />
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      )}
+
       <HospitalFormModal
         mode={modal}
         form={form}
         onChange={handleChange}
-        onAmenityToggle={handleAmenityToggle}
+        onFormChange={handleFormChange}
         onSave={handleSave}
         onClose={closeModal}
+        saving={saving}
       />
+
       <HospitalViewModal
-        h={modal === "view" ? selected : null}
-        onEdit={() => {
-          closeModal();
-          openEdit(selected);
-        }}
+        hosp={modal === "view" ? selected : null}
+        onEdit={() => { closeModal(); openEdit(selected); }}
         onClose={closeModal}
       />
+
       <DeleteConfirmModal
-        h={modal === "delete" ? selected : null}
+        hosp={modal === "delete" ? selected : null}
         onConfirm={handleDelete}
         onClose={closeModal}
+        deleting={deleting}
       />
     </div>
   );

@@ -1,462 +1,182 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// AdminSpecialtiesPage.jsx  —  Specialties Management CRUD
+// AdminSpecialtiesPage.jsx
 // ─────────────────────────────────────────────────────────────────────────────
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
+import ReactPaginate from "react-paginate";
 import {
+  FaStethoscope,
   FaPlus,
   FaEdit,
   FaTrash,
-  FaSearch,
-  FaFilter,
-  FaSortAmountDown,
   FaEye,
-  FaUserMd,
-  FaStethoscope,
-  FaHospital,
-  FaStar,
-  FaCheckCircle,
-  FaExclamationTriangle,
-  FaTimesCircle,
+  FaChevronLeft,
+  FaChevronRight,
+  FaDisease,
+  FaInfoCircle
 } from "react-icons/fa";
 import "./AdminSpecialtiesPage.scss";
+import { specialtyService } from "../../../api/appService";
+import LoadingSpinner from "../../../components/Common/LoadingSpinner";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PRESETS
+// CONSTANTS
 // ─────────────────────────────────────────────────────────────────────────────
-const ICON_PRESETS = [
-  "❤️",
-  "🧠",
-  "👁️",
-  "🦴",
-  "💊",
-  "🩺",
-  "👶",
-  "🔬",
-  "🫁",
-  "🦷",
-];
-
-const COLOR_PRESETS = [
-  { name: "Teal", from: "#0ba3a3", to: "#077d7d" },
-  { name: "Navy", from: "#1a3a5c", to: "#0d2b45" },
-  { name: "Purple", from: "#7c3aed", to: "#5b21b6" },
-  { name: "Rose", from: "#f43f5e", to: "#be123c" },
-  { name: "Amber", from: "#f59e0b", to: "#b45309" },
-  { name: "Green", from: "#10b981", to: "#047857" },
-];
-
-// Mock doctors cho ViewDoctorsModal
-const MOCK_DOCTORS_BY_SPEC = {
-  Cardiology: [
-    {
-      name: "Dr. Nguyen Van An",
-      hospital: "TKT Medical",
-      rating: 4.9,
-      img: "https://i.pravatar.cc/150?img=11",
-    },
-    {
-      name: "Dr. Pham Duc Minh",
-      hospital: "City Hospital",
-      rating: 4.7,
-      img: "https://i.pravatar.cc/150?img=12",
-    },
-  ],
-  Neurology: [
-    {
-      name: "Dr. Le Thi Bich",
-      hospital: "City Hospital",
-      rating: 4.8,
-      img: "https://i.pravatar.cc/150?img=47",
-    },
-    {
-      name: "Dr. Hoang Van Nam",
-      hospital: "Riverside",
-      rating: 4.6,
-      img: "https://i.pravatar.cc/150?img=57",
-    },
-  ],
-  Dermatology: [
-    {
-      name: "Dr. Tran Quoc Hung",
-      hospital: "Riverside",
-      rating: 4.7,
-      img: "https://i.pravatar.cc/150?img=15",
-    },
-  ],
-  Orthopedics: [
-    {
-      name: "Dr. Pham Duc Minh",
-      hospital: "TKT Medical",
-      rating: 4.7,
-      img: "https://i.pravatar.cc/150?img=12",
-    },
-    {
-      name: "Dr. Cao Minh Tri",
-      hospital: "City Hospital",
-      rating: 4.5,
-      img: "https://i.pravatar.cc/150?img=53",
-    },
-  ],
-  Ophthalmology: [
-    {
-      name: "Dr. Vo Thi Lan",
-      hospital: "Riverside",
-      rating: 4.6,
-      img: "https://i.pravatar.cc/150?img=48",
-    },
-  ],
-  Pediatrics: [
-    {
-      name: "Dr. Hoang Van Nam",
-      hospital: "TKT Medical",
-      rating: 4.8,
-      img: "https://i.pravatar.cc/150?img=57",
-    },
-    {
-      name: "Dr. Dang Thi Hoa",
-      hospital: "City Hospital",
-      rating: 4.5,
-      img: "https://i.pravatar.cc/150?img=44",
-    },
-  ],
-  Gynecology: [
-    {
-      name: "Dr. Dang Thi Hoa",
-      hospital: "City Hospital",
-      rating: 4.5,
-      img: "https://i.pravatar.cc/150?img=44",
-    },
-  ],
-  Oncology: [
-    {
-      name: "Dr. Bui Minh Khoa",
-      hospital: "Riverside",
-      rating: 4.6,
-      img: "https://i.pravatar.cc/150?img=53",
-    },
-  ],
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MOCK DATA — 8 specialties
-// ─────────────────────────────────────────────────────────────────────────────
-const INIT_SPECIALTIES = [
-  {
-    id: 1,
-    name: "Cardiology",
-    icon: "❤️",
-    desc: "Diagnosis and treatment of heart and cardiovascular system disorders.",
-    color: COLOR_PRESETS[0],
-    doctors: 12,
-    visits: 1842,
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "Neurology",
-    icon: "🧠",
-    desc: "Specializes in disorders of the nervous system including brain and spine.",
-    color: COLOR_PRESETS[2],
-    doctors: 8,
-    visits: 1120,
-    status: "active",
-  },
-  {
-    id: 3,
-    name: "Dermatology",
-    icon: "🔬",
-    desc: "Focuses on skin, hair, nail conditions and cosmetic procedures.",
-    color: COLOR_PRESETS[4],
-    doctors: 6,
-    visits: 980,
-    status: "active",
-  },
-  {
-    id: 4,
-    name: "Orthopedics",
-    icon: "🦴",
-    desc: "Treatment of musculoskeletal system including bones, joints and muscles.",
-    color: COLOR_PRESETS[1],
-    doctors: 10,
-    visits: 1540,
-    status: "active",
-  },
-  {
-    id: 5,
-    name: "Ophthalmology",
-    icon: "👁️",
-    desc: "Care for eyes and vision, including surgery and laser treatments.",
-    color: COLOR_PRESETS[5],
-    doctors: 5,
-    visits: 760,
-    status: "active",
-  },
-  {
-    id: 6,
-    name: "Pediatrics",
-    icon: "👶",
-    desc: "Medical care for infants, children and adolescents.",
-    color: COLOR_PRESETS[0],
-    doctors: 9,
-    visits: 2100,
-    status: "active",
-  },
-  {
-    id: 7,
-    name: "Gynecology",
-    icon: "💊",
-    desc: "Women's reproductive health, maternal care and minimally invasive surgery.",
-    color: COLOR_PRESETS[3],
-    doctors: 7,
-    visits: 890,
-    status: "active",
-  },
-  {
-    id: 8,
-    name: "Oncology",
-    icon: "🩺",
-    desc: "Diagnosis and treatment of cancer using chemotherapy and other methods.",
-    color: COLOR_PRESETS[2],
-    doctors: 4,
-    visits: 430,
-    status: "inactive",
-  },
-];
+const PAGE_LIMIT = 12;
 
 const EMPTY_FORM = {
   name: "",
-  icon: "❤️",
-  desc: "",
-  color: COLOR_PRESETS[0],
-  status: "active",
+  slug: "",
+  description: "",
+  imgURL: "",
+  diseases: "",
+  information: "",
+  isActive: true,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: SpecialtyCard
+// HELPER
 // ─────────────────────────────────────────────────────────────────────────────
-const SpecialtyCard = ({ s, onView, onEdit, onDelete }) => (
-  <div className="spec-card">
-    {/* Gradient header */}
-    <div
-      className="spec-card__header"
-      style={{
-        background: `linear-gradient(135deg, ${s.color.from} 0%, ${s.color.to} 100%)`,
-      }}
-    >
-      <span className="spec-card__icon">{s.icon}</span>
-      <h3 className="spec-card__name">{s.name}</h3>
-      <span
-        className={`spec-card__status ${s.status === "active" ? "status-active" : "status-inactive"}`}
-      >
-        {s.status === "active" ? (
-          <>
-            <FaCheckCircle /> Active
-          </>
+const buildPayload = (form, isEdit = false) => {
+  const base = {
+    name: form.name?.trim(),
+    slug: form.slug?.trim() || undefined,
+    description: form.description?.trim() || undefined,
+    imgURL: form.imgURL?.trim() || undefined,
+    diseases: form.diseases ? form.diseases.split(",").map(d => d.trim()).filter(Boolean) : undefined,
+    information: form.information ? form.information.split(",").map(i => i.trim()).filter(Boolean) : undefined,
+  };
+  
+  if (isEdit) {
+    base.isActive = form.isActive;
+  }
+  return base;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUB-COMPONENTS
+// ─────────────────────────────────────────────────────────────────────────────
+const SpecialtyCard = ({ spec, onView, onEdit, onDelete }) => {
+  return (
+    <div className="spec-card">
+      <div className="spec-card__cover-wrap">
+        {spec.imgURL ? (
+          <img src={spec.imgURL} alt={spec.name} className="spec-card__cover" />
         ) : (
-          <>
-            <FaTimesCircle /> Inactive
-          </>
+          <FaStethoscope size={48} className="text-secondary opacity-50" />
         )}
-      </span>
-    </div>
+      </div>
 
-    {/* Body */}
-    <div className="spec-card__body">
-      <p className="spec-card__desc">{s.desc}</p>
-
-      <div className="spec-card__stats">
-        <div className="spec-card__stat">
-          <FaUserMd />
-          <div>
-            <p className="spec-card__stat-value">{s.doctors}</p>
-            <p className="spec-card__stat-label">Doctors</p>
-          </div>
-        </div>
-        <div className="spec-card__stat">
-          <FaStethoscope />
-          <div>
-            <p className="spec-card__stat-value">{s.visits.toLocaleString()}</p>
-            <p className="spec-card__stat-label">Total Visits</p>
-          </div>
+      <div>
+        <h3 className="spec-card__name">{spec.name}</h3>
+        <p className="spec-card__address">
+          {spec.description ? (spec.description.length > 60 ? spec.description.substring(0, 60) + "..." : spec.description) : "Chưa có mô tả"}
+        </p>
+        <div className="spec-card__badges">
+          <span className={`badge ${spec.isActive ? "badge-active" : "badge-inactive"}`}>
+            {spec.isActive ? "Đang hoạt động" : "Ngừng hoạt động"}
+          </span>
         </div>
       </div>
 
-      {/* Actions */}
+      <div className="spec-card__info">
+        <div className="spec-card__info-item">
+          <FaDisease /> {spec.diseases?.length ? `${spec.diseases.length} bệnh liên quan` : "Chưa có thông tin bệnh"}
+        </div>
+        <div className="spec-card__info-item">
+          <FaInfoCircle /> {spec.information?.length ? `${spec.information.length} thông tin` : "Chưa có thông tin thêm"}
+        </div>
+      </div>
+
       <div className="spec-card__actions">
-        <button className="spec-btn spec-btn--view" onClick={() => onView(s)}>
-          <FaEye /> View Doctors
+        <button className="spec-btn spec-btn--view" onClick={() => onView(spec)}>
+          <FaEye /> View
         </button>
-        <button className="spec-btn spec-btn--edit" onClick={() => onEdit(s)}>
-          <FaEdit />
+        <button className="spec-btn spec-btn--edit" onClick={() => onEdit(spec)}>
+          <FaEdit /> Edit
         </button>
-        <button
-          className="spec-btn spec-btn--delete"
-          onClick={() => onDelete(s)}
-        >
+        <button className="spec-btn spec-btn--delete" onClick={() => onDelete(spec)}>
           <FaTrash />
         </button>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: SpecialtyFormModal (Add / Edit)
-// ─────────────────────────────────────────────────────────────────────────────
 const SpecialtyFormModal = ({
-  mode,
-  form,
-  onChange,
-  onColorPick,
-  onIconPick,
-  onSave,
-  onClose,
+  mode, form, onChange, onFormChange, onSave, onClose, saving
 }) => {
   if (mode !== "add" && mode !== "edit") return null;
   const isEdit = mode === "edit";
 
   return (
     <>
-      <div className="modal-backdrop fade show" onClick={onClose} />
-      <div className="modal fade show d-block" tabIndex="-1">
-        <div className="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">
-                <FaStethoscope className="me-2" style={{ color: "#0ba3a3" }} />
-                {isEdit ? "Edit Specialty" : "Add New Specialty"}
+      <div className="modal-backdrop fade show" style={{ zIndex: 1040 }}></div>
+      <div className="modal fade show d-block" tabIndex="-1" style={{ zIndex: 1050 }}>
+        <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+          <div className="modal-content border-0 shadow-lg">
+            <div className="modal-header bg-light border-bottom-0 pb-0">
+              <h5 className="modal-title fs-4 fw-bold">
+                {isEdit ? <><FaEdit className="me-2 text-primary" /> Sửa Chuyên khoa</> : <><FaPlus className="me-2 text-primary" /> Thêm Chuyên khoa</>}
               </h5>
-              <button className="btn-close" onClick={onClose} />
+              <button type="button" className="btn-close" onClick={onClose}></button>
             </div>
-
-            <div className="modal-body">
+            <div className="modal-body p-4">
               <div className="row g-3">
-                {/* Left: form */}
-                <div className="col-md-7">
-                  <div className="row g-3">
-                    {/* Name */}
-                    <div className="col-12">
-                      <label className="form-label">Specialty Name</label>
+                <div className="col-md-6">
+                  <label className="form-label">Tên chuyên khoa <span className="text-danger">*</span></label>
+                  <input type="text" className="form-control" name="name" value={form.name} onChange={onChange} />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label">Slug (tùy chọn)</label>
+                  <input type="text" className="form-control" name="slug" value={form.slug} onChange={onChange} placeholder="tu-sinh-khi-de-trong" />
+                </div>
+
+                <div className="col-12">
+                  <label className="form-label">Hình ảnh minh họa (URL)</label>
+                  <div className="d-flex gap-2">
+                    {form.imgURL && <img src={form.imgURL} alt="Preview" className="avatar-preview rounded" style={{width: 36, height: 36, objectFit: "cover"}} />}
+                    <input type="text" className="form-control" name="imgURL" value={form.imgURL} onChange={onChange} placeholder="https://..." />
+                  </div>
+                </div>
+
+                <div className="col-12">
+                  <label className="form-label">Mô tả (Tối đa 500 ký tự)</label>
+                  <textarea className="form-control" name="description" value={form.description} onChange={onChange} rows="3" />
+                </div>
+
+                <div className="col-12">
+                  <label className="form-label">Các bệnh liên quan (Cách nhau bằng dấu phẩy)</label>
+                  <input type="text" className="form-control" name="diseases" value={form.diseases} onChange={onChange} placeholder="VD: Đau đầu, Sốt, Cảm cúm" />
+                </div>
+
+                <div className="col-12">
+                  <label className="form-label">Thông tin khác (Cách nhau bằng dấu phẩy)</label>
+                  <input type="text" className="form-control" name="information" value={form.information} onChange={onChange} placeholder="VD: Chữa khỏi 99%, Điều trị ngoại trú" />
+                </div>
+
+                {isEdit && (
+                  <div className="col-12">
+                    <div className="form-check form-switch py-2 border rounded bg-light">
                       <input
-                        className="form-control"
-                        name="name"
-                        value={form.name}
-                        onChange={onChange}
-                        placeholder="e.g. Cardiology"
+                        className="form-check-input ms-2 me-3"
+                        type="checkbox"
+                        role="switch"
+                        id="isActiveSwitch"
+                        checked={form.isActive}
+                        onChange={(e) => onFormChange({ ...form, isActive: e.target.checked })}
                       />
-                    </div>
-
-                    {/* Icon picker */}
-                    <div className="col-12">
-                      <label className="form-label">Icon</label>
-                      <div className="icon-picker">
-                        {ICON_PRESETS.map((ico) => (
-                          <button
-                            key={ico}
-                            type="button"
-                            className={`icon-swatch ${form.icon === ico ? "icon-swatch--active" : ""}`}
-                            onClick={() => onIconPick(ico)}
-                          >
-                            {ico}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Color picker */}
-                    <div className="col-12">
-                      <label className="form-label">Color Theme</label>
-                      <div className="spec-color-picker">
-                        {COLOR_PRESETS.map((c) => (
-                          <button
-                            key={c.name}
-                            type="button"
-                            className={`spec-color-swatch ${form.color.name === c.name ? "spec-color-swatch--active" : ""}`}
-                            style={{
-                              background: `linear-gradient(135deg, ${c.from}, ${c.to})`,
-                            }}
-                            onClick={() => onColorPick(c)}
-                            title={c.name}
-                          />
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Description */}
-                    <div className="col-12">
-                      <label className="form-label">Description</label>
-                      <textarea
-                        className="form-control"
-                        name="desc"
-                        rows={3}
-                        value={form.desc}
-                        onChange={onChange}
-                        placeholder="Brief description of this specialty..."
-                      />
-                    </div>
-
-                    {/* Status */}
-                    <div className="col-12">
-                      <label className="form-label">Status</label>
-                      <select
-                        className="form-select"
-                        name="status"
-                        value={form.status}
-                        onChange={onChange}
-                      >
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                      </select>
+                      <label className="form-check-label fw-semibold" htmlFor="isActiveSwitch">
+                        Trạng thái hoạt động
+                      </label>
                     </div>
                   </div>
-                </div>
-
-                {/* Right: preview card */}
-                <div className="col-md-5">
-                  <label className="form-label">Preview</label>
-                  <div className="spec-preview">
-                    <div
-                      className="spec-preview__header"
-                      style={{
-                        background: `linear-gradient(135deg, ${form.color.from} 0%, ${form.color.to} 100%)`,
-                      }}
-                    >
-                      <span className="spec-preview__icon">{form.icon}</span>
-                      <p className="spec-preview__name">
-                        {form.name || "Specialty Name"}
-                      </p>
-                    </div>
-                    <div className="spec-preview__body">
-                      <p className="spec-preview__desc">
-                        {form.desc || "Description will appear here..."}
-                      </p>
-                      <span
-                        className={`spec-preview__status ${form.status === "active" ? "status-active" : "status-inactive"}`}
-                      >
-                        {form.status === "active" ? "● Active" : "● Inactive"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
-
-            <div className="modal-footer">
-              <button className="btn btn-light border" onClick={onClose}>
-                Cancel
-              </button>
-              <button className="btn btn-save" onClick={onSave}>
-                {isEdit ? (
-                  <>
-                    <FaEdit className="me-1" />
-                    Update
-                  </>
-                ) : (
-                  <>
-                    <FaPlus className="me-1" />
-                    Save Specialty
-                  </>
-                )}
+            <div className="modal-footer border-top-0 pt-0 bg-light">
+              <button className="btn btn-secondary px-4" onClick={onClose} disabled={saving}>Hủy</button>
+              <button className="btn btn-primary px-4 btn-save" onClick={onSave} disabled={saving}>
+                {saving ? <span className="spinner-border spinner-border-sm"></span> : isEdit ? "Lưu thay đổi" : "Tạo mới"}
               </button>
             </div>
           </div>
@@ -466,71 +186,66 @@ const SpecialtyFormModal = ({
   );
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: ViewDoctorsModal
-// ─────────────────────────────────────────────────────────────────────────────
-const ViewDoctorsModal = ({ specialty, onClose }) => {
-  if (!specialty) return null;
-  const doctors = MOCK_DOCTORS_BY_SPEC[specialty.name] || [];
-
+const SpecialtyViewModal = ({ spec, onEdit, onClose }) => {
+  if (!spec) return null;
   return (
     <>
-      <div className="modal-backdrop fade show" onClick={onClose} />
-      <div className="modal fade show d-block" tabIndex="-1">
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content">
-            <div
-              className="modal-header"
-              style={{
-                background: `linear-gradient(135deg, ${specialty.color.from}, ${specialty.color.to})`,
-              }}
-            >
-              <h5 className="modal-title text-white">
-                <span className="me-2">{specialty.icon}</span>
-                Doctors in {specialty.name}
-              </h5>
-              <button className="btn-close btn-close-white" onClick={onClose} />
+      <div className="modal-backdrop fade show" style={{ zIndex: 1040 }}></div>
+      <div className="modal fade show d-block" tabIndex="-1" style={{ zIndex: 1050 }}>
+        <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+          <div className="modal-content border-0 shadow">
+            <div className="modal-header bg-light">
+              <h5 className="modal-title fw-bold">Chi tiết Chuyên khoa</h5>
+              <button type="button" className="btn-close" onClick={onClose}></button>
             </div>
-
-            <div className="modal-body p-0">
-              {doctors.length === 0 ? (
-                <div className="text-center py-4 text-muted">
-                  <FaUserMd
-                    style={{ fontSize: "2rem", opacity: 0.3, marginBottom: 8 }}
-                  />
-                  <p className="mb-0">No doctors assigned yet.</p>
+            <div className="modal-body p-4">
+              <div className="view-header">
+                {spec.imgURL ? (
+                  <img src={spec.imgURL} alt={spec.name} className="view-cover" />
+                ) : (
+                  <div className="view-cover d-flex align-items-center justify-content-center bg-secondary bg-opacity-25" style={{ width: 100, height: 100 }}>
+                    <FaStethoscope size={40} className="text-secondary" />
+                  </div>
+                )}
+                <div>
+                  <h4 className="fw-bold mb-1">{spec.name}</h4>
+                  <div className="d-flex gap-2 flex-wrap mb-2">
+                    <span className={`badge ${spec.isActive ? "badge-active" : "badge-inactive"}`}>
+                      {spec.isActive ? "Đang hoạt động" : "Ngừng hoạt động"}
+                    </span>
+                  </div>
+                  {spec.slug && <p className="mb-0 text-muted small">Slug: {spec.slug}</p>}
                 </div>
-              ) : (
-                <div className="view-doc-list">
-                  {doctors.map((doc, i) => (
-                    <div key={i} className="view-doc-item">
-                      <img
-                        src={doc.img}
-                        alt={doc.name}
-                        className="view-doc-avatar"
-                        onError={(e) => {
-                          e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(doc.name)}&background=0ba3a3&color=fff`;
-                        }}
-                      />
-                      <div className="view-doc-info">
-                        <p className="view-doc-name">{doc.name}</p>
-                        <p className="view-doc-hospital">
-                          <FaHospital /> {doc.hospital}
-                        </p>
-                      </div>
-                      <div className="view-doc-rating">
-                        <FaStar /> {doc.rating}
-                      </div>
-                    </div>
-                  ))}
+              </div>
+
+              {spec.description && (
+                <div className="mb-3">
+                  <h6 className="fw-bold mb-2">Mô tả</h6>
+                  <p className="text-secondary small" style={{ whiteSpace: "pre-line" }}>{spec.description}</p>
+                </div>
+              )}
+
+              {spec.diseases && spec.diseases.length > 0 && (
+                <div className="mb-3">
+                  <h6 className="fw-bold mb-2">Các bệnh liên quan</h6>
+                  <ul className="text-secondary small">
+                    {spec.diseases.map((d, i) => <li key={i}>{d}</li>)}
+                  </ul>
+                </div>
+              )}
+
+              {spec.information && spec.information.length > 0 && (
+                <div className="mb-3">
+                  <h6 className="fw-bold mb-2">Thông tin khác</h6>
+                  <ul className="text-secondary small">
+                    {spec.information.map((info, i) => <li key={i}>{info}</li>)}
+                  </ul>
                 </div>
               )}
             </div>
-
-            <div className="modal-footer">
-              <button className="btn btn-light border" onClick={onClose}>
-                Close
-              </button>
+            <div className="modal-footer bg-light">
+              <button className="btn btn-secondary" onClick={onClose}>Đóng</button>
+              <button className="btn btn-primary" onClick={onEdit}><FaEdit className="me-1"/> Sửa</button>
             </div>
           </div>
         </div>
@@ -539,39 +254,29 @@ const ViewDoctorsModal = ({ specialty, onClose }) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: DeleteConfirmModal
-// ─────────────────────────────────────────────────────────────────────────────
-const DeleteConfirmModal = ({ s, onConfirm, onClose }) => {
-  if (!s) return null;
+const DeleteConfirmModal = ({ spec, onConfirm, onClose, deleting }) => {
+  if (!spec) return null;
   return (
     <>
-      <div className="modal-backdrop fade show" onClick={onClose} />
-      <div className="modal fade show d-block" tabIndex="-1">
-        <div className="modal-dialog modal-sm modal-dialog-centered">
-          <div className="modal-content">
-            <div className="modal-body text-center py-4">
-              <div className="delete-icon-wrap">
-                <FaExclamationTriangle />
+      <div className="modal-backdrop fade show" style={{ zIndex: 1040 }}></div>
+      <div className="modal fade show d-block" tabIndex="-1" style={{ zIndex: 1050 }}>
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content border-0 shadow">
+            <div className="modal-body p-4 text-center">
+              <div className="mb-3">
+                 <FaTrash size={48} className="text-danger opacity-75" />
               </div>
-              <h5 className="delete-title">Delete Specialty?</h5>
-              <p className="delete-desc">
-                Are you sure you want to delete
-                <br />
-                <strong>
-                  {s.icon} {s.name}
-                </strong>
-                ?<br />
-                This action cannot be undone.
+              <h5 className="fw-bold mb-3">Xác nhận xóa</h5>
+              <p className="text-muted mb-4">
+                Bạn có chắc chắn muốn xóa chuyên khoa <strong>{spec.name}</strong>?<br/>
+                Thao tác này chỉ thực hiện xóa mềm.
               </p>
-            </div>
-            <div className="modal-footer justify-content-center gap-2 border-0 pt-0 pb-4">
-              <button className="btn btn-light border px-4" onClick={onClose}>
-                Cancel
-              </button>
-              <button className="btn btn-danger px-4" onClick={onConfirm}>
-                <FaTrash className="me-1" /> Delete
-              </button>
+              <div className="d-flex gap-2 justify-content-center">
+                <button className="btn btn-light px-4" onClick={onClose} disabled={deleting}>Hủy</button>
+                <button className="btn btn-danger px-4" onClick={onConfirm} disabled={deleting}>
+                  {deleting ? <span className="spinner-border spinner-border-sm"></span> : "Xóa"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -584,180 +289,171 @@ const DeleteConfirmModal = ({ s, onConfirm, onClose }) => {
 // MAIN PAGE
 // ─────────────────────────────────────────────────────────────────────────────
 export default function AdminSpecialtiesPage() {
-  const [specialties, setSpecialties] = useState(INIT_SPECIALTIES);
-  const [modal, setModal] = useState(null);
+  const [specialties, setSpecialties] = useState([]);
+  const [modal, setModal]       = useState(null); // "add"|"edit"|"view"|"delete"
   const [selected, setSelected] = useState(null);
-  const [form, setForm] = useState(EMPTY_FORM);
+  const [form, setForm]         = useState(EMPTY_FORM);
+  const [meta, setMeta]         = useState({ total: 0, page: 1, totalPages: 1 });
+  const [currentPage, setCurrentPage] = useState(0);
+  const [isLoading, setIsLoading]     = useState(true);
+  const [saving, setSaving]     = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError]       = useState(null);
 
-  // Filters
-  const [search, setSearch] = useState("");
-  const [filterStat, setFilterStat] = useState("all");
-  const [sortBy, setSortBy] = useState("name");
+  const fetchSpecialties = (page) => {
+    setIsLoading(true);
+    setError(null);
+    specialtyService
+      .adminGetSpecialties({ page: page + 1, limit: PAGE_LIMIT })
+      .then((res) => {
+        setSpecialties(res.data?.data ?? []);
+        setMeta(res.data?.meta ?? {});
+      })
+      .catch((err) => {
+        console.error("Lỗi lấy danh sách chuyên khoa:", err);
+        setError("Không thể tải danh sách chuyên khoa.");
+      })
+      .finally(() => setIsLoading(false));
+  };
 
-  // ── Modal helpers ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    fetchSpecialties(currentPage);
+  }, [currentPage]);
+
+  const mapToForm = (spec) => ({
+    name: spec.name ?? "",
+    slug: spec.slug ?? "",
+    description: spec.description ?? "",
+    imgURL: spec.imgURL ?? "",
+    diseases: spec.diseases ? spec.diseases.join(", ") : "",
+    information: spec.information ? spec.information.join(", ") : "",
+    isActive: spec.isActive ?? true,
+  });
+
   const openAdd = () => {
     setForm(EMPTY_FORM);
     setSelected(null);
     setModal("add");
   };
 
-  const openEdit = (s) => {
-    setForm({
-      name: s.name,
-      icon: s.icon,
-      desc: s.desc,
-      color: s.color,
-      status: s.status,
-    });
-    setSelected(s);
-    setModal("edit");
+  const openEdit = async (spec) => {
+    try {
+      const res = await specialtyService.specialtyDetail(spec.slug || spec.id);
+      const data = res.data?.data ?? {};
+      setForm(mapToForm(data));
+      setSelected(data);
+      setModal("edit");
+    } catch (err) {
+      console.error("Lỗi lấy chi tiết chuyên khoa:", err);
+      alert("Không thể tải thông tin chuyên khoa.");
+    }
   };
 
-  const openView = (s) => {
-    setSelected(s);
-    setModal("view");
+  const openView = async (spec) => {
+    try {
+      const res = await specialtyService.specialtyDetail(spec.slug || spec.id);
+      setSelected(res.data?.data ?? {});
+      setModal("view");
+    } catch (err) {
+      console.error("Lỗi lấy chi tiết chuyên khoa:", err);
+      alert("Không thể tải thông tin chuyên khoa.");
+    }
   };
-  const openDelete = (s) => {
-    setSelected(s);
+
+  const openDelete = (spec) => {
+    setSelected(spec);
     setModal("delete");
   };
+
   const closeModal = () => {
     setModal(null);
     setSelected(null);
   };
 
-  // ── Form handlers ─────────────────────────────────────────────────────────
   const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
-  const handleColorPick = (c) => setForm({ ...form, color: c });
-  const handleIconPick = (i) => setForm({ ...form, icon: i });
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
-  // ── Save ──────────────────────────────────────────────────────────────────
-  const handleSave = () => {
-    if (modal === "add") {
-      setSpecialties((prev) => [
-        ...prev,
-        { ...form, id: Date.now(), doctors: 0, visits: 0 },
-      ]);
-    } else {
-      setSpecialties((prev) =>
-        prev.map((s) => (s.id === selected.id ? { ...s, ...form } : s)),
-      );
+  const handleFormChange = (newForm) => setForm(newForm);
+
+  const handleSave = async () => {
+    const isEdit = modal === "edit";
+    const payload = buildPayload(form, isEdit);
+
+    if (!payload.name) {
+      alert("Vui lòng điền tên chuyên khoa!");
+      return;
     }
-    closeModal();
+
+    setSaving(true);
+    try {
+      if (!isEdit) {
+        await specialtyService.adminCreateSpecialty(payload);
+      } else {
+        await specialtyService.adminUpdateSpecialty(selected.id, payload);
+      }
+      closeModal();
+      fetchSpecialties(currentPage);
+    } catch (err) {
+      console.error("Lỗi lưu chuyên khoa:", err);
+      alert(err?.response?.data?.message ?? "Có lỗi xảy ra, vui lòng thử lại.");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  // ── Delete ────────────────────────────────────────────────────────────────
-  const handleDelete = () => {
-    setSpecialties((prev) => prev.filter((s) => s.id !== selected.id));
-    closeModal();
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await specialtyService.adminDeleteSpecialty(selected.id);
+      closeModal();
+      const isLastItem = specialties.length === 1 && currentPage > 0;
+      if (isLastItem) setCurrentPage((p) => p - 1);
+      else fetchSpecialties(currentPage);
+    } catch (err) {
+      console.error("Lỗi xóa chuyên khoa:", err);
+      alert(err?.response?.data?.message ?? "Không thể xóa, vui lòng thử lại.");
+    } finally {
+      setDeleting(false);
+    }
   };
 
-  // ── Filter pipeline ───────────────────────────────────────────────────────
-  const filtered = useMemo(() => {
-    let list = [...specialties];
-    if (filterStat !== "all")
-      list = list.filter((s) => s.status === filterStat);
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(
-        (s) =>
-          s.name.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q),
-      );
-    }
-    if (sortBy === "name") list.sort((a, b) => a.name.localeCompare(b.name));
-    if (sortBy === "doctors") list.sort((a, b) => b.doctors - a.doctors);
-    if (sortBy === "newest") list.sort((a, b) => b.id - a.id);
-    return list;
-  }, [specialties, filterStat, search, sortBy]);
-
-  // ── Summary ───────────────────────────────────────────────────────────────
-  const total = specialties.length;
-  const activeCount = specialties.filter((s) => s.status === "active").length;
-  const totalDocs = specialties.reduce((sum, s) => sum + s.doctors, 0);
+  const handlePageChange = ({ selected: page }) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
-    <div className="admin-specs">
-      {/* Header */}
-      <div className="specs-header">
+    <div className="admin-specialties">
+      <div className="spec-header">
         <div>
-          <h1 className="specs-title">Specialties Management</h1>
-          <p className="specs-sub">
-            Manage medical specialties and assigned doctors.
-          </p>
+          <h1 className="spec-title">Quản lý Chuyên khoa</h1>
+          <p className="spec-sub">Quản lý danh sách các chuyên khoa y tế.</p>
         </div>
-        <div className="specs-header__right">
-          <span className="specs-badge">
-            <FaStethoscope /> {total} specialties
+        <div className="spec-header__right">
+          <span className="spec-total-badge">
+            <FaStethoscope /> {meta.total ?? 0} chuyên khoa
           </span>
           <button className="btn-add-spec" onClick={openAdd}>
-            <FaPlus /> Add Specialty
+            <FaPlus /> Thêm chuyên khoa
           </button>
         </div>
       </div>
 
-      {/* Summary */}
-      <div className="specs-summary">
-        {[
-          { label: "Total Specialties", value: total, cls: "s-teal" },
-          { label: "Active", value: activeCount, cls: "s-green" },
-          { label: "Doctors Assigned", value: totalDocs, cls: "s-navy" },
-        ].map((s) => (
-          <div key={s.label} className={`specs-summary__card ${s.cls}`}>
-            <p className="specs-summary__value">{s.value}</p>
-            <p className="specs-summary__label">{s.label}</p>
-          </div>
-        ))}
-      </div>
+      {error && <div className="alert alert-danger" role="alert">{error}</div>}
 
-      {/* Toolbar */}
-      <div className="specs-toolbar">
-        <div className="toolbar-search">
-          <FaSearch className="toolbar-search__icon" />
-          <input
-            placeholder="Search specialty name..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="toolbar-select">
-          <FaFilter className="toolbar-select__icon" />
-          <select
-            value={filterStat}
-            onChange={(e) => setFilterStat(e.target.value)}
-          >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </div>
-        <div className="toolbar-select">
-          <FaSortAmountDown className="toolbar-select__icon" />
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-            <option value="name">Name A→Z</option>
-            <option value="doctors">Most Doctors</option>
-            <option value="newest">Newest</option>
-          </select>
-        </div>
-      </div>
-
-      <p className="specs-count">
-        Showing <strong>{filtered.length}</strong> of {total} specialties
-      </p>
-
-      {/* Grid */}
-      {filtered.length === 0 ? (
-        <div className="specs-empty">
-          <FaStethoscope className="specs-empty__icon" />
-          <p>No specialties found.</p>
-          <span>Try adjusting your search or filters.</span>
+      {isLoading ? (
+        <LoadingSpinner />
+      ) : specialties.length === 0 ? (
+        <div className="spec-empty">
+          <FaStethoscope className="spec-empty__icon" />
+          <p>Không tìm thấy chuyên khoa nào</p>
         </div>
       ) : (
-        <div className="specs-grid">
-          {filtered.map((s) => (
+        <div className="spec-grid">
+          {specialties.map((spec) => (
             <SpecialtyCard
-              key={s.id}
-              s={s}
+              key={spec.id}
+              spec={spec}
               onView={openView}
               onEdit={openEdit}
               onDelete={openDelete}
@@ -766,24 +462,77 @@ export default function AdminSpecialtiesPage() {
         </div>
       )}
 
-      {/* Modals */}
+      {!isLoading && (meta.totalPages ?? 1) > 1 && (
+        <div className="mt-4">
+          <nav aria-label="Page navigation">
+            <ul className="pagination justify-content-center mb-3">
+              <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange({ selected: currentPage - 1 })}
+                  disabled={currentPage === 0}
+                >
+                  <FaChevronLeft /> Trước
+                </button>
+              </li>
+
+              {Array.from({ length: meta.totalPages }, (_, i) => {
+                const start = Math.max(0, currentPage - 2);
+                const end = Math.min(meta.totalPages, start + 5);
+                const adjustedStart = Math.max(0, end - 5);
+
+                if (i < adjustedStart || i >= end) return null;
+
+                return (
+                  <li
+                    key={i}
+                    className={`page-item ${i === currentPage ? "active" : ""}`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange({ selected: i })}
+                    >
+                      {i + 1}
+                    </button>
+                  </li>
+                );
+              })}
+
+              <li className={`page-item ${currentPage === meta.totalPages - 1 ? "disabled" : ""}`}>
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange({ selected: currentPage + 1 })}
+                  disabled={currentPage === meta.totalPages - 1}
+                >
+                  Sau <FaChevronRight />
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      )}
+
       <SpecialtyFormModal
         mode={modal}
         form={form}
         onChange={handleChange}
-        onColorPick={handleColorPick}
-        onIconPick={handleIconPick}
+        onFormChange={handleFormChange}
         onSave={handleSave}
         onClose={closeModal}
+        saving={saving}
       />
-      <ViewDoctorsModal
-        specialty={modal === "view" ? selected : null}
+
+      <SpecialtyViewModal
+        spec={modal === "view" ? selected : null}
+        onEdit={() => { closeModal(); openEdit(selected); }}
         onClose={closeModal}
       />
+
       <DeleteConfirmModal
-        s={modal === "delete" ? selected : null}
+        spec={modal === "delete" ? selected : null}
         onConfirm={handleDelete}
         onClose={closeModal}
+        deleting={deleting}
       />
     </div>
   );

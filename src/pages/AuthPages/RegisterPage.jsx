@@ -7,12 +7,21 @@ import {
   FaGithub,
   FaFacebook,
 } from "react-icons/fa";
-import { Link } from "react-router";
+// import { FaGoogle } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import { register } from "../../store/slices/authSlice";
 import Password from "../../components/Common/Password";
 import { BrandLogo } from "../../components/Common/BrandLogo";
+import authService from "../../api/authService";
 
 export default function RegisterInvite() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { isLoading } = useSelector((state) => state.auth);
+
   const [formData, setFormData] = useState({
     surname: "",
     name: "",
@@ -29,13 +38,40 @@ export default function RegisterInvite() {
     }));
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Mật khẩu không khớp!");
+      return;
+    }
+    
+    // Chuẩn bị payload khớp với backend
+    const payload = {
+      firstName: formData.name,
+      lastName: formData.surname,
+      email: formData.email,
+      password: formData.password,
+    };
+
+    try {
+      const resultAction = await dispatch(register(payload)).unwrap();
+      toast.success("Đăng ký thành công!");
+      const returnUrl = resultAction.role === "admin" ? "/app/admin/dashboard" 
+        : resultAction.role === "doctor" ? "/app/doctor/dashboard" : "/app/user/dashboard";
+      navigate(returnUrl);
+    } catch (error) {
+      toast.error(error || "Đăng ký thất bại");
+    }
+  };
+
   return (
-    <div className="login-container d-flex flex-column align-items-center justify-content-center">
+    <div className="login-container min-vh-100 d-flex flex-column align-items-center justify-content-center p-4">
       <div className="p-3">
         <BrandLogo />
       </div>
 
-      <div
+      <form
+        onSubmit={handleSubmit}
         className="card p-4 shadow-sm"
         style={{ width: "420px", borderRadius: "12px" }}
       >
@@ -95,23 +131,34 @@ export default function RegisterInvite() {
         ></Password>
 
         {/* Button */}
-        <button className="btn-search-go mt-3">Đăng ký →</button>
+        <button type="submit" className="btn-search-go mt-3" disabled={isLoading}>
+          {isLoading ? "Đang xử lý..." : "Đăng ký →"}
+        </button>
 
         {/* Divider */}
         <div className="">
           <hr className="my-3" />
-          <p className="text-center">Đăng ký với</p>
+          <p className="text-center">Hoặc</p>
         </div>
 
         {/* OAuth Buttons */}
-        <div className="row justify-content-center">
+        {/* <div className="row justify-content-center">
           <div className="col-4">
-            <button className="btn-search-go w-100">
+            <button type="button" className="btn-search-go w-100" onClick={() => authService.loginWithGoogle()}>
               <FaGoogle />
             </button>
           </div>
+        </div> */}
+        <div className="d-flex justify-content-center mb-4">
+          <button 
+            className="btn-search-go"
+            onClick={() => {authService.loginWithGoogle()}}
+          >
+            {/* <FaGoogle /> */}
+            <span>Đăng nhập với Google</span>
+          </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 }

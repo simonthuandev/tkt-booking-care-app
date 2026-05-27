@@ -1,13 +1,16 @@
 import axiosInstance from "../api/axiosInstance";
 import authService from "../api/authService";
 
-// Routes công khai — 401 ở đây là bình thường, không cần redirect
-const PUBLIC_PATHS = ["/", "/doctors", "/specialties", "/hospitals", "/services", "/news", "/search", "/about", "/contact"];
+// Route loại trừ — 401 ở đây là bình thường, không cần redirect
+const EXCLUDED_PATHS = ["/", "/doctors", "/specialties", "/hospitals",
+"/services", "/news", "/search", "/about", "/contact", "/auth",
+"/test-payment", "/payment-result"
+];
 
-const isPublicPage = () => {
+const isExcludedPage = () => {
   const pathname = window.location.pathname;
   
-  return PUBLIC_PATHS.some((p) => {
+  return EXCLUDED_PATHS.some((p) => {
     if (p === "/") return pathname === "/";
     return pathname.startsWith(p);
   });
@@ -37,7 +40,8 @@ const setupInterceptors = (store) => {
       const isHardSkip =
         url.includes("/auth/refresh") ||
         url.includes("/auth/login") ||
-        url.includes("/auth/register");
+        url.includes("/auth/register") ||
+        url.match(/\.(jpeg|jpg|gif|png|svg|webp)$/i); // Bypass resource URLs
 
       if (status === 401 && !originalRequest._retry && !isHardSkip) {
         if (isRefreshing) {
@@ -60,7 +64,7 @@ const setupInterceptors = (store) => {
           const { logout } = await import("../store/slices/authSlice");
           store.dispatch(logout());
 
-          if (!isRedirectingToLogin && !isPublicPage()) {
+          if (!isRedirectingToLogin && !isExcludedPage()) {
             isRedirectingToLogin = true;
             window.location.replace("/auth/login");
           }

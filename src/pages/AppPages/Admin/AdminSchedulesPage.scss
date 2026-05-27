@@ -1,52 +1,41 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// AdminSchedulesPage.scss
-// ─────────────────────────────────────────────────────────────────────────────
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap");
-
-// ── Tokens ──────────────────────────────────────────────────────────────────
-$primary: #0ba3a3;
+// ─── Variables ────────────────────────────────────────────────
+$bg: #f5f6fa;
+$surface: #ffffff;
+$border: #e4e7ef;
+$text: #1a1d2e;
+$text-muted: #6b7280;
+$primary: #2563eb;
+$primary-h: #1d4ed8;
 $primary-dk: #077d7d;
 $primary-lt: #e6f7f7;
-$accent: #ff6b35;
-$accent-lt: #fff1ec;
-$navy: #0d2b45;
-$navy-lt: #e6eef5;
-$text: #1a2b3c;
-$text-muted: #6b7f8e;
-$border: #e2ebf0;
-$bg-main: #f7fafb;
-$bg-card: #ffffff;
 $white: #ffffff;
-$green: #1a9e5c;
-$green-lt: #e6f9f0;
-$danger: #e24b4a;
-$danger-lt: #fef2f2;
-$star: #f5a623;
-$star-lt: #fff8e6;
+$danger: #ef4444;
+$danger-h: #dc2626;
 $ff-head: "Playfair Display", serif;
 $ff-body: "DM Sans", sans-serif;
-$radius: 16px;
+$radius: 8px;
 $radius-sm: 10px;
-$shadow: 0 4px 24px rgba(13, 43, 69, 0.08);
-$shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
+$radius-lg: 12px;
 
-@mixin card {
-  background: $bg-card;
-  border-radius: $radius;
-  box-shadow: $shadow;
-  border: 1px solid $border;
-}
+// Status colors
+$c-free: #16a34a;
+$c-booked: #2563eb;
+$c-blocked: #dc2626;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PAGE
-// ─────────────────────────────────────────────────────────────────────────────
-.admin-sch {
+// ─── Page layout ─────────────────────────────────────────────
+.schedules-page {
   font-family: $ff-body;
   max-width: 1400px;
+  // min-height: 100vh;
+  // background: $bg;
+  // padding: 28px 32px;
+  // font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+  // color: $text;
+  // box-sizing: border-box;
 }
 
-// ── Header ───────────────────────────────────────────────────────────────────
-.sch-header {
+// ─── Header ───────────────────────────────────────────────────
+.slots-header {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -62,24 +51,25 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
   }
 }
 
-.sch-title {
+.slots-title {
   font-family: $ff-head;
   font-size: 2rem;
   font-weight: 700;
   color: $text;
   margin: 0 0 4px;
+
   @media (max-width: 576px) {
     font-size: 1.5rem;
   }
 }
 
-.sch-sub {
+.slots-sub {
   font-size: 0.875rem;
   color: $text-muted;
   margin: 0;
 }
 
-.sch-badge {
+.slots-total-badge {
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -91,12 +81,14 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
   border-radius: 100px;
   border: 1px solid rgba($primary, 0.25);
   white-space: nowrap;
+
   svg {
     font-size: 0.82rem;
   }
 }
 
-.btn-add-sch {
+// Add button
+.btn-add-slot {
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -112,792 +104,467 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
   transition:
     box-shadow 0.2s,
     transform 0.15s;
+
   svg {
     font-size: 0.8rem;
   }
+
   &:hover {
     box-shadow: 0 6px 18px rgba($primary, 0.4);
     transform: translateY(-1px);
   }
+
   &:active {
     transform: scale(0.98);
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SUMMARY — 4 thẻ
-// ─────────────────────────────────────────────────────────────────────────────
-.sch-summary {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+// ─── Buttons ──────────────────────────────────────────────────
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: $radius;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
 
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  @media (max-width: 400px) {
-    grid-template-columns: 1fr;
+  &:active {
+    transform: scale(0.97);
   }
 
-  &__card {
-    @include card;
-    padding: 1rem 1.25rem;
-    text-align: center;
-    transition:
-      box-shadow 0.2s,
-      transform 0.2s;
+  &--primary {
+    background: $primary;
+    color: #fff;
+    box-shadow: 0 1px 3px rgba($primary, 0.35);
 
     &:hover {
-      box-shadow: $shadow-hov;
-      transform: translateY(-2px);
-    }
-
-    // color variants — border-top accent
-    &.s-teal {
-      border-top: 3px solid $primary;
-    }
-    &.s-green {
-      border-top: 3px solid $green;
-    }
-    &.s-navy {
-      border-top: 3px solid $navy;
-    }
-    &.s-gray {
-      border-top: 3px solid $text-muted;
+      background: $primary-h;
     }
   }
 
-  &__value {
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: $text;
-    margin: 0 0 4px;
-    line-height: 1;
-  }
-
-  &__label {
-    font-size: 0.72rem;
-    font-weight: 600;
+  &--ghost {
+    background: transparent;
     color: $text-muted;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin: 0;
+    border: 1px solid $border;
+
+    &:hover {
+      background: #f0f1f5;
+      color: $text;
+    }
+  }
+
+  &--danger {
+    background: $danger;
+    color: #fff;
+
+    &:hover {
+      background: $danger-h;
+    }
+  }
+
+  &--sm {
+    padding: 5px 12px;
+    font-size: 0.8rem;
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// FILTER BAR
-// ─────────────────────────────────────────────────────────────────────────────
-.sch-filterbar {
+// ─── Filter Bar ───────────────────────────────────────────────
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+
+  select,
+  input[type="date"] {
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid $border;
+    border-radius: $radius;
+    background: $bg;
+    font-size: 0.85rem;
+    color: $text;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+
+    &:focus {
+      outline: none;
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary, 0.12);
+    }
+  }
+}
+
+// ─── Bulk Bar ─────────────────────────────────────────────────
+.bulk-bar {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 1.25rem;
-  flex-wrap: wrap;
-}
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: $radius;
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+  color: $primary;
 
-.filterbar-doctor {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  &__avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid $primary-lt;
-    flex-shrink: 0;
-  }
-}
-
-.filterbar-info {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
-  color: $text-muted;
-  background: $bg-card;
-  padding: 6px 12px;
-  border-radius: $radius-sm;
-  border: 1px solid $border;
-
-  svg {
-    color: $primary;
-    font-size: 0.72rem;
-  }
-}
-
-// Shared toolbar select (reuse từ các trang khác)
-.toolbar-select {
-  position: relative;
-  flex-shrink: 0;
-
-  &__icon {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: $text-muted;
-    font-size: 0.75rem;
-    pointer-events: none;
-  }
-
-  select {
-    padding: 0.52rem 1rem 0.52rem 2rem;
-    border: 1px solid $border;
-    border-radius: $radius-sm;
-    font-family: $ff-body;
-    font-size: 0.83rem;
-    color: $text;
-    background: $bg-card;
-    outline: none;
-    cursor: pointer;
-    appearance: none;
-    transition: border-color 0.18s;
-    &:focus {
-      border-color: $primary;
-    }
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// CALENDAR CARD
-// ─────────────────────────────────────────────────────────────────────────────
-.sch-calendar {
-  @include card;
-  overflow: hidden;
-}
-
-// Nav
-.sch-cal-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid $border;
-
-  &__month {
-    font-family: $ff-head;
-    font-size: 1.05rem;
+  strong {
     font-weight: 600;
-    color: $text;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    svg {
-      color: $primary;
-      font-size: 0.95rem;
-    }
-  }
-
-  &__btn {
-    width: 34px;
-    height: 34px;
-    border-radius: $radius-sm;
-    border: 1px solid $border;
-    background: $bg-card;
-    color: $text-muted;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 0.8rem;
-    transition:
-      background 0.15s,
-      color 0.15s,
-      border-color 0.15s;
-    &:hover {
-      background: $primary-lt;
-      color: $primary;
-      border-color: rgba($primary, 0.3);
-    }
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ALL DOCTORS VIEW — stacked rows
-// ─────────────────────────────────────────────────────────────────────────────
-.sch-all-doctors {
-  display: flex;
-  flex-direction: column;
+// ─── Table ────────────────────────────────────────────────────
+.table-wrap {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  overflow-x: auto;
+  margin-bottom: 20px;
 }
 
-.sch-doctor-row {
-  display: flex;
-  align-items: flex-start;
-  border-bottom: 1px solid $border;
-  &:last-child {
-    border-bottom: none;
-  }
+.slot-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
 
-  &__label {
-    width: 180px;
-    min-width: 180px;
-    padding: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-right: 1px solid $border;
-    background: $bg-main;
-    position: sticky;
-    left: 0;
-    z-index: 3;
-
-    @media (max-width: 600px) {
-      width: 120px;
-      min-width: 120px;
-    }
-  }
-
-  &__avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid $primary-lt;
-    flex-shrink: 0;
-  }
-
-  &__name {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: $text;
-    margin: 0 0 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 110px;
-  }
-
-  &__spec {
-    font-size: 0.68rem;
-    color: $text-muted;
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 110px;
-  }
-
-  &__grid-wrap {
-    flex: 1;
-    overflow-x: auto;
-    scrollbar-width: thin;
-    scrollbar-color: $border transparent;
-    &::-webkit-scrollbar {
-      height: 4px;
-    }
-    &::-webkit-scrollbar-thumb {
-      background: $border;
-      border-radius: 2px;
-    }
-  }
-}
-
-// Mini grid (khi All Doctors)
-.sch-mini-grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(100px, 1fr));
-  min-width: 700px;
-}
-
-.sch-mini-col {
-  border-right: 1px solid $border;
-  &:last-child {
-    border-right: none;
-  }
-
-  &__header {
-    padding: 0.4rem 0.5rem;
-    text-align: center;
+  thead tr {
+    background: #f8f9fd;
     border-bottom: 1px solid $border;
-    background: $bg-main;
-    font-size: 0.68rem;
-    color: $text-muted;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
+  }
 
-    &--today {
-      background: $primary-lt;
+  th {
+    padding: 11px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: $text-muted;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 11px 14px;
+    border-bottom: 1px solid $border;
+    vertical-align: middle;
+  }
+
+  tbody tr {
+    transition: background 0.1s;
+
+    &:last-child td {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background: #f8f9fd;
+    }
+
+    &.row--selected {
+      background: #eff6ff;
     }
   }
 
-  &__slots {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 5px 4px;
+  .col-check {
+    width: 36px;
+  }
+
+  .col-actions {
+    width: 90px;
+    text-align: center;
   }
 }
 
-.today-num {
+// ─── Table cell styles ────────────────────────────────────────
+.doctor-name {
+  font-weight: 500;
+  color: $text;
+}
+
+.hospital-tag {
+  font-size: 0.78rem;
+  background: #f0f1f5;
+  color: $text-muted;
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.date-cell {
+  color: $text-muted;
+  font-size: 0.83rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.time-cell {
+  .time-pill {
+    display: inline-block;
+    background: #eff6ff;
+    color: $primary;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.3px;
+  }
+}
+
+// ─── Badges ───────────────────────────────────────────────────
+.badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+
+  &--free {
+    background: #dcfce7;
+    color: $c-free;
+  }
+
+  &--booked {
+    background: #dbeafe;
+    color: $c-booked;
+  }
+
+  &--blocked {
+    background: #fee2e2;
+    color: $c-blocked;
+  }
+}
+
+// ─── Action buttons ───────────────────────────────────────────
+.action-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: $primary;
-  color: $white;
-  font-weight: 700;
-  font-size: 0.72rem;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SINGLE DOCTOR CALENDAR (full view)
-// ─────────────────────────────────────────────────────────────────────────────
-.sch-grid-wrap {
-  overflow-x: auto;
-  scrollbar-width: thin;
-  scrollbar-color: $border transparent;
-  &::-webkit-scrollbar {
-    height: 6px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: $border;
-    border-radius: 3px;
-  }
-}
-
-.sch-grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(130px, 1fr));
-  min-width: 910px;
-  border-top: 1px solid $border;
-}
-
-.sch-col {
-  border-right: 1px solid $border;
-  &:last-child {
-    border-right: none;
-  }
-
-  &__header {
-    padding: 0.75rem 0.5rem 0.6rem;
-    text-align: center;
-    border-bottom: 1px solid $border;
-    background: $bg-main;
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    &--today {
-      background: $primary-lt;
-    }
-  }
-
-  &__day-name {
-    display: block;
-    font-size: 0.68rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: $text-muted;
-    margin-bottom: 4px;
-  }
-
-  &__day-num {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    font-size: 0.92rem;
-    font-weight: 600;
-    color: $text;
-
-    &--today {
-      background: $primary;
-      color: $white;
-    }
-  }
-
-  &__today-dot {
-    display: block;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: $primary;
-    margin: 3px auto 0;
-  }
-
-  &__slots {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 8px 6px;
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SLOT CELL
-// ─────────────────────────────────────────────────────────────────────────────
-.sch-slot {
-  border-radius: $radius-sm;
-  padding: 6px 7px;
+  background: none;
+  border: none;
   cursor: pointer;
-  transition:
-    transform 0.15s,
-    box-shadow 0.15s;
-  min-height: 50px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: background 0.15s, transform 0.1s, color 0.15s;
+  margin: 0 2px;
+  color: $text-muted;
 
   &:hover {
-    transform: translateY(-1px);
+    background: #f0f1f5;
+    transform: scale(1.15);
+    color: $text;
   }
 
-  &--available {
-    background: $primary-lt;
-    border: 1px dashed rgba($primary, 0.5);
-    &:hover {
-      background: rgba($primary, 0.18);
-      box-shadow: 0 3px 10px rgba($primary, 0.2);
-    }
-    .sch-slot__hour {
-      color: $primary-dk;
-    }
+  &--block:hover {
+    background: #fee2e2;
+    color: $danger;
   }
 
-  &--booked {
-    background: $navy-lt;
-    border: 1px solid rgba($navy, 0.2);
-    &:hover {
-      box-shadow: 0 3px 10px rgba($navy, 0.15);
-    }
-    .sch-slot__hour {
-      color: $navy;
-    }
+  &--unblock:hover {
+    background: #dcfce7;
+    color: $c-free;
   }
 
-  &--blocked {
-    background: $bg-main;
-    border: 1px solid $border;
-    opacity: 0.7;
-    .sch-slot__hour {
-      color: $text-muted;
-    }
+  &--delete:hover {
+    background: #fee2e2;
+    color: $danger;
   }
 }
 
-.sch-slot__hour {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-}
-
-.sch-slot__label {
-  font-size: 0.62rem;
+// ─── Empty state ──────────────────────────────────────────────
+.empty-state {
+  text-align: center;
+  padding: 48px !important;
   color: $text-muted;
-  font-weight: 500;
+  font-size: 0.9rem;
 }
 
-.sch-slot__booked {
+// ─── Pagination ───────────────────────────────────────────────
+.pagination {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
+  justify-content: center;
+  margin-top: 4px;
 
-.sch-slot__doc-avatar {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid $white;
-}
-
-.sch-slot__patient {
-  font-size: 0.68rem;
-  font-weight: 600;
-  color: $navy;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.sch-slot__type {
-  font-size: 0.6rem;
-  color: $text-muted;
-}
-
-// Booking status mini badge
-.sch-slot__booking-badge {
-  display: inline-block;
-  font-size: 0.58rem;
-  font-weight: 700;
-  padding: 1px 5px;
-  border-radius: 100px;
-  align-self: flex-start;
-
-  &.badge-wait {
-    background: $star-lt;
-    color: darken($star, 15%);
-    border: 1px solid rgba($star, 0.3);
-  }
-  &.badge-conf {
-    background: $green-lt;
-    color: $green;
-    border: 1px solid rgba($green, 0.25);
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// LEGEND
-// ─────────────────────────────────────────────────────────────────────────────
-.sch-legend {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 0.85rem 1.5rem;
-  border-top: 1px solid $border;
-  background: $bg-main;
-  flex-wrap: wrap;
-
-  &__item {
+  ul {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.75rem;
-    color: $text-muted;
+    gap: 4px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
   }
 
-  &__dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 3px;
-    flex-shrink: 0;
-    &--available {
-      background: $primary-lt;
-      border: 1px dashed $primary;
-    }
-    &--booked {
-      background: $navy-lt;
-      border: 1px solid rgba($navy, 0.3);
-    }
-    &--blocked {
-      background: $bg-main;
+  li {
+    button {
+      min-width: 34px;
+      height: 34px;
+      padding: 0 8px;
       border: 1px solid $border;
+      border-radius: $radius;
+      background: $surface;
+      color: $text;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.15s;
+
+      &:hover:not(:disabled) {
+        border-color: $primary;
+        color: $primary;
+        background: #eff6ff;
+      }
+
+      &:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+    }
+
+    &.active button {
+      background: $primary;
+      border-color: $primary;
+      color: #fff;
+      font-weight: 600;
+      box-shadow: 0 1px 4px rgba($primary, 0.4);
+    }
+
+    &.disabled button {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    &.ellipsis span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      color: $text-muted;
+      font-size: 0.85rem;
+      user-select: none;
     }
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// BOOTSTRAP MODAL OVERRIDES
-// ─────────────────────────────────────────────────────────────────────────────
-.form-label {
+// ─── Form elements inside modal ───────────────────────────────
+.form-row {
+  display: flex;
+  gap: 12px;
+
+  .form-group {
+    flex: 1;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  input,
+  select {
+    height: 38px;
+    padding: 0 10px;
+    border: 1px solid $border;
+    border-radius: $radius;
+    background: $bg;
+    font-size: 0.875rem;
+    color: $text;
+    transition: border-color 0.15s, box-shadow 0.15s;
+
+    &:focus {
+      outline: none;
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary, 0.12);
+    }
+  }
+
+  input[type="number"] {
+    appearance: textfield;
+  }
+}
+
+// ─── Day picker ───────────────────────────────────────────────
+.day-picker {
+  display: flex;
+  gap: 6px;
+}
+
+.day-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: $radius;
+  border: 1px solid $border;
+  background: $bg;
   font-size: 0.8rem;
   font-weight: 600;
-  color: $text;
-  margin-bottom: 5px;
-}
-
-.form-control,
-.form-select {
-  font-family: $ff-body;
-  font-size: 0.875rem;
-  border-radius: $radius-sm;
-  border-color: $border;
-  color: $text;
-  &:focus {
-    border-color: $primary;
-    box-shadow: 0 0 0 3px rgba($primary, 0.12);
-  }
-}
-
-// Save button
-.btn-save {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0.5rem 1.4rem;
-  border: none;
-  border-radius: $radius-sm;
-  background: linear-gradient(135deg, $primary 0%, $primary-dk 100%);
-  color: $white !important;
-  font-family: $ff-body;
-  font-size: 0.875rem;
-  font-weight: 600;
   cursor: pointer;
-  transition: box-shadow 0.2s;
-  &:hover {
-    box-shadow: 0 6px 16px rgba($primary, 0.4);
-  }
-}
-
-// Custom action buttons in SlotDetailModal
-.btn-success-custom {
-  background: $green-lt;
-  color: $green;
-  border: 1px solid rgba($green, 0.3);
-  font-weight: 600;
-  font-family: $ff-body;
-  &:hover {
-    background: $green;
-    color: $white;
-  }
-}
-
-.btn-block-custom {
-  background: $bg-main;
+  transition: all 0.15s;
   color: $text-muted;
-  border: 1px solid $border;
-  font-weight: 600;
-  font-family: $ff-body;
-  &:hover {
-    background: $navy;
-    color: $white;
-    border-color: $navy;
-  }
-}
 
-.btn-unblock-custom {
-  background: $primary-lt;
-  color: $primary-dk;
-  border: 1px solid rgba($primary, 0.3);
-  font-weight: 600;
-  font-family: $ff-body;
   &:hover {
+    border-color: $primary;
+    color: $primary;
+    background: #eff6ff;
+  }
+
+  &--active {
     background: $primary;
-    color: $white;
+    border-color: $primary;
+    color: #fff;
+    box-shadow: 0 1px 4px rgba($primary, 0.35);
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SLOT DETAIL MODAL content
-// ─────────────────────────────────────────────────────────────────────────────
-.slot-detail-doc {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.85rem 1rem;
-  background: $bg-main;
-  border-radius: $radius-sm;
-  border: 1px solid $border;
-  margin-bottom: 1rem;
-
-  &__avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid $primary-lt;
-    flex-shrink: 0;
+// ─── Responsive ───────────────────────────────────────────────
+@media (max-width: 768px) {
+  .schedules-page {
+    padding: 16px;
   }
 
-  &__name {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: $text;
-    margin: 0 0 3px;
+  .page-header {
+    flex-direction: column;
+    gap: 12px;
   }
 
-  &__spec {
-    font-size: 0.78rem;
-    color: $text-muted;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    svg {
-      font-size: 0.68rem;
-      color: $primary;
-    }
-  }
-}
+  .filter-bar {
+    flex-direction: column;
 
-.slot-detail-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
-
-  &__item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.82rem;
-    color: $text-muted;
-    svg {
-      font-size: 0.72rem;
-      color: $primary;
-    }
-  }
-}
-
-// Status badge large
-.sch-status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 12px;
-  border-radius: 100px;
-  font-size: 0.75rem;
-  font-weight: 600;
-
-  &--available {
-    background: $primary-lt;
-    color: $primary-dk;
-    border: 1px solid rgba($primary, 0.25);
-  }
-  &--blocked {
-    background: $bg-main;
-    color: $text-muted;
-    border: 1px solid $border;
-  }
-  &--booked {
-    background: $navy-lt;
-    color: $navy;
-    border: 1px solid rgba($navy, 0.2);
-  }
-}
-
-.slot-detail-patient {
-  padding: 0.85rem 1rem;
-  background: $bg-main;
-  border-radius: $radius-sm;
-  border: 1px solid $border;
-
-  &__label {
-    font-size: 0.68rem;
-    font-weight: 700;
-    color: $text-muted;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0 0 6px;
-  }
-
-  &__name {
-    font-size: 0.92rem;
-    font-weight: 700;
-    color: $text;
-    margin: 0 0 3px;
-    display: flex;
-    align-items: center;
-    svg {
-      color: $primary;
-      font-size: 0.78rem;
+    select,
+    input[type="date"] {
+      width: 100%;
     }
   }
 
-  &__type {
-    font-size: 0.78rem;
-    color: $text-muted;
-    margin: 0 0 8px;
+  .form-row {
+    flex-direction: column;
   }
-}
 
-// Add schedule modal avatar preview
-.add-sch-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid $primary-lt;
-  flex-shrink: 0;
+  .slot-table {
+
+    th:nth-child(2),
+    td:nth-child(2) {
+      display: none;
+    }
+
+    // hide hospital on mobile
+
+    font-size: 0.8rem;
+  }
 }

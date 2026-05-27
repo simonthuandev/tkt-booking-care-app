@@ -5,30 +5,24 @@ import { BsSearch } from "react-icons/bs";
 import { FiUser } from "react-icons/fi";
 import { BrandLogo } from "./Common/BrandLogo";
 import "./NavBar.scss";
+import { selectIsAuthenticated, selectUser } from "../store/slices/authSlice";
+import UserDropdown from "./Common/UserDropdown";
 
 // ─── Nav links config ─────────────────────────────────────────────────────────
 const NAV_LINKS = [
   { label: "Chuyên khoa", to: "/specialties" },
-  { label: "Cơ sở y tế",  to: "/hospitals"   },
-  { label: "Bác sĩ",      to: "/doctors"     },
-  { label: "Dịch vụ",    to: "/services"    },
+  { label: "Cơ sở y tế", to: "/hospitals" },
+  { label: "Bác sĩ", to: "/doctors" },
+  // { label: "Dịch vụ",     to: "/services"    },
 ];
-
-// ─── Helper: lấy chữ viết tắt từ tên ────────────────────────────────────────
-const getInitials = (name = "") =>
-  name
-    .split(" ")
-    .slice(-2)
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase() || "U";
 
 // ─── NavBar ───────────────────────────────────────────────────────────────────
 const NavBar = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const user = useSelector(selectUser);
   const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false); 
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -85,16 +79,10 @@ const NavBar = () => {
             <div className="hc-divider d-none d-lg-block" />
 
             {isAuthenticated && user ? (
-              <NavLink
-                to={`/app/${user.role || ""}/dashboard`}
-                className="hc-user-chip"
-                onClick={() => setMenuOpen(false)}
-              >
-                <div className="hc-avatar" title={user.name}>
-                  {getInitials(user.name)}
-                </div>
-                <span className="hc-username">{user.name}</span>
-              </NavLink>
+              <UserDropdown
+                user={user}
+                onClose={() => setMenuOpen(false)}
+              />
             ) : (
               <NavLink
                 to="/auth/login"

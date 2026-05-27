@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import * as Home from "../../components/Home";
 import Footer from "../../components/Footer";
 import "./HomePage.scss";
+import Chatbot from '../../components/Common/Chatbot';
 
 export default function HomePage() {
   const [scrolled, setScrolled] = useState(false);
@@ -21,11 +22,12 @@ export default function HomePage() {
       <Home.HowSection />
       <Home.DoctorsSection />
       <Home.HospitalSection />
-      <Home.ServicesSection />
+      {/* <Home.ServicesSection />
       <Home.TestimonialsSection />
       <Home.NewsSection />
-      <Home.PartnerSection />
+      <Home.PartnerSection /> */}
       <Footer />
+      <Chatbot />
     </>
   );
 }

@@ -1,556 +1,154 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// AdminSchedulesPage.jsx  —  Schedules Management
-// Admin xem/quản lý lịch của tất cả bác sĩ
-// ─────────────────────────────────────────────────────────────────────────────
-import { useState, useMemo } from "react";
-import ReactDOM from "react-dom";
-import { BsCalendar2WeekFill, BsClockFill } from "react-icons/bs";
-import {
-  FaUserMd,
-  FaPlus,
-  FaEdit,
-  FaTrash,
-  FaSearch,
-  FaFilter,
-  FaHospital,
-  FaStethoscope,
-  FaChevronLeft,
-  FaChevronRight,
-  FaCheckCircle,
-  FaClock,
-  FaBan,
-  FaLock,
-  FaLockOpen,
-  FaEye,
-  FaCalendarAlt,
-  FaUserInjured,
-  FaTimes,
-} from "react-icons/fa";
+import { useState, useEffect } from "react";
+import { FaLock, FaLockOpen, FaTrash, FaPlus } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { timeSlotService, doctorService, hospitalService } from "../../../api/appService";
 import "./AdminSchedulesPage.scss";
+import { FaCheckToSlot } from "react-icons/fa6";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// HELPERS
-// ─────────────────────────────────────────────────────────────────────────────
-const getMonday = (date) => {
-  const d = new Date(date),
-    day = d.getDay();
-  d.setDate(d.getDate() + (day === 0 ? -6 : 1 - day));
-  d.setHours(0, 0, 0, 0);
-  return d;
-};
-const getWeekDays = (monday) =>
-  Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(monday);
-    d.setDate(d.getDate() + i);
-    return d;
-  });
-const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const isSameDay = (a, b) =>
-  a.getFullYear() === b.getFullYear() &&
-  a.getMonth() === b.getMonth() &&
-  a.getDate() === b.getDate();
-const dateKey = (d) => d.toISOString().slice(0, 10);
-const HOURS = [
-  "08:00",
-  "09:00",
-  "10:00",
-  "11:00",
-  "13:00",
-  "14:00",
-  "15:00",
-  "16:00",
-];
+const DAYS_OF_WEEK = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+const DAY_LABELS = { MON: "T2", TUE: "T3", WED: "T4", THU: "T5", FRI: "T6", SAT: "T7", SUN: "CN" };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MOCK DATA
-// ─────────────────────────────────────────────────────────────────────────────
-const DOCTORS = [
-  {
-    id: 1,
-    name: "Dr. Nguyen Van An",
-    specialty: "Cardiology",
-    hospital: "TKT Medical",
-    avatarUrl: "https://i.pravatar.cc/150?img=11",
-    initials: "NA",
-  },
-  {
-    id: 2,
-    name: "Dr. Le Thi Bich",
-    specialty: "Neurology",
-    hospital: "City Hospital",
-    avatarUrl: "https://i.pravatar.cc/150?img=47",
-    initials: "LB",
-  },
-  {
-    id: 3,
-    name: "Dr. Tran Quoc Hung",
-    specialty: "Dermatology",
-    hospital: "Riverside",
-    avatarUrl: "https://i.pravatar.cc/150?img=15",
-    initials: "TH",
-  },
-  {
-    id: 4,
-    name: "Dr. Pham Duc Minh",
-    specialty: "Orthopedics",
-    hospital: "TKT Medical",
-    avatarUrl: "https://i.pravatar.cc/150?img=12",
-    initials: "PM",
-  },
-  {
-    id: 5,
-    name: "Dr. Vo Thi Lan",
-    specialty: "Ophthalmology",
-    hospital: "Riverside",
-    avatarUrl: "https://i.pravatar.cc/150?img=48",
-    initials: "VL",
-  },
-  {
-    id: 6,
-    name: "Dr. Hoang Van Nam",
-    specialty: "Pediatrics",
-    hospital: "City Hospital",
-    avatarUrl: "https://i.pravatar.cc/150?img=57",
-    initials: "HN",
-  },
-];
+const PAGE_LIMIT = 20;
 
-const PATIENTS = [
-  "Tran Thi Mai",
-  "Le Van Binh",
-  "Pham Duc Thanh",
-  "Nguyen Thi Lan",
-  "Vo Minh Khoa",
-  "Hoang Thi Thu",
-  "Dang Van Long",
-  "Bui Thi Huong",
-];
-const TYPES = ["Check-up", "Follow-up", "Consultation"];
-const BOOKING_STATUSES = ["waiting", "confirmed"];
+function statusBadge(slot) {
+  if (slot.isBlocked) return <span className="badge badge--blocked">Đã khóa</span>;
+  if (slot.isBooked) return <span className="badge badge--booked">Đã đặt</span>;
+  return <span className="badge badge--free">Trống</span>;
+}
 
-// Generate slots cho từng bác sĩ trong tuần
-const generateDoctorSlots = (doctorId, monday) => {
-  const week = getWeekDays(monday);
-  const today = new Date();
-  const slots = {};
-  week.forEach((day, di) => {
-    const key = dateKey(day);
-    slots[key] = {};
-    HOURS.forEach((hour, hi) => {
-      const r = (doctorId * 13 + di * 11 + hi * 7) % 7;
-      if (day < today && !isSameDay(day, today)) {
-        slots[key][hour] =
-          r < 3
-            ? {
-                status: "booked",
-                patient: PATIENTS[(doctorId + di + hi) % PATIENTS.length],
-                type: TYPES[(di + hi) % 3],
-                bookingStatus: "confirmed",
-              }
-            : { status: "blocked" };
-      } else {
-        if (r < 3) slots[key][hour] = { status: "available" };
-        else if (r < 5)
-          slots[key][hour] = {
-            status: "booked",
-            patient: PATIENTS[(doctorId + di + hi) % PATIENTS.length],
-            type: TYPES[(di + hi) % 3],
-            bookingStatus: BOOKING_STATUSES[(di + hi) % 2],
-          };
-        else slots[key][hour] = { status: "blocked" };
-      }
-    });
-  });
-  return slots;
-};
-
-// Build initial slots state cho tất cả bác sĩ
-const buildAllSlots = (monday) => {
-  const all = {};
-  DOCTORS.forEach((d) => {
-    all[d.id] = generateDoctorSlots(d.id, monday);
-  });
-  return all;
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: SlotCell
-// ─────────────────────────────────────────────────────────────────────────────
-const SlotCell = ({
-  hour,
-  slotData,
-  showDoctorAvatar,
-  doctorAvatarUrl,
-  doctorInitials,
-  onClick,
-}) => {
-  const { status, patient, type, bookingStatus } = slotData || {
-    status: "available",
-  };
-  return (
-    <div
-      className={`sch-slot sch-slot--${status}`}
-      onClick={onClick}
-      title={
-        status === "booked"
-          ? `${patient} · ${type}`
-          : status === "blocked"
-            ? "Blocked"
-            : "Available"
-      }
-    >
-      <span className="sch-slot__hour">{hour}</span>
-
-      {status === "available" && <span className="sch-slot__label">Open</span>}
-
-      {status === "blocked" && <span className="sch-slot__label">Blocked</span>}
-
-      {status === "booked" && (
-        <div className="sch-slot__booked">
-          {/* Khi xem All Doctors: hiện avatar nhỏ */}
-          {showDoctorAvatar && (
-            <img
-              src={doctorAvatarUrl}
-              alt=""
-              className="sch-slot__doc-avatar"
-              onError={(e) => {
-                e.target.style.display = "none";
-              }}
-            />
-          )}
-          <span className="sch-slot__patient">{patient}</span>
-          <span className="sch-slot__type">{type}</span>
-          <span
-            className={`sch-slot__booking-badge ${bookingStatus === "waiting" ? "badge-wait" : "badge-conf"}`}
-          >
-            {bookingStatus === "waiting" ? "Pending" : "✓"}
-          </span>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: SlotDetailModal (Bootstrap Modal)
-// Admin có thêm quyền so với Doctor
-// ─────────────────────────────────────────────────────────────────────────────
-const SlotDetailModal = ({
-  slot,
-  doctor,
-  onClose,
-  onConfirm,
-  onCancel,
-  onBlock,
-  onUnblock,
-}) => {
-  if (!slot) return null;
-  const { hour, dateStr, slotData } = slot;
-  const { status, patient, type, bookingStatus } = slotData;
-
-  const displayDate = new Date(dateStr + "T00:00:00").toLocaleDateString(
-    "en-US",
-    {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    },
-  );
-
-  return (
-    <>
-      <div className="modal-backdrop fade show" onClick={onClose} />
-      <div className="modal fade show d-block" tabIndex="-1">
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">
-                <BsCalendar2WeekFill
-                  className="me-2"
-                  style={{ color: "#0ba3a3" }}
-                />
-                Slot Details
-              </h5>
-              <button className="btn-close" onClick={onClose} />
-            </div>
-
-            <div className="modal-body">
-              {/* Doctor info */}
-              <div className="slot-detail-doc">
-                <img
-                  src={doctor.avatarUrl}
-                  alt={doctor.name}
-                  className="slot-detail-doc__avatar"
-                  onError={(e) => {
-                    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(doctor.name)}&background=0ba3a3&color=fff`;
-                  }}
-                />
-                <div>
-                  <p className="slot-detail-doc__name">{doctor.name}</p>
-                  <p className="slot-detail-doc__spec">
-                    <FaStethoscope className="me-1" />
-                    {doctor.specialty} · {doctor.hospital}
-                  </p>
-                </div>
-              </div>
-
-              {/* Slot info */}
-              <div className="slot-detail-info">
-                <div className="slot-detail-info__item">
-                  <BsCalendar2WeekFill />
-                  <span>{displayDate}</span>
-                </div>
-                <div className="slot-detail-info__item">
-                  <BsClockFill />
-                  <span>{hour}</span>
-                </div>
-                <div className="slot-detail-info__item">
-                  <span
-                    className={`sch-status-badge sch-status-badge--${status}`}
-                  >
-                    {status === "available" && (
-                      <>
-                        <FaLockOpen /> Available
-                      </>
-                    )}
-                    {status === "blocked" && (
-                      <>
-                        <FaLock /> Blocked
-                      </>
-                    )}
-                    {status === "booked" && (
-                      <>
-                        <FaUserInjured /> Booked
-                      </>
-                    )}
-                  </span>
-                </div>
-              </div>
-
-              {/* Patient info nếu booked */}
-              {status === "booked" && (
-                <div className="slot-detail-patient">
-                  <p className="slot-detail-patient__label">Patient</p>
-                  <p className="slot-detail-patient__name">
-                    <FaUserInjured className="me-1" />
-                    {patient}
-                  </p>
-                  <p className="slot-detail-patient__type">{type}</p>
-                  <span
-                    className={`sch-slot__booking-badge ${bookingStatus === "waiting" ? "badge-wait" : "badge-conf"}`}
-                    style={{ fontSize: ".75rem", padding: "3px 10px" }}
-                  >
-                    {bookingStatus === "waiting"
-                      ? "⏳ Waiting for confirmation"
-                      : "✓ Confirmed"}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Footer actions theo status */}
-            <div className="modal-footer">
-              <button className="btn btn-light border" onClick={onClose}>
-                Close
-              </button>
-
-              {status === "booked" && bookingStatus === "waiting" && (
-                <button className="btn btn-success-custom" onClick={onConfirm}>
-                  <FaCheckCircle className="me-1" /> Confirm
-                </button>
-              )}
-              {status === "booked" && (
-                <button className="btn btn-danger" onClick={onCancel}>
-                  <FaTimes className="me-1" /> Cancel Appointment
-                </button>
-              )}
-              {status === "available" && (
-                <button className="btn btn-block-custom" onClick={onBlock}>
-                  <FaLock className="me-1" /> Block Slot
-                </button>
-              )}
-              {status === "blocked" && (
-                <button className="btn btn-unblock-custom" onClick={onUnblock}>
-                  <FaLockOpen className="me-1" /> Unblock
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: AddScheduleModal (Bootstrap Modal)
-// ─────────────────────────────────────────────────────────────────────────────
-const AddScheduleModal = ({ onClose, onSave, weekDays }) => {
+// ─── Generate Modal ───────────────────────────────────────────
+function GenerateModal({ onClose, doctors, hospitals, onSuccess }) {
   const [form, setForm] = useState({
-    doctorId: String(DOCTORS[0].id),
-    date: dateKey(weekDays[0]),
-    startTime: "08:00",
-    endTime: "09:00",
-    repeat: "none",
-    note: "",
+    doctorId: doctors.length > 0 ? doctors[0].id : "",
+    hospitalId: hospitals.length > 0 ? hospitals[0].id : "",
+    startDate: "", endDate: "",
+    dayOfWeek: ["MON", "WED", "FRI"],
+    startTime: "08:00", endTime: "17:00",
+    durationMinutes: 30,
+    breakStart: "12:00", breakEnd: "13:00",
   });
-  const handle = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-  const selectedDoc =
-    DOCTORS.find((d) => String(d.id) === form.doctorId) || DOCTORS[0];
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const timeOptions = [
-    "07:00",
-    "08:00",
-    "09:00",
-    "10:00",
-    "11:00",
-    "12:00",
-    "13:00",
-    "14:00",
-    "15:00",
-    "16:00",
-    "17:00",
-  ];
+  const toggle = (day) => setForm(f => ({
+    ...f,
+    dayOfWeek: f.dayOfWeek.includes(day)
+      ? f.dayOfWeek.filter(d => d !== day)
+      : [...f.dayOfWeek, day],
+  }));
+
+  const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const handleSubmit = async () => {
+    if (!form.doctorId || !form.hospitalId || !form.startDate || !form.endDate) {
+      toast.error("Vui lòng điền đủ thông tin cơ bản!");
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      const payload = { ...form };
+      if (!payload.breakStart) delete payload.breakStart;
+      if (!payload.breakEnd) delete payload.breakEnd;
+      payload.durationMinutes = Number(payload.durationMinutes);
+
+      await timeSlotService.adminGenerateTimeSlots(payload);
+      toast.success("Sinh slots thành công!");
+      onSuccess();
+    } catch (error) {
+      const msg = error?.response?.data?.message || "Lỗi khi sinh slots. Vui lòng thử lại!";
+      toast.error(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <>
+      {/* Lớp nền đen xám của Bootstrap */}
       <div className="modal-backdrop fade show" onClick={onClose} />
+
+      {/* Khung Modal của Bootstrap */}
       <div className="modal fade show d-block" tabIndex="-1">
-        <div className="modal-dialog modal-dialog-centered">
+        <div className="modal-dialog modal-lg modal-dialog-centered">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">
-                <FaPlus className="me-2" style={{ color: "#0ba3a3" }} />
-                Add Schedule Slot
-              </h5>
-              <button className="btn-close" onClick={onClose} />
+              <h5 className="modal-title">Sinh slots tự động</h5>
+              <button className="btn-close" onClick={onClose} disabled={isSubmitting} />
             </div>
 
             <div className="modal-body">
-              <div className="row g-3">
-                {/* Doctor select + avatar preview */}
-                <div className="col-12">
-                  <label className="form-label">Doctor</label>
-                  <div className="d-flex align-items-center gap-2">
-                    <img
-                      src={selectedDoc.avatarUrl}
-                      alt={selectedDoc.name}
-                      className="add-sch-avatar"
-                      onError={(e) => {
-                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedDoc.name)}&background=0ba3a3&color=fff`;
-                      }}
-                    />
-                    <select
-                      className="form-select"
-                      name="doctorId"
-                      value={form.doctorId}
-                      onChange={handle}
+              <div className="row mb-3">
+                <div className="col-md-6">
+                  <label className="form-label text-muted small text-uppercase fw-bold">Bác sĩ</label>
+                  <select className="form-select" value={form.doctorId} onChange={set("doctorId")}>
+                    {doctors.map(d => <option key={d.id} value={d.id}>{d.user?.lastName} {d.user?.firstName}</option>)}
+                  </select>
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label text-muted small text-uppercase fw-bold">Cơ sở</label>
+                  <select className="form-select" value={form.hospitalId} onChange={set("hospitalId")}>
+                    {hospitals.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="row mb-3">
+                <div className="col-md-6">
+                  <label className="form-label text-muted small text-uppercase fw-bold">Từ ngày</label>
+                  <input type="date" className="form-control" value={form.startDate} onChange={set("startDate")} />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label text-muted small text-uppercase fw-bold">Đến ngày</label>
+                  <input type="date" className="form-control" value={form.endDate} onChange={set("endDate")} />
+                </div>
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label text-muted small text-uppercase fw-bold">Ngày trong tuần</label>
+                <div className="d-flex flex-wrap gap-2">
+                  {DAYS_OF_WEEK.map(d => (
+                    <button
+                      key={d}
+                      type="button"
+                      className={`btn btn-sm ${form.dayOfWeek.includes(d) ? "btn-primary" : "btn-outline-secondary"}`}
+                      onClick={() => toggle(d)}
                     >
-                      {DOCTORS.map((d) => (
-                        <option key={d.id} value={String(d.id)}>
-                          {d.name} — {d.specialty}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                      {DAY_LABELS[d]}
+                    </button>
+                  ))}
                 </div>
+              </div>
 
-                {/* Date */}
-                <div className="col-12">
-                  <label className="form-label">Date</label>
-                  <select
-                    className="form-select"
-                    name="date"
-                    value={form.date}
-                    onChange={handle}
-                  >
-                    {weekDays.map((d) => (
-                      <option key={dateKey(d)} value={dateKey(d)}>
-                        {d.toLocaleDateString("en-US", {
-                          weekday: "short",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </option>
-                    ))}
-                  </select>
+              <div className="row mb-3">
+                <div className="col-md-4">
+                  <label className="form-label text-muted small text-uppercase fw-bold">Giờ bắt đầu</label>
+                  <input type="time" className="form-control" value={form.startTime} onChange={set("startTime")} />
                 </div>
+                <div className="col-md-4">
+                  <label className="form-label text-muted small text-uppercase fw-bold">Giờ kết thúc</label>
+                  <input type="time" className="form-control" value={form.endTime} onChange={set("endTime")} />
+                </div>
+                <div className="col-md-4">
+                  <label className="form-label text-muted small text-uppercase fw-bold">Mỗi slot (phút)</label>
+                  <input type="number" className="form-control" min={15} max={120} value={form.durationMinutes} onChange={set("durationMinutes")} />
+                </div>
+              </div>
 
-                {/* Start + End time */}
-                <div className="col-6">
-                  <label className="form-label">Start Time</label>
-                  <select
-                    className="form-select"
-                    name="startTime"
-                    value={form.startTime}
-                    onChange={handle}
-                  >
-                    {timeOptions.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </select>
+              <div className="row">
+                <div className="col-md-6">
+                  <label className="form-label text-muted small text-uppercase fw-bold">Nghỉ từ</label>
+                  <input type="time" className="form-control" value={form.breakStart} onChange={set("breakStart")} />
                 </div>
-                <div className="col-6">
-                  <label className="form-label">End Time</label>
-                  <select
-                    className="form-select"
-                    name="endTime"
-                    value={form.endTime}
-                    onChange={handle}
-                  >
-                    {timeOptions.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Repeat */}
-                <div className="col-12">
-                  <label className="form-label">Repeat</label>
-                  <select
-                    className="form-select"
-                    name="repeat"
-                    value={form.repeat}
-                    onChange={handle}
-                  >
-                    <option value="none">None (one time)</option>
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                  </select>
-                </div>
-
-                {/* Note */}
-                <div className="col-12">
-                  <label className="form-label">Note (optional)</label>
-                  <textarea
-                    className="form-control"
-                    name="note"
-                    rows={2}
-                    value={form.note}
-                    onChange={handle}
-                    placeholder="e.g. Morning shift only"
-                  />
+                <div className="col-md-6">
+                  <label className="form-label text-muted small text-uppercase fw-bold">Đến</label>
+                  <input type="time" className="form-control" value={form.breakEnd} onChange={set("breakEnd")} />
                 </div>
               </div>
             </div>
 
-            <div className="modal-footer">
-              <button className="btn btn-light border" onClick={onClose}>
-                Cancel
-              </button>
-              <button
-                className="btn btn-save"
-                onClick={() => {
-                  onSave(form);
-                  onClose();
-                }}
-              >
-                <FaPlus className="me-1" /> Add Slot
+            <div className="modal-footer border-0">
+              <button className="btn btn-light border" onClick={onClose} disabled={isSubmitting}>Hủy</button>
+              <button className="btn btn-primary" onClick={handleSubmit} disabled={isSubmitting} style={{ backgroundColor: "#2563eb", borderColor: "#2563eb" }}>
+                {isSubmitting ? "Đang xử lý..." : "Sinh slots"}
               </button>
             </div>
           </div>
@@ -558,401 +156,302 @@ const AddScheduleModal = ({ onClose, onSave, weekDays }) => {
       </div>
     </>
   );
-};
+}
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN PAGE
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Main Page ────────────────────────────────────────────────
 export default function AdminSchedulesPage() {
-  const today = new Date();
-  const [weekStart, setWeekStart] = useState(getMonday(today));
-  const [allSlots, setAllSlots] = useState(() =>
-    buildAllSlots(getMonday(today)),
-  );
-  const [selectedDoc, setSelectedDoc] = useState("all"); // "all" hoặc doctor id (number)
-  const [filterHosp, setFilterHosp] = useState("all");
-  const [activeSlot, setActiveSlot] = useState(null); // { doctorId, dateStr, hour }
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [slots, setSlots] = useState([]);
+  const [doctors, setDoctors] = useState([]);
+  const [hospitals, setHospitals] = useState([]);
+  const [meta, setMeta] = useState({ total: 0, totalPages: 1 });
 
-  const weekDays = getWeekDays(weekStart);
-
-  // ── Chuyển tuần ────────────────────────────────────────────────────────────
-  const prevWeek = () => {
-    const d = new Date(weekStart);
-    d.setDate(d.getDate() - 7);
-    setWeekStart(d);
-    setAllSlots((prev) => {
-      const newSlots = buildAllSlots(d);
-      // Giữ lại thay đổi của tuần cũ, merge tuần mới
-      const merged = {};
-      DOCTORS.forEach((doc) => {
-        merged[doc.id] = { ...newSlots[doc.id], ...(prev[doc.id] || {}) };
-      });
-      return merged;
-    });
-  };
-
-  const nextWeek = () => {
-    const d = new Date(weekStart);
-    d.setDate(d.getDate() + 7);
-    setWeekStart(d);
-    setAllSlots((prev) => {
-      const newSlots = buildAllSlots(d);
-      const merged = {};
-      DOCTORS.forEach((doc) => {
-        merged[doc.id] = { ...newSlots[doc.id], ...(prev[doc.id] || {}) };
-      });
-      return merged;
-    });
-  };
-
-  // ── Doctors hiển thị sau filter ────────────────────────────────────────────
-  const visibleDoctors = useMemo(() => {
-    let list = DOCTORS;
-    if (selectedDoc !== "all")
-      list = list.filter((d) => d.id === Number(selectedDoc));
-    if (filterHosp !== "all")
-      list = list.filter((d) => d.hospital === filterHosp);
-    return list;
-  }, [selectedDoc, filterHosp]);
-
-  // ── Slot actions ───────────────────────────────────────────────────────────
-  const updateSlot = (doctorId, dateStr, hour, data) => {
-    setAllSlots((prev) => ({
-      ...prev,
-      [doctorId]: {
-        ...prev[doctorId],
-        [dateStr]: {
-          ...(prev[doctorId]?.[dateStr] || {}),
-          [hour]: data,
-        },
-      },
-    }));
-  };
-
-  const handleConfirm = () => {
-    const { doctorId, dateStr, hour, slotData } = activeSlot;
-    updateSlot(doctorId, dateStr, hour, {
-      ...slotData,
-      bookingStatus: "confirmed",
-    });
-    setActiveSlot(null);
-  };
-
-  const handleCancelAppt = () => {
-    const { doctorId, dateStr, hour } = activeSlot;
-    updateSlot(doctorId, dateStr, hour, { status: "available" });
-    setActiveSlot(null);
-  };
-
-  const handleBlock = () => {
-    const { doctorId, dateStr, hour } = activeSlot;
-    updateSlot(doctorId, dateStr, hour, { status: "blocked" });
-    setActiveSlot(null);
-  };
-
-  const handleUnblock = () => {
-    const { doctorId, dateStr, hour } = activeSlot;
-    updateSlot(doctorId, dateStr, hour, { status: "available" });
-    setActiveSlot(null);
-  };
-
-  const handleAddSlot = (form) => {
-    const docId = Number(form.doctorId);
-    updateSlot(docId, form.date, form.startTime, { status: "available" });
-  };
-
-  // ── Summary counts (tuần hiện tại, tất cả bác sĩ) ─────────────────────────
-  const allWeekSlots = DOCTORS.flatMap((d) =>
-    weekDays.flatMap((day) =>
-      Object.values(allSlots[d.id]?.[dateKey(day)] || {}),
-    ),
-  );
-  const summary = {
-    total: allWeekSlots.length,
-    available: allWeekSlots.filter((s) => s.status === "available").length,
-    booked: allWeekSlots.filter((s) => s.status === "booked").length,
-    blocked: allWeekSlots.filter((s) => s.status === "blocked").length,
-  };
-
-  const monthLabel = weekStart.toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
+  const [filters, setFilters] = useState({
+    doctorId: "", hospitalId: "", date: "", isBooked: "", isBlocked: "",
   });
-  const showAllDocs = selectedDoc === "all";
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showGenerate, setShowGenerate] = useState(false);
+  const [selected, setSelected] = useState(new Set());
 
-  // Doctor đang active slot (cho modal)
-  const activeDoctor = activeSlot
-    ? DOCTORS.find((d) => d.id === activeSlot.doctorId)
-    : null;
+  useEffect(() => {
+    const fetchMasterData = async () => {
+      try {
+        const [docsRes, hospsRes] = await Promise.all([
+          doctorService.adminGetDoctors({ limit: 50 }),
+          hospitalService.adminGetHospitals({ limit: 50 })
+        ]);
+        setDoctors(docsRes.data?.data || docsRes.data || []);
+        setHospitals(hospsRes.data?.data || hospsRes.data || []);
+      } catch (err) {
+        toast.error("Không thể tải danh sách bác sĩ/cơ sở.");
+      }
+    };
+    fetchMasterData();
+  }, []);
+
+  const fetchSlots = async () => {
+    try {
+      setIsLoading(true);
+      const params = { page, limit: PAGE_LIMIT };
+      if (filters.doctorId) params.doctorId = filters.doctorId;
+      if (filters.hospitalId) params.hospitalId = filters.hospitalId;
+      if (filters.date) params.date = filters.date;
+      if (filters.isBooked !== "") params.isBooked = filters.isBooked === "true";
+      if (filters.isBlocked !== "") params.isBlocked = filters.isBlocked === "true";
+
+      const res = await timeSlotService.adminGetTimeSlots(params);
+      const data = res.data;
+      setSlots(data.data || []);
+      setMeta(data.meta || { total: 0, totalPages: 1, page: 1 });
+      setSelected(new Set());
+    } catch (err) {
+      toast.error("Không thể tải danh sách lịch khám.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSlots();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, filters]);
+
+  const setFilter = (k) => (e) => {
+    setFilters(f => ({ ...f, [k]: e.target.value }));
+    setPage(1);
+  };
+
+  const toggleSelect = (id) => setSelected(s => {
+    const next = new Set(s);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
+
+  const toggleAll = () => {
+    if (selected.size === slots.length) setSelected(new Set());
+    else setSelected(new Set(slots.map(s => s.id)));
+  };
+
+  const handleBlockToggle = async (id, currentBlocked) => {
+    try {
+      await timeSlotService.adminBlockTimeSlot(id, { isBlocked: !currentBlocked });
+      toast.success(currentBlocked ? "Đã mở khóa slot" : "Đã khóa slot");
+      fetchSlots();
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Lỗi thao tác!");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa slot này?")) return;
+    try {
+      await timeSlotService.adminDeleteTimeSlot(id);
+      toast.success("Xóa slot thành công");
+      fetchSlots();
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Lỗi khi xóa slot!");
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa ${selected.size} slot đã chọn?`)) return;
+    try {
+      setIsLoading(true);
+      await Promise.all(Array.from(selected).map(id => timeSlotService.adminDeleteTimeSlot(id)));
+      toast.success(`Đã xóa thành công ${selected.size} slot`);
+      fetchSlots();
+    } catch (error) {
+      toast.error("Có lỗi xảy ra khi xóa một số slot. Có thể một số slot đã được đặt.");
+      fetchSlots();
+    }
+  };
+
+  const pageRange = () => {
+    const delta = 2;
+    const range = [];
+    for (let i = Math.max(1, page - delta); i <= Math.min(meta.totalPages || 1, page + delta); i++) range.push(i);
+    return range;
+  };
+
+  const formatDoctorName = (doctor) => {
+    if (!doctor || !doctor.user) return "N/A";
+    return `${doctor.user.lastName || ""} ${doctor.user.firstName || ""}`.trim();
+  };
 
   return (
-    <div className="admin-sch">
-      {/* Header */}
-      <div className="sch-header">
-        <div>
-          <h1 className="sch-title">Schedules Management</h1>
-          <p className="sch-sub">View and manage all doctor schedules.</p>
-        </div>
-        <div className="sch-header__right">
-          <span className="sch-badge">
-            <BsCalendar2WeekFill /> {summary.total} slots this week
-          </span>
-          <button className="btn-add-sch" onClick={() => setShowAddModal(true)}>
-            <FaPlus /> Add Schedule
-          </button>
-        </div>
-      </div>
-
-      {/* Summary */}
-      <div className="sch-summary">
-        {[
-          { label: "Total Slots", value: summary.total, cls: "s-teal" },
-          { label: "Available", value: summary.available, cls: "s-green" },
-          { label: "Booked", value: summary.booked, cls: "s-navy" },
-          { label: "Blocked", value: summary.blocked, cls: "s-gray" },
-        ].map((s) => (
-          <div key={s.label} className={`sch-summary__card ${s.cls}`}>
-            <p className="sch-summary__value">{s.value}</p>
-            <p className="sch-summary__label">{s.label}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Filter bar */}
-      <div className="sch-filterbar">
-        {/* Doctor select */}
-        <div className="filterbar-doctor">
-          {selectedDoc !== "all" && (
-            <img
-              src={DOCTORS.find((d) => d.id === Number(selectedDoc))?.avatarUrl}
-              alt=""
-              className="filterbar-doctor__avatar"
-              onError={(e) => {
-                e.target.style.display = "none";
-              }}
-            />
-          )}
-          <div className="toolbar-select">
-            <FaUserMd className="toolbar-select__icon" />
-            <select
-              value={selectedDoc}
-              onChange={(e) => setSelectedDoc(e.target.value)}
-            >
-              <option value="all">All Doctors</option>
-              {DOCTORS.map((d) => (
-                <option key={d.id} value={String(d.id)}>
-                  {d.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Hospital filter */}
-        <div className="toolbar-select">
-          <FaHospital className="toolbar-select__icon" />
-          <select
-            value={filterHosp}
-            onChange={(e) => setFilterHosp(e.target.value)}
-          >
-            <option value="all">All Hospitals</option>
-            <option value="TKT Medical">TKT Medical</option>
-            <option value="City Hospital">City Hospital</option>
-            <option value="Riverside">Riverside</option>
-          </select>
-        </div>
-
-        {/* Selected doctor info */}
-        {selectedDoc !== "all" &&
-          (() => {
-            const doc = DOCTORS.find((d) => d.id === Number(selectedDoc));
-            return doc ? (
-              <div className="filterbar-info">
-                <FaStethoscope /> {doc.specialty} · {doc.hospital}
-              </div>
-            ) : null;
-          })()}
-      </div>
-
-      {/* Calendar card */}
-      <div className="sch-calendar">
-        {/* Nav */}
-        <div className="sch-cal-nav">
-          <button className="sch-cal-nav__btn" onClick={prevWeek}>
-            <FaChevronLeft />
-          </button>
-          <h2 className="sch-cal-nav__month">
-            <BsCalendar2WeekFill /> {monthLabel}
-          </h2>
-          <button className="sch-cal-nav__btn" onClick={nextWeek}>
-            <FaChevronRight />
-          </button>
-        </div>
-
-        {/* Khi All Doctors: hiện từng bác sĩ theo hàng */}
-        {showAllDocs ? (
-          <div className="sch-all-doctors">
-            {visibleDoctors.map((doc) => (
-              <div key={doc.id} className="sch-doctor-row">
-                {/* Doctor label */}
-                <div className="sch-doctor-row__label">
-                  <img
-                    src={doc.avatarUrl}
-                    alt={doc.name}
-                    className="sch-doctor-row__avatar"
-                    onError={(e) => {
-                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(doc.name)}&background=0ba3a3&color=fff`;
-                    }}
-                  />
-                  <div>
-                    <p className="sch-doctor-row__name">{doc.name}</p>
-                    <p className="sch-doctor-row__spec">{doc.specialty}</p>
-                  </div>
-                </div>
-
-                {/* Week grid cho bác sĩ này */}
-                <div className="sch-doctor-row__grid-wrap">
-                  <div className="sch-mini-grid">
-                    {weekDays.map((day, idx) => {
-                      const key = dateKey(day);
-                      const isToday = isSameDay(day, today);
-                      const daySlots = allSlots[doc.id]?.[key] || {};
-                      return (
-                        <div key={key} className="sch-mini-col">
-                          <div
-                            className={`sch-mini-col__header ${isToday ? "sch-mini-col__header--today" : ""}`}
-                          >
-                            <span>{DAY_NAMES[idx]}</span>
-                            <span className={isToday ? "today-num" : ""}>
-                              {day.getDate()}
-                            </span>
-                          </div>
-                          <div className="sch-mini-col__slots">
-                            {HOURS.map((hour) => {
-                              const slotData = daySlots[hour] || {
-                                status: "available",
-                              };
-                              return (
-                                <SlotCell
-                                  key={hour}
-                                  hour={hour}
-                                  slotData={slotData}
-                                  showDoctorAvatar={false}
-                                  doctorAvatarUrl={doc.avatarUrl}
-                                  doctorInitials={doc.initials}
-                                  onClick={() =>
-                                    setActiveSlot({
-                                      doctorId: doc.id,
-                                      dateStr: key,
-                                      hour,
-                                      slotData,
-                                    })
-                                  }
-                                />
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          /* Single doctor: full calendar view */
-          <div className="sch-grid-wrap">
-            {/* Day headers */}
-            <div className="sch-grid">
-              {weekDays.map((day, idx) => {
-                const key = dateKey(day);
-                const isToday = isSameDay(day, today);
-                const doc = visibleDoctors[0];
-                if (!doc) return null;
-                const daySlots = allSlots[doc.id]?.[key] || {};
-                return (
-                  <div key={key} className="sch-col">
-                    <div
-                      className={`sch-col__header ${isToday ? "sch-col__header--today" : ""}`}
-                    >
-                      <span className="sch-col__day-name">
-                        {DAY_NAMES[idx]}
-                      </span>
-                      <span
-                        className={`sch-col__day-num ${isToday ? "sch-col__day-num--today" : ""}`}
-                      >
-                        {day.getDate()}
-                      </span>
-                      {isToday && <span className="sch-col__today-dot" />}
-                    </div>
-                    <div className="sch-col__slots">
-                      {HOURS.map((hour) => {
-                        const slotData = daySlots[hour] || {
-                          status: "available",
-                        };
-                        return (
-                          <SlotCell
-                            key={hour}
-                            hour={hour}
-                            slotData={slotData}
-                            showDoctorAvatar={false}
-                            doctorAvatarUrl={doc?.avatarUrl}
-                            doctorInitials={doc?.initials}
-                            onClick={() =>
-                              setActiveSlot({
-                                doctorId: doc.id,
-                                dateStr: key,
-                                hour,
-                                slotData,
-                              })
-                            }
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Legend */}
-        <div className="sch-legend">
-          {[
-            { cls: "sch-legend__dot--available", text: "Available" },
-            { cls: "sch-legend__dot--booked", text: "Booked" },
-            { cls: "sch-legend__dot--blocked", text: "Blocked" },
-          ].map((l) => (
-            <span key={l.text} className="sch-legend__item">
-              <span className={`sch-legend__dot ${l.cls}`} /> {l.text}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Slot Detail Modal */}
-      {activeSlot && activeDoctor && (
-        <SlotDetailModal
-          slot={activeSlot}
-          doctor={activeDoctor}
-          onClose={() => setActiveSlot(null)}
-          onConfirm={handleConfirm}
-          onCancel={handleCancelAppt}
-          onBlock={handleBlock}
-          onUnblock={handleUnblock}
+    <div className="schedules-page">
+      {showGenerate && (
+        <GenerateModal
+          onClose={() => setShowGenerate(false)}
+          doctors={doctors}
+          hospitals={hospitals}
+          onSuccess={() => {
+            setShowGenerate(false);
+            setPage(1);
+            fetchSlots();
+          }}
         />
       )}
 
-      {/* Add Schedule Modal */}
-      {showAddModal && (
-        <AddScheduleModal
-          weekDays={weekDays}
-          onClose={() => setShowAddModal(false)}
-          onSave={handleAddSlot}
+      <div className="slots-header">
+        <div>
+          <h1 className="slots-title">Quản lý lịch khám</h1>
+          <p className="slots-sub">Quản lý slot của bác sĩ và hỗ trợ sinh slots theo luật.</p>
+        </div>
+        <div className="slots-header__right">
+          <span className="slots-total-badge">
+            <FaCheckToSlot /> {meta.total ?? 0} slots
+          </span>
+          <button className="btn-add-slot" onClick={() => setShowGenerate(true)}>
+            <FaPlus /> Sinh slots
+          </button>
+        </div>
+      </div>
+
+      {/* <div className="page-header">
+        <div>
+          <h1 className="page-title">Quản lý lịch khám</h1>
+          <p className="page-sub">Tổng <strong>{meta.total}</strong> slots · Trang {page}/{meta.totalPages || 1}</p>
+        </div>
+        <button className="btn btn--primary" onClick={() => setShowGenerate(true)}>
+          <FaPlus /> Sinh slots
+        </button>
+      </div> */}
+
+      <div className="filter-bar">
+        <select value={filters.doctorId} onChange={setFilter("doctorId")}>
+          <option value="">Tất cả bác sĩ</option>
+          {doctors.map(d => <option key={d.id} value={d.id}>{formatDoctorName(d)}</option>)}
+        </select>
+        <select value={filters.hospitalId} onChange={setFilter("hospitalId")}>
+          <option value="">Tất cả cơ sở</option>
+          {hospitals.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+        </select>
+        <input
+          type="date"
+          value={filters.date}
+          onChange={setFilter("date")}
+          title="Lọc theo ngày"
         />
+        <select value={filters.isBooked} onChange={setFilter("isBooked")}>
+          <option value="">Trạng thái đặt</option>
+          <option value="true">Đã đặt</option>
+          <option value="false">Chưa đặt</option>
+        </select>
+        <select value={filters.isBlocked} onChange={setFilter("isBlocked")}>
+          <option value="">Trạng thái khóa</option>
+          <option value="true">Đã khóa</option>
+          <option value="false">Chưa khóa</option>
+        </select>
+        {(filters.doctorId || filters.hospitalId || filters.date || filters.isBooked || filters.isBlocked) && (
+          <button className="btn btn--ghost btn--sm" onClick={() => { setFilters({ doctorId: "", hospitalId: "", date: "", isBooked: "", isBlocked: "" }); setPage(1); }}>
+            Xóa lọc
+          </button>
+        )}
+      </div>
+
+      {selected.size > 0 && (
+        <div className="bulk-bar">
+          <span>Đã chọn <strong>{selected.size}</strong> slot</span>
+          <button className="btn btn--danger btn--sm" onClick={handleBulkDelete} disabled={isLoading}>
+            <FaTrash /> Xóa hàng loạt
+          </button>
+          <button className="btn btn--ghost btn--sm" onClick={() => setSelected(new Set())}>Bỏ chọn</button>
+        </div>
+      )}
+
+      <div className="table-wrap">
+        <table className="slot-table">
+          <thead>
+            <tr>
+              <th className="col-check">
+                <input type="checkbox" checked={selected.size === slots.length && slots.length > 0} onChange={toggleAll} />
+              </th>
+              <th>Bác sĩ</th>
+              <th>Cơ sở</th>
+              <th>Ngày</th>
+              <th>Giờ</th>
+              <th>Trạng thái</th>
+              <th className="col-actions">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            {isLoading ? (
+              <tr><td colSpan={7} className="empty-state">Đang tải dữ liệu...</td></tr>
+            ) : slots.length === 0 ? (
+              <tr><td colSpan={7} className="empty-state">Không tìm thấy slot nào</td></tr>
+            ) : slots.map(slot => (
+              <tr key={slot.id} className={selected.has(slot.id) ? "row--selected" : ""}>
+                <td className="col-check">
+                  <input type="checkbox" checked={selected.has(slot.id)} onChange={() => toggleSelect(slot.id)} />
+                </td>
+                <td>
+                  <span className="doctor-name">{formatDoctorName(slot.doctor)}</span>
+                </td>
+                <td><span className="hospital-tag">{slot.hospital?.name || "N/A"}</span></td>
+                <td className="date-cell">{new Date(slot.date).toLocaleDateString("vi-VN")}</td>
+                <td className="time-cell">
+                  <span className="time-pill">{slot.startTime} – {slot.endTime}</span>
+                </td>
+                <td>{statusBadge(slot)}</td>
+                <td className="col-actions">
+                  <button
+                    className={`action-btn ${slot.isBlocked ? "action-btn--unblock" : "action-btn--block"}`}
+                    title={slot.isBlocked ? "Mở khóa" : "Khóa slot"}
+                    onClick={() => handleBlockToggle(slot.id, slot.isBlocked)}
+                  >
+                    {slot.isBlocked ? <FaLockOpen /> : <FaLock />}
+                  </button>
+                  {!slot.isBooked && (
+                    <button className="action-btn action-btn--delete" title="Xóa slot" onClick={() => handleDelete(slot.id)}>
+                      <FaTrash />
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {(meta.totalPages > 1) && (
+        <nav className="pagination" aria-label="Phân trang">
+          <ul>
+            <li className={page === 1 ? "disabled" : ""}>
+              <button onClick={() => setPage(1)} disabled={page === 1} aria-label="Trang đầu">«</button>
+            </li>
+            <li className={page === 1 ? "disabled" : ""}>
+              <button onClick={() => setPage(p => p - 1)} disabled={page === 1} aria-label="Trang trước">‹</button>
+            </li>
+
+            {page > 3 && (
+              <>
+                <li><button onClick={() => setPage(1)}>1</button></li>
+                {page > 4 && <li className="ellipsis"><span>…</span></li>}
+              </>
+            )}
+
+            {pageRange().map(p => (
+              <li key={p} className={p === page ? "active" : ""}>
+                <button onClick={() => setPage(p)}>{p}</button>
+              </li>
+            ))}
+
+            {page < meta.totalPages - 2 && (
+              <>
+                {page < meta.totalPages - 3 && <li className="ellipsis"><span>…</span></li>}
+                <li><button onClick={() => setPage(meta.totalPages)}>{meta.totalPages}</button></li>
+              </>
+            )}
+
+            <li className={page === meta.totalPages ? "disabled" : ""}>
+              <button onClick={() => setPage(p => p + 1)} disabled={page === meta.totalPages} aria-label="Trang sau">›</button>
+            </li>
+            <li className={page === meta.totalPages ? "disabled" : ""}>
+              <button onClick={() => setPage(meta.totalPages)} disabled={page === meta.totalPages} aria-label="Trang cuối">»</button>
+            </li>
+          </ul>
+        </nav>
       )}
     </div>
   );

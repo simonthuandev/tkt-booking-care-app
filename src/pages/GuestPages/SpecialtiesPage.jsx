@@ -1,92 +1,55 @@
 import { Link } from "react-router";
-import RoutePage from "../../components/Common/RoutePage";
+import { useState, useEffect } from "react";
+import { specialtyService } from "../../api/appService";
+import LoadingSpinner from "../../components/Common/LoadingSpinner";
 import "./SpecialtiesPage.scss";
-import { toSlug } from "../../utils/helpers";
-
-const specialties = [
-  {
-    name: "Cơ Xương Khớp",
-    img: "https://cdn.bookingcare.vn/fo/w384/2023/12/26/101627-co-xuong-khop.png",
-  },
-  {
-    name: "Thần Kinh",
-    img: "https://cdn.bookingcare.vn/fo/2023/12/26/101739-than-kinh.png",
-  },
-  {
-    name: "Tiêu Hóa",
-    img: "https://cdn.bookingcare.vn/fo/w384/2023/12/26/101713-tieu-hoa.png",
-  },
-  {
-    name: "Tim Mạch",
-    img: "https://cdn.bookingcare.vn/fo/w384/2023/12/26/101713-tim-mach.png",
-  },
-  {
-    name: "Tai Mũi Họng",
-    img: "https://cdn.bookingcare.vn/fo/w384/2023/12/26/101713-tai-mui-hong.png",
-  },
-  {
-    name: "Cột Sống",
-    img: "https://cdn.bookingcare.vn/fo/w384/2023/12/26/101627-cot-song.png",
-  },
-  {
-    name: "Y Học Cổ Truyền",
-    img: "https://cdn.bookingcare.vn/fo/w384/2023/12/26/101739-y-hoc-co-truyen.png",
-  },
-  {
-    name: "Châm Cứu",
-    img: "https://cdn.bookingcare.vn/fo/w384/2023/12/26/101627-cham-cuu.png",
-  },
-  {
-    name: "Sản Phụ Khoa",
-    img: "https://cdn.bookingcare.vn/fo/w384/2023/12/26/101713-san-phu-khoa.png",
-  },
-  {
-    name: "Siêu Âm Thai",
-    img: "https://cdn.bookingcare.vn/fo/w384/2023/12/26/101713-suc-khoe-tam-than.png",
-  },
-  {
-    name: "Nhi Khoa",
-    img: "https://cdn.bookingcare.vn/fo/w384/2023/12/26/101655-nhi-khoa.png",
-  },
-  {
-    name: "Da Liễu",
-    img: "https://cdn.bookingcare.vn/fo/w384/2023/12/26/101638-da-lieu.png",
-  },
-  {
-    name: "Viêm Gan",
-    img: "https://cdn.bookingcare.vn/fo/w384/2023/12/26/101739-viem-gan.png",
-  },
-  {
-    name: "Sức Khỏe Tâm Thần",
-    img: "https://cdn.bookingcare.vn/fo/w384/2023/12/26/101713-suc-khoe-tam-than.png",
-  },
-  {
-    name: "Dị Ứng - Miễn Dịch",
-    img: "https://cdn.bookingcare.vn/fo/w384/2023/12/26/101638-di-ung-mien-dich.png",
-  },
-  {
-    name: "Hô Hấp - Phổi",
-    img: "https://cdn.bookingcare.vn/fo/w384/2023/12/26/101638-ho-hap-phoi.png",
-  },
-];
 
 const SpecialtiesPage = () => {
+  const [specialties, setSpecialties] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    specialtyService.specialties()
+      .then((res) => {
+        if (!isMounted) return;
+        setSpecialties(res.data?.data || []);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error("Lỗi lấy danh sách chuyên khoa:", err);
+        if (isMounted) setIsLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
   return (
     <>
       <div className="specialties-container">
-        {specialties.map((specialty, index) => (
-          <Link
-            key={index}
-            // chỉnh lại link to để chuyển sang form khác
-            to={`/specialties/${toSlug(specialty.name)}`}
-            className="specialty-card"
-          >
-            <div className="specialty-image">
-              <img src={specialty.img} alt={specialty.name} />
-            </div>
-            <h3 className="specialty-name">{specialty.name}</h3>
-          </Link>
-        ))}
+        {specialties.map((specialty, index) => {
+          const name = specialty.name || "ko có";
+          const slug = specialty.slug || "ko có";
+          const imgUrl = specialty.icon;
+
+          return (
+            <Link
+              key={specialty.id || index}
+              to={`/specialties/${slug}`}
+              className="specialty-card"
+            >
+              <div className="specialty-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8f9fa', minHeight: '150px' }}>
+                <img src={imgUrl} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+              <h3 className="specialty-name">{name}</h3>
+            </Link>
+          );
+        })}
       </div>
     </>
   );
