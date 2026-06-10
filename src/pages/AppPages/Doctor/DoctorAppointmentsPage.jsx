@@ -1,97 +1,82 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// DoctorAppointmentsPage.jsx
-// Danh sách appointments của bác sĩ: tabs, search, filter, sort, actions
-// ─────────────────────────────────────────────────────────────────────────────
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import {
   BsCalendar2WeekFill,
   BsClockFill,
   BsPersonBadgeFill,
+  BsTelephoneFill, // Thêm icon điện thoại
 } from "react-icons/bs";
 import {
   FaUserInjured,
   FaCheckCircle,
   FaClock,
-  FaSearch,
-  FaSortAmountDown,
-  FaEye,
   FaTimes,
   FaCheck,
   FaBan,
   FaFilter,
   FaStethoscope,
+  FaPlay,
+  FaChevronLeft,
+  FaChevronRight,
+  FaExclamationTriangle
 } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { appointmentService } from "../../../api/appService";
+import LoadingSpinner from "../../../components/Common/LoadingSpinner";
 import "./DoctorAppointmentsPage.scss";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MOCK DATA
+// HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
-const today     = new Date();
-const fmt       = (d) => d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-const addDays   = (n) => { const d = new Date(today); d.setDate(d.getDate() + n); return fmt(d); };
+const calculateAge = (dobString) => {
+  if (!dobString) return "?";
+  const dob = new Date(dobString);
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const m = today.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+    age--;
+  }
+  return age;
+};
 
-const INIT_APPOINTMENTS = [
-  { id: 1,  patient: "Tran Thi Mai",    age: 45, avatar: "TM", color: "#0ba3a3", type: "Check-up",     date: addDays(0),  time: "08:00 AM", status: "waiting"   },
-  { id: 2,  patient: "Le Van Binh",     age: 62, avatar: "LB", color: "#077d7d", type: "Follow-up",    date: addDays(0),  time: "09:00 AM", status: "confirmed"  },
-  { id: 3,  patient: "Pham Duc Thanh",  age: 38, avatar: "PT", color: "#f5a623", type: "Consultation", date: addDays(0),  time: "10:00 AM", status: "completed"  },
-  { id: 4,  patient: "Nguyen Thi Lan",  age: 55, avatar: "NL", color: "#534ab7", type: "Check-up",     date: addDays(0),  time: "11:00 AM", status: "cancelled"  },
-  { id: 5,  patient: "Vo Minh Khoa",    age: 29, avatar: "VK", color: "#1a9e5c", type: "Follow-up",    date: addDays(2),  time: "02:00 PM", status: "waiting"    },
-  { id: 6,  patient: "Hoang Thi Thu",   age: 48, avatar: "HT", color: "#ff6b35", type: "Consultation", date: addDays(3),  time: "09:30 AM", status: "confirmed"  },
-  { id: 7,  patient: "Dang Van Long",   age: 33, avatar: "DL", color: "#0d2b45", type: "Check-up",     date: addDays(5),  time: "03:00 PM", status: "waiting"    },
-  { id: 8,  patient: "Bui Thi Huong",   age: 60, avatar: "BH", color: "#9b59b6", type: "Follow-up",    date: addDays(-2), time: "10:00 AM", status: "completed"  },
-  { id: 9,  patient: "Cao Minh Tri",    age: 41, avatar: "CT", color: "#e67e22", type: "Consultation", date: addDays(-3), time: "08:30 AM", status: "completed"  },
-  { id: 10, patient: "Dinh Thi Nga",    age: 52, avatar: "DN", color: "#16a085", type: "Check-up",     date: addDays(-1), time: "04:00 PM", status: "cancelled"  },
-];
+const getAvatarInitials = (name) => {
+  if (!name) return "BN";
+  const parts = name.trim().split(" ");
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+};
+
+const COLORS = ["#0ba3a3", "#077d7d", "#f5a623", "#534ab7", "#1a9e5c", "#ff6b35", "#0d2b45", "#9b59b6", "#e67e22", "#16a085"];
+const getColorForId = (id) => {
+  if (!id) return COLORS[0];
+  const charCode = id.charCodeAt(id.length - 1);
+  return COLORS[charCode % COLORS.length];
+};
 
 // ── Tab config ───────────────────────────────────────────────────────────────
 const TABS = [
-  { key: "all",       label: "All"       },
-  { key: "today",     label: "Today"     },
-  { key: "upcoming",  label: "Upcoming"  },
-  { key: "completed", label: "Completed" },
-  { key: "cancelled", label: "Cancelled" },
+  { key: "all",        label: "Tất cả",      statusVal: "" },
+  { key: "pending",    label: "Chờ xác nhận", statusVal: "pending" },
+  { key: "confirmed",  label: "Đã xác nhận",  statusVal: "confirmed" },
+  { key: "processing", label: "Đang khám",    statusVal: "processing" },
+  { key: "completed",  label: "Hoàn tất",     statusVal: "completed" },
+  { key: "no_show",    label: "Vắng mặt",     statusVal: "no_show" }, // Bổ sung Tab Vắng mặt
+  { key: "cancelled",  label: "Đã huỷ",       statusVal: "cancelled" },
 ];
 
 // ── Status config ────────────────────────────────────────────────────────────
 const STATUS_CONFIG = {
-  waiting:   { label: "Waiting",   icon: FaClock,       className: "status--waiting"   },
-  confirmed: { label: "Confirmed", icon: BsPersonBadgeFill, className: "status--confirmed" },
-  completed: { label: "Completed", icon: FaCheckCircle, className: "status--completed" },
-  cancelled: { label: "Cancelled", icon: FaBan,         className: "status--cancelled" },
+  pending:    { label: "Chờ xác nhận", icon: FaClock,       className: "status--pending" },
+  confirmed:  { label: "Đã xác nhận",  icon: BsPersonBadgeFill, className: "status--confirmed" },
+  processing: { label: "Đang khám",    icon: FaStethoscope, className: "status--processing" },
+  completed:  { label: "Hoàn tất",     icon: FaCheckCircle, className: "status--completed" },
+  no_show:    { label: "Vắng mặt",     icon: FaExclamationTriangle, className: "status--noshow" },
+  cancelled:  { label: "Đã huỷ",       icon: FaBan,         className: "status--cancelled" },
 };
 
-// ── Type config ──────────────────────────────────────────────────────────────
-const TYPE_CONFIG = {
-  "Check-up":    "type--checkup",
-  "Follow-up":   "type--followup",
-  "Consultation":"type--consultation",
-};
-
-// ── Sort options ─────────────────────────────────────────────────────────────
-const SORT_OPTIONS = [
-  { value: "date-desc", label: "Newest first"  },
-  { value: "date-asc",  label: "Oldest first"  },
-  { value: "name-asc",  label: "Name A → Z"    },
-];
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: TypeTag
-// ─────────────────────────────────────────────────────────────────────────────
-function TypeTag({ type }) {
-  return (
-    <span className={`appt-type-tag ${TYPE_CONFIG[type] || ""}`}>
-      <FaStethoscope />
-      {type}
-    </span>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: StatusBadge
-// ─────────────────────────────────────────────────────────────────────────────
 function StatusBadge({ status }) {
   const cfg = STATUS_CONFIG[status];
-  if (!cfg) return null;
+  if (!cfg) return <span className="appt-status-badge status--pending">{status}</span>;
   const Icon = cfg.icon;
   return (
     <span className={`appt-status-badge ${cfg.className}`}>
@@ -104,232 +89,295 @@ function StatusBadge({ status }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // SUB-COMPONENT: AppointmentRow
 // ─────────────────────────────────────────────────────────────────────────────
-function AppointmentRow({ appt, onConfirm, onMarkDone, onCancel }) {
-  const { patient, age, avatar, color, type, date, time, status } = appt;
+function AppointmentRow({ appt, onUpdateStatus, loadingId }) {
+  const patient = appt.patientProfile?.fullName || "Bệnh nhân";
+  const phone = appt.patientProfile?.phoneNumber || "Chưa cập nhật SĐT";
+  const age = calculateAge(appt.patientProfile?.dob);
+  const avatar = getAvatarInitials(patient);
+  const color = getColorForId(appt.patientProfile?.id);
+  const dateStr = new Date(appt.timeSlot?.date).toLocaleDateString("vi-VN");
+  const timeStr = `${appt.timeSlot?.startTime} - ${appt.timeSlot?.endTime}`;
+  const status = appt.status;
+  const isUpdating = loadingId === appt.id;
 
   return (
     <div className="doc-appt-row">
-
-      {/* ── Avatar ───────────────────────────────────── */}
       <div className="doc-appt-row__avatar" style={{ background: color }}>
         {avatar}
       </div>
 
-      {/* ── Patient info ─────────────────────────────── */}
       <div className="doc-appt-row__patient">
         <p className="doc-appt-row__name">
           {patient}
-          <span className="doc-appt-row__age">{age} yrs</span>
+          <span className="doc-appt-row__age">{age} tuổi</span>
+          <span className="doc-appt-row__gender ms-2">
+            {appt.patientProfile?.gender === 'MALE' ? 'Nam' : appt.patientProfile?.gender === 'FEMALE' ? 'Nữ' : 'Khác'}
+          </span>
         </p>
-        <TypeTag type={type} />
+        {/* Hiển thị thêm Số điện thoại và Lý do khám */}
+        <div className="doc-appt-row__contact-info mt-1">
+          <span className="text-primary small fw-medium me-3">
+            <BsTelephoneFill className="me-1" style={{fontSize: '0.7rem'}}/> {phone}
+          </span>
+          <span className="text-muted small">
+            Lý do: {appt.reason || "Không ghi rõ"}
+          </span>
+        </div>
       </div>
 
-      {/* ── Date & time ──────────────────────────────── */}
       <div className="doc-appt-row__datetime">
         <span className="doc-appt-row__date">
-          <BsCalendar2WeekFill />
-          {date}
+          <BsCalendar2WeekFill /> {dateStr}
         </span>
         <span className="doc-appt-row__time">
-          <BsClockFill />
-          {time}
+          <BsClockFill /> {timeStr}
         </span>
       </div>
 
-      {/* ── Status badge ─────────────────────────────── */}
       <div className="doc-appt-row__status">
         <StatusBadge status={status} />
       </div>
 
-      {/* ── Actions ──────────────────────────────────── */}
       <div className="doc-appt-row__actions">
-        {status === "waiting" && (
-          <>
-            <button className="doc-appt-btn doc-appt-btn--confirm" onClick={() => onConfirm(appt.id)}>
-              <FaCheck /> Confirm
-            </button>
-            <button className="doc-appt-btn doc-appt-btn--cancel" onClick={() => onCancel(appt.id)}>
-              <FaTimes /> Cancel
-            </button>
-          </>
+        {status === "pending" && (
+          <button 
+            className="doc-appt-btn doc-appt-btn--confirm" 
+            onClick={() => onUpdateStatus(appt.id, "confirmed")}
+            disabled={isUpdating}
+          >
+            {isUpdating ? <span className="spinner-border spinner-border-sm" /> : <><FaCheck /> Xác nhận</>}
+          </button>
         )}
 
         {status === "confirmed" && (
           <>
-            <button className="doc-appt-btn doc-appt-btn--done" onClick={() => onMarkDone(appt.id)}>
-              <FaCheckCircle /> Mark Done
+            <button 
+              className="doc-appt-btn doc-appt-btn--processing" 
+              onClick={() => onUpdateStatus(appt.id, "processing")}
+              disabled={isUpdating}
+            >
+              {isUpdating ? <span className="spinner-border spinner-border-sm" /> : <><FaPlay /> Tiến hành khám</>}
             </button>
-            <button className="doc-appt-btn doc-appt-btn--cancel" onClick={() => onCancel(appt.id)}>
-              <FaTimes /> Cancel
+            <button 
+              className="doc-appt-btn doc-appt-btn--cancel" 
+              onClick={() => {
+                if(window.confirm("Bạn có chắc muốn huỷ lịch khám này không?")) {
+                  onUpdateStatus(appt.id, "cancelled");
+                }
+              }}
+              disabled={isUpdating}
+            >
+              <FaTimes /> Huỷ lịch
             </button>
           </>
         )}
 
-        {status === "completed" && (
-          <button className="doc-appt-btn doc-appt-btn--view">
-            <FaEye /> View Notes
-          </button>
+        {status === "processing" && (
+          <>
+            <button 
+              className="doc-appt-btn doc-appt-btn--done" 
+              onClick={() => onUpdateStatus(appt.id, "completed")}
+              disabled={isUpdating}
+            >
+              {isUpdating ? <span className="spinner-border spinner-border-sm" /> : <><FaCheckCircle /> Hoàn tất</>}
+            </button>
+            <button 
+              className="doc-appt-btn doc-appt-btn--noshow" 
+              onClick={() => {
+                if(window.confirm("Xác nhận bệnh nhân không đến khám?")) {
+                  onUpdateStatus(appt.id, "no_show");
+                }
+              }}
+              disabled={isUpdating}
+            >
+              <FaExclamationTriangle /> Không đến
+            </button>
+          </>
         )}
-
-        {/* cancelled → không có action */}
       </div>
-
     </div>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN PAGE COMPONENT
-// ─────────────────────────────────────────────────────────────────────────────
 export default function DoctorAppointmentsPage() {
-  const [appointments, setAppointments] = useState(INIT_APPOINTMENTS);
-  const [activeTab,    setActiveTab]    = useState("all");
-  const [search,       setSearch]       = useState("");
-  const [filterType,   setFilterType]   = useState("all");
-  const [sortBy,       setSortBy]       = useState("date-desc");
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [updatingId, setUpdatingId] = useState(null);
 
-  const todayStr = fmt(today);
+  const [activeTab, setActiveTab] = useState("all");
+  const [filterDate, setFilterDate] = useState("");
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
 
-  // ── Actions ───────────────────────────────────────────────────────────────
-  const updateStatus = (id, newStatus) =>
-    setAppointments((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status: newStatus } : a))
-    );
+  const PAGE_LIMIT = 20; // Đồng bộ với Backend
 
-  const handleConfirm  = (id) => updateStatus(id, "confirmed");
-  const handleMarkDone = (id) => updateStatus(id, "completed");
-  const handleCancel   = (id) => updateStatus(id, "cancelled");
+  const fetchAppointments = async () => {
+    try {
+      setLoading(true);
+      const tabConfig = TABS.find(t => t.key === activeTab);
+      const params = {
+        page: currentPage,
+        limit: PAGE_LIMIT
+      };
 
-  // ── Tab counter helpers ───────────────────────────────────────────────────
-  const countTab = (key) => {
-    if (key === "all")       return appointments.length;
-    if (key === "today")     return appointments.filter((a) => a.date === todayStr).length;
-    if (key === "upcoming")  return appointments.filter((a) => new Date(a.date) > today && a.date !== todayStr).length;
-    if (key === "completed") return appointments.filter((a) => a.status === "completed").length;
-    if (key === "cancelled") return appointments.filter((a) => a.status === "cancelled").length;
-    return 0;
+      if (tabConfig && tabConfig.statusVal) {
+        params.status = tabConfig.statusVal;
+      }
+      if (filterDate) {
+        params.date = filterDate;
+      }
+
+      const res = await appointmentService.getDoctorAppointments(params);
+      const respData = res.data?.data?.data || res.data?.data || [];
+      const meta = res.data?.meta || res.data?.data?.meta || {};
+      
+      setAppointments(Array.isArray(respData) ? respData : []);
+      setTotalPages(meta.totalPages || 1);
+      setTotalCount(meta.total || 0);
+
+    } catch (error) {
+      console.error("Lỗi lấy danh sách lịch hẹn:", error);
+      toast.error("Không thể tải danh sách lịch hẹn.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // ── Filter + sort (useMemo) ────────────────────────────────────────────────
-  const filtered = useMemo(() => {
-    let list = [...appointments];
+  useEffect(() => {
+    fetchAppointments();
+  }, [activeTab, filterDate, currentPage]);
 
-    // Tab filter
-    if (activeTab === "today")     list = list.filter((a) => a.date === todayStr);
-    if (activeTab === "upcoming")  list = list.filter((a) => new Date(a.date) > today && a.date !== todayStr);
-    if (activeTab === "completed") list = list.filter((a) => a.status === "completed");
-    if (activeTab === "cancelled") list = list.filter((a) => a.status === "cancelled");
-
-    // Type filter
-    if (filterType !== "all") list = list.filter((a) => a.type === filterType);
-
-    // Search
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter((a) => a.patient.toLowerCase().includes(q));
+  const handleUpdateStatus = async (id, newStatus) => {
+    try {
+      setUpdatingId(id);
+      await appointmentService.doctorUpdateAppointmentStatus(id, { status: newStatus });
+      toast.success("Cập nhật trạng thái thành công!");
+      fetchAppointments();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Lỗi cập nhật trạng thái.");
+    } finally {
+      setUpdatingId(null);
     }
+  };
 
-    // Sort
-    if (sortBy === "date-desc") list.sort((a, b) => new Date(b.date) - new Date(a.date));
-    if (sortBy === "date-asc")  list.sort((a, b) => new Date(a.date) - new Date(b.date));
-    if (sortBy === "name-asc")  list.sort((a, b) => a.patient.localeCompare(b.patient));
+  const handleTabChange = (key) => {
+    setActiveTab(key);
+    setCurrentPage(1);
+  };
 
-    return list;
-  }, [appointments, activeTab, filterType, search, sortBy]);
+  const handleFilterDateChange = (e) => {
+    setFilterDate(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <div className="doc-appts-page">
-
-      {/* ── Page Header ────────────────────────────────── */}
       <div className="doc-appts-page__header">
         <div>
-          <h1 className="doc-appts-page__title">Appointments</h1>
-          <p className="doc-appts-page__subtitle">
-            Manage and track all your patient appointments.
-          </p>
-        </div>
-        <div className="doc-appts-page__today-badge">
-          <BsCalendar2WeekFill />
-          {countTab("today")} appointments today
+          <h1 className="doc-appts-page__title">Quản lý lịch hẹn</h1>
+          <p className="doc-appts-page__subtitle">Theo dõi và cập nhật trạng thái lịch khám.</p>
         </div>
       </div>
 
-      {/* ── Tabs ───────────────────────────────────────── */}
       <div className="doc-appts-tabs">
         {TABS.map(({ key, label }) => (
           <button
             key={key}
             className={`doc-appts-tabs__btn ${activeTab === key ? "doc-appts-tabs__btn--active" : ""}`}
-            onClick={() => setActiveTab(key)}
+            onClick={() => handleTabChange(key)}
           >
             {label}
-            <span className="doc-appts-tabs__count">{countTab(key)}</span>
           </button>
         ))}
       </div>
 
-      {/* ── Toolbar ────────────────────────────────────── */}
-      <div className="doc-appts-toolbar">
-        {/* Search */}
-        <div className="doc-appts-search">
-          <FaSearch className="doc-appts-search__icon" />
-          <input
-            type="text"
-            placeholder="Search patient name..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="doc-appts-search__input"
-          />
-        </div>
+      <div className="doc-appts-toolbar card shadow-sm border-0 mb-4 p-3 bg-white rounded-3">
+        <div className="row g-3 align-items-center">       
+          
+          {/* CỘT BÊN TRÁI: BỘ LỌC NGÀY (Căn sang TRÁI hoàn toàn) */}
+          <div className="col-12 col-md-6 d-flex justify-content-md-start">
+            <div className="doc-appts-date-filter">
+              <label className="text-muted small fw-semibold me-2 mb-0"><FaFilter className="me-1"/> Ngày:</label>
+              <div className="doc-appts-date-filter__input-wrap">
+                <input 
+                  type="date" 
+                  className="form-control form-control-sm border" 
+                  value={filterDate}
+                  onChange={handleFilterDateChange}
+                />
+              </div>
+              {filterDate && (
+                <button className="btn btn-sm btn-light border text-danger ms-1" onClick={() => { setFilterDate(""); setCurrentPage(1); }}>
+                  <FaTimes />
+                </button>
+              )}
+            </div>
+          </div>
 
-        {/* Type filter */}
-        <div className="doc-appts-select-wrap">
-          <FaFilter className="doc-appts-select-wrap__icon" />
-          <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
-            <option value="all">All Types</option>
-            <option value="Check-up">Check-up</option>
-            <option value="Follow-up">Follow-up</option>
-            <option value="Consultation">Consultation</option>
-          </select>
-        </div>
+          {/* CỘT BÊN PHẢI: HIỂN THỊ SỐ LƯỢNG (Dạt hẳn sang PHẢI hoàn toàn) */}
+          <div className="col-12 col-md-6 d-flex justify-content-md-end align-items-center">
+            <span className="doc-appts-results-count">
+              Hiển thị <strong>{appointments.length}</strong> / <strong>{totalCount}</strong> lịch hẹn
+            </span>
+          </div>
 
-        {/* Sort */}
-        <div className="doc-appts-select-wrap">
-          <FaSortAmountDown className="doc-appts-select-wrap__icon" />
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-            {SORT_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
-          </select>
         </div>
       </div>
 
-      {/* ── Results count ──────────────────────────────── */}
-      <p className="doc-appts-results-count">
-        Showing <strong>{filtered.length}</strong> appointment{filtered.length !== 1 ? "s" : ""}
-      </p>
+      <div className="doc-appts-list position-relative" style={{ minHeight: "300px" }}>
+        {loading && (
+          <div className="position-absolute w-100 h-100 d-flex justify-content-center align-items-center bg-white bg-opacity-75" style={{ zIndex: 10 }}>
+            <LoadingSpinner />
+          </div>
+        )}
 
-      {/* ── List ───────────────────────────────────────── */}
-      <div className="doc-appts-list">
-        {filtered.length === 0 ? (
+        {!loading && appointments.length === 0 ? (
           <div className="doc-appts-empty">
             <FaUserInjured className="doc-appts-empty__icon" />
-            <p className="doc-appts-empty__text">No appointments found.</p>
-            <p className="doc-appts-empty__hint">Try adjusting your search or filter.</p>
+            <p className="doc-appts-empty__text">Không có lịch hẹn nào.</p>
           </div>
         ) : (
-          filtered.map((appt) => (
+          appointments.map((appt) => (
             <AppointmentRow
               key={appt.id}
               appt={appt}
-              onConfirm={handleConfirm}
-              onMarkDone={handleMarkDone}
-              onCancel={handleCancel}
+              onUpdateStatus={handleUpdateStatus}
+              loadingId={updatingId}
             />
           ))
         )}
       </div>
 
+      {!loading && totalPages > 1 && (
+        <div className="mt-4">
+          <nav>
+            <ul className="pagination justify-content-center">
+              <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                <button className="page-link" onClick={() => handlePageChange(currentPage - 1)}>
+                  <FaChevronLeft />
+                </button>
+              </li>
+              {Array.from({ length: totalPages }, (_, i) => (
+                <li key={i+1} className={`page-item ${i+1 === currentPage ? "active" : ""}`}>
+                  <button className="page-link" onClick={() => handlePageChange(i+1)}>{i+1}</button>
+                </li>
+              ))}
+              <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+                <button className="page-link" onClick={() => handlePageChange(currentPage + 1)}>
+                  <FaChevronRight />
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      )}
     </div>
   );
 }
