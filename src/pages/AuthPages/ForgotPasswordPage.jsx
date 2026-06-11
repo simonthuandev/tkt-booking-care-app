@@ -1,48 +1,59 @@
-import { Link } from "react-router";
+import { FaArrowRight, FaRegEnvelope } from "react-icons/fa";
+import { Link } from "react-router-dom";
 import { BrandLogo } from "../../components/Common/BrandLogo";
-import RoutePage from "../../components/Common/RoutePage";
+import "./LoginPage.scss";
 
 const ForgotPasswordPage = () => {
   return (
-    <div className="login-container min-vh-100 d-flex flex-column align-items-center justify-content-center p-4">
-      {/* Logo */}
-      <div className="p-3">
-        <BrandLogo />
-      </div>
-
-      {/* Email Card */}
-      <div
-        className="card shadow-lg p-5"
-        style={{ width: "100%", maxWidth: "420px" }}
-      >
-        <h2>Quên mật khẩu ?</h2>
-        <p>Điền email gắn với tài khoản của bạn để khôi phục</p>
-        {/* Email Input */}
-        <div className="mb-4 ">
-          <label className="form-label fw-semibold text-secondary">
-            E-mail
-          </label>
-          <input
-            type="email"
-            placeholder=""
-            className="form-control form-control-lg"
-          />
+    <main className="auth-shell">
+      <section className="auth-visual" aria-hidden="true">
+        <div className="auth-visual__brand">
+          <BrandLogo />
+          <p>Nâng tầm trải nghiệm y tế, kết nối chuyên gia hàng đầu</p>
         </div>
-
-        {/* Button go to gmail */}
-        <button className="btn-search-go">Tiếp tục</button>
-
-        {/* Goback Login */}
-        <div className="d-flex justify-content-center align-items-center text-secondary pt-3">
-          <Link
-            to="/auth/login"
-            className="text-secondary text-decoration-none"
-          >
-            Quay lại trang đăng nhập
-          </Link>
+        <div className="auth-visual__note">
+          <h2>Khôi phục truy cập dễ dàng</h2>
+          <p>
+            Chúng tôi sẽ hướng dẫn bạn đặt lại mật khẩu để tiếp tục quản lý lịch
+            hẹn và hồ sơ sức khỏe.
+          </p>
         </div>
-      </div>
-    </div>
+      </section>
+
+      <section className="auth-panel">
+        <div className="auth-card auth-card--compact">
+          <div className="auth-card__brand">
+            <BrandLogo />
+          </div>
+
+          <header className="auth-card__header">
+            <h1>Quên mật khẩu?</h1>
+            <p>Nhập email gắn với tài khoản của bạn để khôi phục mật khẩu.</p>
+          </header>
+
+          <div className="auth-field">
+            <label htmlFor="reset-email">E-mail</label>
+            <div className="auth-input">
+              <FaRegEnvelope />
+              <input
+                id="reset-email"
+                type="email"
+                placeholder="ten@gmail.com"
+              />
+            </div>
+          </div>
+
+          <button type="button" className="auth-primary-btn">
+            <span>Tiếp tục</span>
+            <FaArrowRight />
+          </button>
+
+          <p className="auth-switch">
+            <Link to="/auth/login">Quay lại trang đăng nhập</Link>
+          </p>
+        </div>
+      </section>
+    </main>
   );
 };
 

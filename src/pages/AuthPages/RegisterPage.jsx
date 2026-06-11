@@ -1,26 +1,25 @@
-import { CgLogIn } from "react-icons/cg";
-import {
-  FaLock,
-  FaUserPlus,
-  FaFacebookF,
-  FaGoogle,
-  FaGithub,
-  FaFacebook,
-} from "react-icons/fa";
-// import { FaGoogle } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import {
+  FaArrowRight,
+  FaEye,
+  FaLock,
+  FaRegEnvelope,
+  FaUser,
+} from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { register } from "../../store/slices/authSlice";
-import Password from "../../components/Common/Password";
-import { BrandLogo } from "../../components/Common/BrandLogo";
 import authService from "../../api/authService";
+import { BrandLogo } from "../../components/Common/BrandLogo";
+import { register } from "../../store/slices/authSlice";
+import "./LoginPage.scss";
 
 export default function RegisterInvite() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { isLoading } = useSelector((state) => state.auth);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     surname: "",
@@ -44,8 +43,7 @@ export default function RegisterInvite() {
       toast.error("Mật khẩu không khớp!");
       return;
     }
-    
-    // Chuẩn bị payload khớp với backend
+
     const payload = {
       firstName: formData.name,
       lastName: formData.surname,
@@ -56,8 +54,12 @@ export default function RegisterInvite() {
     try {
       const resultAction = await dispatch(register(payload)).unwrap();
       toast.success("Đăng ký thành công!");
-      const returnUrl = resultAction.role === "admin" ? "/app/admin/dashboard" 
-        : resultAction.role === "doctor" ? "/app/doctor/dashboard" : "/app/user/dashboard";
+      const returnUrl =
+        resultAction.role === "admin"
+          ? "/app/admin/dashboard"
+          : resultAction.role === "doctor"
+            ? "/app/doctor/dashboard"
+            : "/app/user/dashboard";
       navigate(returnUrl);
     } catch (error) {
       toast.error(error || "Đăng ký thất bại");
@@ -65,100 +67,150 @@ export default function RegisterInvite() {
   };
 
   return (
-    <div className="login-container min-vh-100 d-flex flex-column align-items-center justify-content-center p-4">
-      <div className="p-3">
-        <BrandLogo />
-      </div>
-
-      <form
-        onSubmit={handleSubmit}
-        className="card p-4 shadow-sm"
-        style={{ width: "420px", borderRadius: "12px" }}
-      >
-        <h5 className="text-center">Đăng ký người mời</h5>
-
-        {/* Ho */}
-        <div className="">
-          <label className="form-label fw-semibold text-secondary">Họ</label>
-          <input
-            type="text"
-            name="surname"
-            value={formData.surname}
-            onChange={handleChange}
-            className="form-control"
-          />
+    <main className="auth-shell">
+      <section className="auth-visual" aria-hidden="true">
+        <div className="auth-visual__brand">
+          <BrandLogo />
+          <p>Nâng tầm trải nghiệm y tế, kết nối chuyên gia hàng đầu</p>
         </div>
-        {/* Ten */}
-        <div className="">
-          <label className="form-label fw-semibold text-secondary">Tên</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            className="form-control"
-          />
+        <div className="auth-visual__note">
+          <h2>Bắt đầu hành trình chăm sóc sức khỏe</h2>
+          <p>
+            Tạo tài khoản để đặt lịch nhanh hơn, quản lý hồ sơ và theo dõi lịch
+            hẹn của bạn tại một nơi.
+          </p>
         </div>
+      </section>
 
-        {/* Email */}
-        <div className="">
-          <label className="form-label fw-semibold text-secondary">
-            E-mail
-          </label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className="form-control"
-          />
-        </div>
-
-        {/* Password */}
-        <Password
-          label="Mật khẩu"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-        ></Password>
-
-        {/* Confirm */}
-        <Password
-          label="Nhập lại mật khẩu"
-          name="confirmPassword"
-          value={formData.confirmPassword}
-          onChange={handleChange}
-        ></Password>
-
-        {/* Button */}
-        <button type="submit" className="btn-search-go mt-3" disabled={isLoading}>
-          {isLoading ? "Đang xử lý..." : "Đăng ký →"}
-        </button>
-
-        {/* Divider */}
-        <div className="">
-          <hr className="my-3" />
-          <p className="text-center">Hoặc</p>
-        </div>
-
-        {/* OAuth Buttons */}
-        {/* <div className="row justify-content-center">
-          <div className="col-4">
-            <button type="button" className="btn-search-go w-100" onClick={() => authService.loginWithGoogle()}>
-              <FaGoogle />
-            </button>
+      <section className="auth-panel">
+        <form className="auth-card auth-card--register" onSubmit={handleSubmit}>
+          <div className="auth-card__brand">
+            <BrandLogo />
           </div>
-        </div> */}
-        <div className="d-flex justify-content-center mb-4">
-          <button 
-            className="btn-search-go"
-            onClick={() => {authService.loginWithGoogle()}}
-          >
-            {/* <FaGoogle /> */}
-            <span>Đăng nhập với Google</span>
+
+          <header className="auth-card__header">
+            <h1>Tạo tài khoản</h1>
+            <p>Nhập thông tin để bắt đầu sử dụng TKTBookingCare.</p>
+          </header>
+
+          <div className="auth-grid">
+            <div className="auth-field">
+              <label htmlFor="surname">Họ</label>
+              <div className="auth-input">
+                <FaUser />
+                <input
+                  id="surname"
+                  type="text"
+                  name="surname"
+                  value={formData.surname}
+                  onChange={handleChange}
+                  placeholder="Nguyen"
+                />
+              </div>
+            </div>
+
+            <div className="auth-field">
+              <label htmlFor="name">Tên</label>
+              <div className="auth-input">
+                <FaUser />
+                <input
+                  id="name"
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="An"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="auth-field">
+            <label htmlFor="email">E-mail</label>
+            <div className="auth-input">
+              <FaRegEnvelope />
+              <input
+                id="email"
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="ten@gmail.com"
+              />
+            </div>
+          </div>
+
+          <div className="auth-field">
+            <label htmlFor="password">Mật khẩu</label>
+            <div className="auth-input">
+              <FaLock />
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                className="auth-icon-btn"
+                onClick={() => setShowPassword((value) => !value)}
+                aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+              >
+                <FaEye />
+              </button>
+            </div>
+          </div>
+
+          <div className="auth-field">
+            <label htmlFor="confirmPassword">Nhập lại mật khẩu</label>
+            <div className="auth-input">
+              <FaLock />
+              <input
+                id="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                className="auth-icon-btn"
+                onClick={() => setShowConfirmPassword((value) => !value)}
+                aria-label={
+                  showConfirmPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"
+                }
+              >
+                <FaEye />
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" className="auth-primary-btn" disabled={isLoading}>
+            <span>{isLoading ? "Đang xử lý..." : "Đăng ký"}</span>
+            <FaArrowRight />
           </button>
-        </div>
-      </form>
-    </div>
+
+          <div className="auth-divider">
+            <span>HOẶC</span>
+          </div>
+
+          <button
+            type="button"
+            className="auth-google-btn"
+            onClick={() => authService.loginWithGoogle()}
+          >
+            <span className="auth-google-mark">g</span>
+            <span>Tiếp tục với Google</span>
+          </button>
+
+          <p className="auth-switch">
+            Đã có tài khoản? <Link to="/auth/login">Đăng nhập</Link>
+          </p>
+        </form>
+      </section>
+    </main>
   );
 }

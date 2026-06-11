@@ -1,27 +1,19 @@
-import axios from "axios";
-import {
-  FaFacebook,
-  FaGithub,
-  FaGoogle,
-  FaEye,
-  FaEyeSlash,
-} from "react-icons/fa";
-import { FcLock } from "react-icons/fc";
-import { Link, useNavigate } from "react-router-dom";
-import { BrandLogo } from "../../components/Common/BrandLogo";
-import { FaUserPlus } from "react-icons/fa6";
 import { useState } from "react";
+import { FaArrowRight, FaEye, FaLock, FaRegEnvelope } from "react-icons/fa";
+import { FaUserPlus } from "react-icons/fa6";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { login } from "../../store/slices/authSlice";
 import authService from "../../api/authService";
-import Password from "../../components/Common/Password";
+import { BrandLogo } from "../../components/Common/BrandLogo";
+import { login } from "../../store/slices/authSlice";
 import "./LoginPage.scss";
 
 const LoginPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { isLoading } = useSelector((state) => state.auth);
+  const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -41,9 +33,12 @@ const LoginPage = () => {
     try {
       const resultAction = await dispatch(login(formData)).unwrap();
       toast.success("Đăng nhập thành công!");
-      // RoleRoute Redirect mapping
-      const returnUrl = resultAction.role === "admin" ? "/app/admin/dashboard" 
-        : resultAction.role === "doctor" ? "/app/doctor/dashboard" : "/app/user/dashboard";
+      const returnUrl =
+        resultAction.role === "admin"
+          ? "/app/admin/dashboard"
+          : resultAction.role === "doctor"
+            ? "/app/doctor/dashboard"
+            : "/app/user/dashboard";
       navigate(returnUrl);
     } catch (error) {
       toast.error(error || "Đăng nhập thất bại");
@@ -51,87 +46,104 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="login-container min-vh-100 d-flex flex-column align-items-center justify-content-center p-4">
-      {/* Logo */}
-      <div className="p-3">
-        <BrandLogo />
-      </div>
-
-      {/* Login Card */}
-      <form
-        onSubmit={handleSubmit}
-        className="card shadow-lg p-5"
-        style={{ width: "100%", maxWidth: "420px" }}
-      >
-        {/* Email Input */}
-        <div className="mb-3">
-          <label className="form-label fw-semibold text-secondary">
-            E-mail
-          </label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder=""
-            className="form-control"
-          />
+    <main className="auth-shell">
+      <section className="auth-visual" aria-hidden="true">
+        <div className="auth-visual__brand">
+          <BrandLogo />
+          <p>Nâng tầm trải nghiệm y tế, kết nối chuyên gia hàng đầu</p>
         </div>
-
-        {/* Password Input */}
-        <Password
-          label="Nhập mật khẩu"
-          className=""
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-        ></Password>
-
-        {/* Login Button */}
-        <button type="submit" className="btn-search-go mt-3" disabled={isLoading}>
-          {isLoading ? "Đang xử lý..." : "Đăng nhập →"}
-        </button>
-
-        {/* Divider */}
-        <div className="">
-          <hr className="my-3" />
-          <p className="text-center" style={{ fontSize: "0,75rem" }}>
-            Hoặc
+        <div className="auth-visual__note">
+          <h2>Nâng tầm trải nghiệm y tế</h2>
+          <p>
+            Hệ thống đặt lịch chuyên nghiệp, bảo mật và tận tâm. Chúng tôi kết
+            nối bạn với những chuyên gia hàng đầu.
           </p>
         </div>
+      </section>
 
-        {/* OAuth Buttons */}
-        <div className="d-flex justify-content-center mb-4">
-          <button 
-            className="btn-search-go"
-            onClick={() => {authService.loginWithGoogle()}}
+      <section className="auth-panel">
+        <form className="auth-card" onSubmit={handleSubmit}>
+          <div className="auth-card__brand">
+            <BrandLogo />
+          </div>
+
+          <header className="auth-card__header">
+            <h1>Chào mừng trở lại</h1>
+            <p>Vui lòng nhập thông tin để đăng nhập vào tài khoản của bạn.</p>
+          </header>
+
+          <div className="auth-field">
+            <label htmlFor="email">E-mail</label>
+            <div className="auth-input">
+              <FaRegEnvelope />
+              <input
+                id="email"
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="ten@gmail.com"
+              />
+            </div>
+          </div>
+
+          <div className="auth-field">
+            <div className="auth-label-row">
+              <label htmlFor="password">Mật khẩu</label>
+              <Link to="/auth/forgot-password">Quên mật khẩu?</Link>
+            </div>
+            <div className="auth-input">
+              <FaLock />
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                className="auth-icon-btn"
+                onClick={() => setShowPassword((value) => !value)}
+                aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+              >
+                <FaEye />
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="auth-primary-btn"
+            disabled={isLoading}
           >
-            {/* <FaGoogle /> */}
-            <span>Đăng nhập với Google</span>
+            <span>{isLoading ? "Đang xử lý..." : "Đăng nhập"}</span>
+            <FaArrowRight />
           </button>
-        </div>
 
-        {/* Footer Links */}
-        <div className="d-flex justify-content-between">
-          <div className="d-flex justify-content-between align-items-center text-secondary">
-            <Link
-              to="/auth/forgot-password"
-              className="text-secondary text-decoration-none"
-            >
-              <FcLock /> Quên mật khẩu
-            </Link>
+          <div className="auth-divider">
+            <span>HOẶC</span>
           </div>
-          <div className="d-flex justify-content-between align-items-center text-secondary">
-            <Link
-              to="/auth/register"
-              className="text-secondary text-decoration-none"
-            >
-              Chưa có tài khoản <FaUserPlus />
+
+          <button
+            type="button"
+            className="auth-google-btn"
+            onClick={() => authService.loginWithGoogle()}
+          >
+            <span className="auth-google-mark">g</span>
+            <span>Tiếp tục với Google</span>
+          </button>
+
+          <p className="auth-switch">
+            Chưa có tài khoản?{" "}
+            <Link to="/auth/register">
+              <FaUserPlus /> Đăng ký ngay
             </Link>
-          </div>
-        </div>
-      </form>
-    </div>
+          </p>
+        </form>
+      </section>
+    </main>
   );
 };
 
