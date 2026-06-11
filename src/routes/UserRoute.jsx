@@ -10,9 +10,10 @@ const UserRoute = {
       element: <UserLayout />,
       children: [
         { path: "dashboard", element: <User.UserDashboardPage /> },
-        { path: "booking/:doctorSlug", element: <User.UserBookingPage /> },
+        { path: "booking/:timeSlotId", element: <User.UserBookingPage /> },
         { path: "appointments", element: <User.UserAppointmentsPage /> },
-        { path: "medical-records", element: <User.UserMedicalRecordsPage /> },
+        { path: "patient-profiles", element: <User.UserPatientProfilesPage /> },
+        { path: "reviews", element: <User.UserReviewsPage /> },
         { path: "settings", element: <User.UserSettingsPage /> },
       ],
     },
