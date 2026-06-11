@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { Container } from "react-bootstrap";
 import SectionHeader from "../Common/SectionHeader";
-import StarRating from "../Common/StarRating";
-import { FaArrowRight, FaClipboardList, FaHospital } from "react-icons/fa";
+import { FaArrowRight, FaClipboardList, FaHospital, FaStar } from "react-icons/fa";
 import { BsPersonHeart } from "react-icons/bs";
 import { Link } from "react-router-dom";
 import { doctorService } from "../../api/appService";
@@ -48,15 +47,11 @@ export default function DoctorsSection() {
         ) : (
           <div className="row g-4">
             {doctors.map((doctor) => {
-              const { id, slug, user, specialties, hospitals, rating, totalReviews, consultationFee } = doctor;
+              const { id, slug, user, specialties, hospitals, rating, totalReviews, consultationFee, imgURL } = doctor;
               const fullName = `${user?.lastName || ""} ${user?.firstName || ""}`.trim();
-              const avatar = user?.avatar
-                ? user.avatar
-                : `${DEFAULT_AVATAR}${encodeURIComponent(fullName)}`;
+              const avatar = imgURL || `${DEFAULT_AVATAR}${encodeURIComponent(fullName)}`;
               const primarySpecialty =
-                specialties?.find((s) => s.isPrimary)?.specialty?.name ||
-                specialties?.[0]?.specialty?.name ||
-                "Không có thông tin";
+                specialties?.find((s) => s.isPrimary)?.specialty?.name || "Không có thông tin";
               const hospitalInfo = hospitals?.[0]?.hospital;
               const hospitalDisplay = hospitalInfo
                 ? `${hospitalInfo.name}, ${hospitalInfo.city}`
@@ -83,11 +78,11 @@ export default function DoctorsSection() {
                         <FaHospital className="me-1" />{hospitalDisplay}
                       </div>
                       <div className="doc-rating">
-                        <span className="rating-num">{rating || 0}</span>
-                        <div className="stars">
-                          <StarRating rating={rating || 0} half={!Number.isInteger(rating)} />
+                        <div className="d-inline-flex align-items-center gap-1">
+                          <span className="rating-num">{rating}</span>
+                          <FaStar color="orange" size={12}/>
                         </div>
-                        <span className="rating-cnt">{totalReviews || 0} đánh giá</span>
+                        <span className="rating-cnt">{totalReviews} đánh giá</span>
                       </div>
                       <div className="doc-price-row">
                         <span className="doc-price">{priceDisplay}</span>

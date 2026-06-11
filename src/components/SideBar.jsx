@@ -6,9 +6,6 @@ import {
   FaCalendarAlt,
   FaChartBar,
   FaCog,
-  FaFileMedical,
-  FaHospitalUser,
-  FaNewspaper,
   FaStethoscope,
   FaTachometerAlt,
   FaUserInjured,
@@ -17,6 +14,7 @@ import {
   FaUser
 } from "react-icons/fa";
 import { GrSchedules } from "react-icons/gr";
+import { MdOutlineReviews } from "react-icons/md";
 import { selectIsAuthenticated, selectUser } from "../store/slices/authSlice";
 
 const MENU_ITEMS = [
@@ -38,6 +36,20 @@ const MENU_ITEMS = [
     label: "Appointments",
     path: "/app/user/appointments",
     icon: FaCalendarAlt,
+    roles: ["user"],
+  },
+  {
+    key: "user-patient-profiles",
+    label: "Patient Profile",
+    path: "/app/user/patient-profiles",
+    icon: FaUserInjured,
+    roles: ["user"],
+  },
+  {
+    key: "user-reviews",
+    label: "Reviews",
+    path: "/app/user/reviews",
+    icon: MdOutlineReviews,
     roles: ["user"],
   },
   {
@@ -92,6 +104,13 @@ const MENU_ITEMS = [
     roles: ["admin"],
   },
   {
+    key: "admin-reviews",
+    label: "Reviews",
+    path: "/app/admin/reviews",
+    icon: MdOutlineReviews,
+    roles: ["admin"],
+  },
+  {
     key: "admin-reports",
     label: "Reports",
     path: "/app/admin/reports",
@@ -119,13 +138,6 @@ const MENU_ITEMS = [
     label: "Appointments",
     path: "/app/doctor/appointments",
     icon: FaCalendarAlt,
-    roles: ["doctor"],
-  },
-  {
-    key: "doctor-patients",
-    label: "Patients",
-    path: "/app/doctor/patients",
-    icon:   FaUserInjured,
     roles: ["doctor"],
   },
   {

@@ -5,6 +5,7 @@ import { Link } from "react-router";
 import UserDropdown from "../Common/UserDropdown";
 import { selectIsAuthenticated, selectUser } from "../../store/slices/authSlice";
 import { useSelector } from "react-redux";
+import { BsSearch } from "react-icons/bs";
 
 export default function HomeNav({ scrolled }) {
   const [expanded, setExpanded] = useState(false);
@@ -40,8 +41,8 @@ export default function HomeNav({ scrolled }) {
           <Nav className="mx-auto gap-lg-1">
             {[
               { href: '#specialties', label: 'Chuyên khoa' },
-              { href: '#doctors', label: 'Bác sĩ' },
               { href: '#hospitals', label: 'Bệnh viện' },
+              { href: '#doctors', label: 'Bác sĩ' },
             ].map(({ href, label }) => (
               <Nav.Link
                 key={href}
@@ -52,6 +53,14 @@ export default function HomeNav({ scrolled }) {
               </Nav.Link>
             ))}
           </Nav>
+          
+          <div className="mx-lg-4">
+            <button className="hc-search-btn" aria-label="Tìm kiếm">
+              <BsSearch />
+              <Link to="/search">Tìm kiếm</Link>
+            </button>
+          </div>
+          
 
           {isAuthenticated && user ? (
             <UserDropdown

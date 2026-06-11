@@ -1,7 +1,7 @@
 import { Container } from 'react-bootstrap';
 import SectionHeader from "../Common/SectionHeader";
 import { BsGrid3X3GapFill } from "react-icons/bs";
-import { FaBorderAll } from 'react-icons/fa6';
+import { FaBorderAll, FaStethoscope } from 'react-icons/fa6';
 import { Link } from "react-router-dom";
 import { useState, useEffect } from 'react';
 import { specialtyService } from '../../api/appService';
@@ -13,46 +13,47 @@ export default function SpecialtiesSection() {
 
   useEffect(() => {
     let isMounted = true;
-    specialtyService.specialties()
+
+    // Lấy 8 chuyên khoa để hiển thị 7 + 1 nút "Xem tất cả"
+    specialtyService.specialties({ limit: 8, page: 1 })
       .then((res) => {
         if (!isMounted) return;
+
+        // Backend trả về { data, meta } — field ảnh là imgURL (không phải icon)
         const apiData = res.data?.data || [];
 
-        // Map API data to UI structure strictly without local palettes or fallback icons
-        const mapped = apiData.map((item) => {
-          return {
-            id: item.id,
-            name: item.name || "ko có",
-            slug: item.slug || "ko có",
-            icon: item.icon || "",
-            count: item._count?.doctors !== undefined ? `${item._count.doctors} bác sĩ` : "ko có",
-            more: false,
-          };
-        });
+        const mapped = apiData.map((item) => ({
+          id:    item.id,
+          name:  item.name,
+          slug:  item.slug,
+          imgURL: item.imgURL || null,           // ✅ đúng field từ backend
+          count: `${item._count?.doctors ?? 0} bác sĩ`,
+          more:  false,
+        }));
 
         setSpecialties(mapped);
-        setIsLoading(false);
       })
       .catch((err) => {
         console.error("Lỗi lấy danh sách chuyên khoa:", err);
+      })
+      .finally(() => {
         if (isMounted) setIsLoading(false);
       });
 
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, []);
 
+  // Hiển thị tối đa 7 chuyên khoa thực, phần còn lại là nút "Xem tất cả"
   const displayedSpecialties = specialties.slice(0, 7);
   const displayList = [...displayedSpecialties];
 
   if (specialties.length > 0) {
     displayList.push({
-      icon: '',
-      name: 'Xem tất cả',
+      imgURL: null,
+      name:  'Xem tất cả',
       count: `${specialties.length}+ chuyên khoa`,
-      more: true,
-      slug: ''
+      more:  true,
+      slug:  '',
     });
   }
 
@@ -64,16 +65,18 @@ export default function SpecialtiesSection() {
           title="Đặt khám theo" titleEm="chuyên khoa"
           sub="Chọn đúng chuyên khoa – gặp đúng bác sĩ – nhận đúng kết quả"
         />
+
         {isLoading ? (
           <LoadingSpinner />
         ) : (
           <div className="row g-3 g-md-4 specialty-grid">
-            {displayList.map(({ icon, name, count, more, slug }) => (
+            {displayList.map(({ imgURL, name, count, more, slug }) => (
               <div key={name} className="col-6 col-md-4 col-lg-3">
                 <Link
                   to={more ? "/specialties" : `/specialties/${slug}`}
                   className={`sp-card${more ? ' sp-card-more' : ''}`}
                 >
+                  {/* ── Thumbnail ─────────────────────────────────── */}
                   <div
                     className="specialty-image"
                     style={{
@@ -81,29 +84,51 @@ export default function SpecialtiesSection() {
                       aspectRatio: '1 / 1',
                       overflow: 'hidden',
                       borderRadius: '8px',
-                      background: '#f8f9fa',
+                      background: '#f0fafb',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center'
+                      justifyContent: 'center',
                     }}
                   >
                     {more ? (
-                      <FaBorderAll style={{ fontSize: '2.5rem' }} />
-                    ) : icon ? (
+                      /* Nút "Xem tất cả" */
+                      <FaBorderAll style={{ fontSize: '2.5rem', color: '#0ba3a3' }} />
+                    ) : imgURL ? (
+                      /* Có ảnh từ backend → hiển thị */
                       <img
-                        src={icon}
+                        src={imgURL}
                         alt={name}
                         style={{
                           width: '100%',
                           height: '100%',
                           objectFit: 'contain',
-                          padding: '16px'
+                          padding: '16px',
+                        }}
+                        onError={(e) => {
+                          // Nếu ảnh lỗi → ẩn và hiện icon fallback
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.nextSibling.style.display = 'flex';
                         }}
                       />
-                    ) : (
-                      <span style={{ fontSize: '14px', color: '#dc3545' }}>ko có</span>
+                    ) : null}
+
+                    {/* Fallback icon khi không có imgURL hoặc ảnh lỗi */}
+                    {!more && (
+                      <span
+                        style={{
+                          display: imgURL ? 'none' : 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: '100%',
+                          height: '100%',
+                        }}
+                      >
+                        <FaStethoscope style={{ fontSize: '2.5rem', color: '#0ba3a3', opacity: 0.5 }} />
+                      </span>
                     )}
                   </div>
+
+                  {/* ── Name & Doctor count ──────────────────────── */}
                   <div className="sp-name">{name}</div>
                   <div className="sp-count">{count}</div>
                 </Link>
