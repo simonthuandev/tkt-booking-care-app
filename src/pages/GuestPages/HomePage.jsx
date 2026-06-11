@@ -18,14 +18,10 @@ export default function HomePage() {
       <Home.HomeNav scrolled={scrolled} />
       <Home.HeroSection />
       <Home.StatsBand />
-      <Home.SpecialtiesSection />
       <Home.HowSection />
-      <Home.DoctorsSection />
+      <Home.SpecialtiesSection />
       <Home.HospitalSection />
-      {/* <Home.ServicesSection />
-      <Home.TestimonialsSection />
-      <Home.NewsSection />
-      <Home.PartnerSection /> */}
+      <Home.DoctorsSection />
       <Footer />
       <Chatbot />
     </>

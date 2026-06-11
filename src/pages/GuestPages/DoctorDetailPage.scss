@@ -1,553 +1,569 @@
 @use "../../styles/variables" as v;
 
-.doctor-detail {
-  margin: 5rem 9rem 5rem 9rem;
+// ─────────────────────────────────────────
+// Page shell
+// ─────────────────────────────────────────
+.ddp-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
 
-  @media (max-width: v.$bp-lg) {
-    margin: 3rem 4rem 3rem 4rem;
-  }
+.ddp-loading-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 100px 20px;
+}
 
-  @media (max-width: v.$bp-md) {
-    margin: 2rem 1.5rem 2rem 1.5rem;
-  }
+.ddp-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 100px 20px;
+  color: #9ca3af;
+  text-align: center;
 
-  @media (max-width: v.$bp-sm) {
-    margin: 1rem 1rem 1rem 1rem;
-  }
-
-  // ── Hero Section ──────────────────────────────────────
-  .hero-section {
-    background: linear-gradient(135deg, v.$primary-lt 0%, #f0fffe 100%);
-    border-radius: v.$radius;
-    padding: 40px;
-    margin-bottom: 40px;
-    display: grid;
-    grid-template-columns: 0.5fr 2fr;
-    gap: 40px;
-    align-items: center;
-    animation: fadeInUp 0.6s ease-out;
-
-    @media (max-width: v.$bp-md) {
-      grid-template-columns: 1fr;
-      padding: 30px 20px;
-      gap: 30px;
-    }
-  }
-
-  .doctor-image {
-    position: relative;
-    border-radius: 100%;
-    overflow: hidden;
-    box-shadow: v.$shadow;
-    height: 200px;
-    width: 200px;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      transition: transform 0.5s ease;
-    }
-
-    &:hover img {
-      transform: scale(1.05);
-    }
-
-    @media (max-width: v.$bp-md) {
-      height: 100px;
-      width: 100px;
-    }
-  }
-
-  .doctor-header {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-
-    h2 {
-      font-family: v.$ff-head;
-      font-size: 2.2rem;
-      color: v.$text;
-      font-weight: 700;
-      line-height: 1.2;
-      margin: 0;
-
-      @media (max-width: v.$bp-sm) {
-        font-size: 1.8rem;
-      }
-    }
-
-    .doctor-meta {
-      align-items: center;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-
-    .meta-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 1rem;
-      color: v.$text-muted;
-      font-weight: 500;
-    }
-  }
-
-  .booking-title {
-    font-family: v.$ff-head;
-    font-size: 1.8rem;
-    color: v.$text;
-    margin: 0 0 30px 0;
-    font-weight: 700;
-    padding-bottom: 16px;
-    border-bottom: 3px solid v.$primary;
-    display: inline-block;
-
-    @media (max-width: v.$bp-sm) {
-      font-size: 1.4rem;
-    }
-  }
-
-  .booking-form {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-  }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .form-label {
-    font-family: v.$ff-head;
-    font-size: 1.1rem;
-    color: v.$text;
-    font-weight: 600;
-    display: block;
-  }
-
-  .form-input {
-    padding: 12px 16px;
-    border: 2px solid v.$border;
-    border-radius: v.$radius-sm;
+  p {
     font-size: 1rem;
-    color: v.$text;
-    background: v.$white;
-    transition: all 0.3s ease;
-    font-weight: 500;
-
-    &:focus {
-      outline: none;
-      border-color: v.$primary;
-      box-shadow: 0 0 0 3px rgba(11, 163, 163, 0.1);
-    }
-
-    &:hover {
-      border-color: v.$primary;
-    }
+    margin: 0;
   }
+}
 
-  .date-input {
-    max-width: 300px;
+// ─────────────────────────────────────────
+// Top card (identity + booking panel)
+// ─────────────────────────────────────────
+.ddp-top-card {
+  display: flex;
+  gap: 32px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  align-items: flex-start;
 
-    @media (max-width: v.$bp-md) {
-      max-width: 100%;
-    }
+  @media (max-width: 860px) {
+    flex-direction: column;
   }
+}
 
-  // ── Slots Grid Update ─────────────────────────────────
-  .slot-box {
-    padding: 12px;
-    border: 2px solid v.$border;
-    border-radius: v.$radius-sm;
+// ── Identity (left) ──────────────────────
+.ddp-identity {
+  display: flex;
+  gap: 24px;
+  flex: 1;
+  min-width: 0;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: center;
     text-align: center;
-    font-weight: 500;
-    color: v.$text;
-    background: v.$white;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-    font-size: 0.95rem;
+  }
+}
 
-    @media (max-width: v.$bp-sm) {
-      padding: 10px 12px;
-      font-size: 0.85rem;
-    }
+.ddp-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
 
-    &::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: v.$primary-lt;
-      transition: left 0.3s ease;
-      z-index: -1;
-    }
-
-    &:hover {
-      border-color: v.$primary;
-      color: v.$primary-dk;
-      font-weight: 600;
-      transform: translateY(-3px);
-      box-shadow: 0 4px 12px rgba(11, 163, 163, 0.15);
-
-      &::before {
-        left: 0;
-      }
-    }
-
-    &.selected {
-      background: v.$primary;
-      color: v.$text;
-      border-color: v.$primary;
-      font-weight: 700;
-      box-shadow: 0 6px 16px rgba(11, 163, 163, 0.25);
-      transform: translateY(-4px);
-
-      &::before {
-        left: 0;
-      }
-    }
-
-    &:active {
-      transform: translateY(-1px);
-    }
+  .ddp-avatar {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #e0faf8;
   }
 
-  // ── Price Box ─────────────────────────────────────────
-  .price-box {
-    background: linear-gradient(
-      135deg,
-      rgba(11, 163, 163, 0.05) 0%,
-      rgba(11, 163, 163, 0.02) 100%
-    );
-    border: 2px dashed v.$primary;
-    border-radius: v.$radius-sm;
-    padding: 20px;
-    margin: 20px 0;
-  }
-
-  .price-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-
-    @media (max-width: v.$bp-sm) {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-  }
-
-  .price-label {
-    font-size: 1.1rem;
-    color: v.$text;
-    font-weight: 600;
-  }
-
-  .price-value {
-    font-family: v.$ff-head;
-    font-size: 1.5rem;
+  .ddp-verified-badge {
+    position: absolute;
+    bottom: 28px;
+    right: 12px;
     color: v.$primary;
-    font-weight: 700;
+    font-size: 18px;
+    background: #fff;
+    border-radius: 50%;
+    line-height: 1;
   }
+}
 
-  .price-note {
-    font-size: 0.85rem;
-    color: v.$text-muted;
-    margin: 8px 0 0 0;
-    font-weight: 400;
-  }
+.ddp-identity-info {
+  flex: 1;
+  min-width: 0;
+}
 
-  // ── Booking Summary ───────────────────────────────────
-  .booking-summary {
-    background: linear-gradient(
-      135deg,
-      v.$primary-lt 0%,
-      rgba(230, 247, 247, 0.5) 100%
-    );
-    border: 2px solid v.$primary;
-    border-radius: v.$radius;
-    padding: 24px;
-    margin-top: 24px;
-    animation: slideRight 0.6s ease-out;
-  }
+.ddp-name {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 10px;
+}
 
-  .summary-title {
-    font-family: v.$ff-head;
-    font-size: 1.3rem;
-    color: v.$text;
-    margin: 0 0 20px 0;
-    font-weight: 700;
-    padding-bottom: 12px;
-    border-bottom: 2px solid v.$primary;
-  }
+.ddp-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
 
-  .summary-item {
-    display: flex;
-    justify-content: space-between;
+  .ddp-tag {
+    display: inline-flex;
     align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(11, 163, 163, 0.1);
-
-    &:last-child {
-      border-bottom: none;
-    }
-
-    @media (max-width: v.$bp-sm) {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 8px;
-    }
-  }
-
-  .summary-label {
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
     font-weight: 600;
-    color: v.$text;
-    font-size: 0.95rem;
+
+    &.specialty {
+      background: #e6faf9;
+      color: v.$primary;
+    }
+
+    &.exp {
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    &.license {
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+  }
+}
+
+.ddp-icon {
+  color: v.$primary;
+  flex-shrink: 0;
+  font-size: 13px;
+  margin-top: 1px;
+}
+
+.ddp-hospital-row,
+.ddp-schedule-row,
+.ddp-rating-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: #4b5563;
+  margin-bottom: 8px;
+
+  @media (max-width: 480px) {
+    justify-content: center;
+  }
+}
+
+.ddp-working-days {
+  color: #9ca3af;
+}
+
+.ddp-rating-row {
+  color: #6b7280;
+  align-items: center;
+
+  .ddp-star {
+    color: #f59e0b;
+    font-size: 14px;
   }
 
-  .summary-value {
-    font-weight: 500;
-    color: v.$primary-dk;
-    font-size: 1rem;
-  }
-
-  // ── Booking Button ────────────────────────────────────
-  .btn-book {
-    width: 100%;
-    padding: 16px;
-    margin-top: 20px;
-    background: linear-gradient(135deg, v.$primary 0%, v.$primary-dk 100%);
-    color: v.$white;
-    border: none;
-    border-radius: v.$radius-sm;
-    font-size: 1.1rem;
+  strong {
+    color: #111827;
     font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(11, 163, 163, 0.25);
+  }
+
+  .ddp-review-count {
+    font-size: 0.82rem;
+    color: #9ca3af;
+  }
+}
+
+// ── Booking panel (right) ────────────────
+.ddp-booking-panel {
+  flex-shrink: 0;
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: #f9fffe;
+  border: 1.5px solid #d1faf6;
+  border-radius: 16px;
+  padding: 24px;
+
+  @media (max-width: 860px) {
+    width: 100%;
+  }
+}
+
+.ddp-price-block {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+
+  .ddp-price {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: v.$primary;
+  }
+
+  .ddp-price-label {
+    font-size: 0.8rem;
+    color: #9ca3af;
+  }
+}
+
+// Date strip
+.ddp-date-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ddp-date-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.ddp-date-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ddp-date-nav {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    border-color: v.$primary;
+    color: v.$primary;
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+}
+
+.ddp-date-list {
+  display: flex;
+  gap: 5px;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.ddp-date-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 7px 4px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  .ddp-date-top {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #374151;
+    white-space: nowrap;
+  }
+
+  .ddp-date-bottom {
+    font-size: 0.68rem;
+    color: #9ca3af;
+  }
+
+  &:hover {
+    border-color: v.$primary;
+    background: #f0fdfb;
+  }
+
+  &.active {
+    border-color: v.$primary;
+    background: v.$primary;
+
+    .ddp-date-top,
+    .ddp-date-bottom {
+      color: #fff;
+    }
+  }
+}
+
+// Slots
+.ddp-slots-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ddp-slots-label {
+  font-size: 0.82rem;
+  color: #6b7280;
+}
+
+.ddp-slots-loading,
+.ddp-slots-empty {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  padding: 12px 0;
+  text-align: center;
+}
+
+.ddp-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.ddp-slot-btn {
+  padding: 8px 6px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+
+  &:hover {
+    border-color: v.$primary;
+    background: #f0fdfb;
+    color: v.$primary;
+  }
+
+  &.active {
+    border-color: v.$primary;
+    background: v.$primary;
+    color: #fff;
+  }
+}
+
+// Book button
+.ddp-book-btn {
+  width: 100%;
+  padding: 13px 20px;
+  border-radius: 50px;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+
+  &.ready {
+    background: linear-gradient(135deg, v.$primary 0%, #0fa39b 100%);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(15, 163, 155, 0.25);
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(11, 163, 163, 0.35);
-    }
-
-    &:active {
-      transform: translateY(0);
-      box-shadow: 0 2px 8px rgba(11, 163, 163, 0.2);
-    }
-
-    @media (max-width: v.$bp-sm) {
-      font-size: 1rem;
-      padding: 14px;
+      box-shadow: 0 8px 24px rgba(15, 163, 155, 0.35);
     }
   }
 
-  // ── Section Description ──────────────────────────────
-  .section-description {
-    color: v.$text-muted;
-    font-size: 0.95rem;
-    font-weight: 400;
-    margin: -12px 0 20px 0;
-  }
-
-  // ── Time Slots Section ────────────────────────────────
-  .slots-section {
-    flex: 1;
-    animation: fadeInUp 0.6s ease-out 0.1s both;
-
-    h3 {
-      font-family: v.$ff-head;
-      font-size: 1.5rem;
-      color: v.$text;
-      margin-bottom: 20px;
-      font-weight: 700;
-    }
-
-    @media (max-width: v.$bp-md) {
-      margin-bottom: 30px;
-    }
-  }
-
-  .slots-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 12px;
-
-    @media (max-width: v.$bp-md) {
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      gap: 10px;
-    }
-
-    @media (max-width: v.$bp-sm) {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
-  }
-
-  // ── Address Section ──────────────────────────────────
-  .address-section {
-    flex: 1;
-    background: v.$bg-card;
-    border: 1.5px solid v.$border;
-    border-radius: v.$radius;
-    padding: 24px;
-    animation: fadeInUp 0.6s ease-out 0.2s both;
-    transition: all 0.3s;
-
-    &:hover {
-      border-color: v.$primary;
-      box-shadow: v.$shadow;
-    }
-
-    h4 {
-      font-family: v.$ff-head;
-      font-size: 1.2rem;
-      color: v.$text;
-      margin: 0 0 16px 0;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-
-      &::before {
-        content: "📍";
-        font-size: 1.4rem;
-      }
-    }
-
-    p {
-      color: v.$text;
-      margin: 0;
-      line-height: 1.6;
-      font-size: 0.95rem;
-    }
-
-    @media (max-width: v.$bp-md) {
-      margin-top: 30px;
-    }
-  }
-
-  // Flex container for slots and address
-  .d-flex {
-    display: flex;
-    gap: 24px;
-    margin-bottom: 40px;
-    align-items: flex-start;
-
-    @media (max-width: v.$bp-md) {
-      flex-direction: column;
-      gap: 0;
-    }
-  }
-
-  // Doctor Information Section
-  .info-section-full {
-    background: linear-gradient(
-      135deg,
-      v.$primary-lt 0%,
-      rgba(230, 247, 247, 0.5) 100%
-    );
-    border-radius: v.$radius;
-    padding: 40px;
-    margin-bottom: 40px;
-    animation: fadeInUp 0.6s ease-out 0.2s both;
-    border: 1px solid rgba(11, 163, 163, 0.2);
-
-    @media (max-width: v.$bp-md) {
-      padding: 30px 20px;
-    }
-
-    h4 {
-      font-family: v.$ff-head;
-      font-size: 1.4rem;
-      color: v.$text;
-      margin: 0 0 24px 0;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding-bottom: 16px;
-      border-bottom: 2px solid rgba(11, 163, 163, 0.3);
-    }
-
-    ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-
-      li {
-        color: v.$text;
-        padding: 0;
-        font-size: 0.95rem;
-        line-height: 1.7;
-        position: relative;
-        padding-left: 28px;
-        transition: all 0.3s ease;
-
-        &::before {
-          content: "✓";
-          position: absolute;
-          left: 0;
-          color: v.$primary;
-          font-weight: bold;
-          font-size: 1.1rem;
-        }
-
-        &:hover {
-          color: v.$primary-dk;
-          padding-left: 32px;
-        }
-      }
-    }
+  &.disabled {
+    background: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
   }
 }
 
-// ── Animations ────────────────────────────────────────
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+// ─────────────────────────────────────────
+// Section title (shared)
+// ─────────────────────────────────────────
+.ddp-section-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .ddp-reviews-count {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #9ca3af;
+    background: #f3f4f6;
+    padding: 2px 10px;
+    border-radius: 20px;
   }
 }
 
-@keyframes slideRight {
-  from {
-    width: 0;
-  }
-  to {
-    width: 100%;
+// ─────────────────────────────────────────
+// Information & Treatment grid
+// ─────────────────────────────────────────
+.ddp-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
   }
 }
 
-// ── Mobile Responsive ─────────────────────────────────
-@media (max-width: v.$bp-sm) {
-  .doctor-detail {
-    .slots-grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
+.ddp-detail-block {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 24px;
+}
 
-    .info-sections {
-      grid-template-columns: 1fr;
-    }
+.ddp-detail-list {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 
-    .slot-box {
-      font-size: 0.9rem;
-      padding: 10px 12px;
-    }
+  li {
+    font-size: 0.9rem;
+    color: #4b5563;
+    line-height: 1.6;
+  }
+}
+
+// ─────────────────────────────────────────
+// Reviews
+// ─────────────────────────────────────────
+.ddp-reviews-section {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 28px;
+}
+
+.ddp-reviews-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 20px;
+  color: #9ca3af;
+  text-align: center;
+
+  p {
+    font-size: 0.9rem;
+    margin: 0;
+  }
+}
+
+.ddp-reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.ddp-review-card {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  }
+}
+
+.ddp-review-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ddp-review-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, v.$primary, #0fa39b);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ddp-review-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .ddp-review-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .ddp-review-date {
+    font-size: 0.75rem;
+    color: #9ca3af;
+  }
+}
+
+.ddp-review-stars {
+  display: flex;
+  gap: 2px;
+  font-size: 12px;
+
+  .star-filled {
+    color: #f59e0b;
+  }
+
+  .star-empty {
+    color: #e5e7eb;
+  }
+}
+
+.ddp-review-body {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+
+  .ddp-quote-icon {
+    color: #d1faf6;
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  p {
+    font-size: 0.875rem;
+    color: #4b5563;
+    line-height: 1.6;
+    margin: 0;
   }
 }

@@ -1,197 +1,350 @@
-import RoutePage from "../../components/Common/RoutePage";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router";
+import {
+  FaStar,
+  FaHospital,
+  FaClipboardList,
+  FaCircleCheck,
+  FaClock,
+  FaCalendarDays,
+  FaChevronLeft,
+  FaChevronRight,
+  FaUserDoctor,
+  FaQuoteLeft,
+} from "react-icons/fa6";
+import { doctorService, timeSlotService } from "../../api/appService";
+import LoadingSpinner from "../../components/Common/LoadingSpinner";
 import "./DoctorDetailPage.scss";
-import { useState } from "react";
 
-const doctor = {
-  id: 2,
-  img: "https://randomuser.me/api/portraits/women/29.jpg",
-  name: "ThS.BS. Phạm Bích Ngọc",
-  spec: "Sản phụ khoa",
-  hospital: "BV Từ Dũ, TP.HCM",
-  city: "Ho Chi Minh",
-  rating: 3,
-  examinationPrice: 500000, // Giá khám (đơn vị: VNĐ)
-  slot: [
-    "7:30 - 8:00",
-    "8:00 - 8:30",
-    "8:30 - 9:00",
-    "9:00 - 9:30",
-    "9:30 - 10:00",
-    "10:00 - 10:30",
-    "10:30 - 11:00",
-    "11:00 - 11:30",
-    "11:30 - 12:00",
-    "13:00 - 13:30",
-    "13:30 - 14:00",
-    "14:00 - 14:30",
-    "14:30 - 15:00",
-    "15:00 - 15:30",
-    "15:30 - 16:00",
-    "16:00 - 16:30",
-    "16:30 - 17:00",
-    "17:00 - 17:30",
-  ],
+const DEFAULT_AVATAR =
+  "https://ui-avatars.com/api/?background=0fa39b&color=fff&size=200&name=";
 
-  address: [
-    "3 Đường Số 17A, phường An Lạc, Thành phố Hồ Chí Minh",
-    "Bệnh viện chợ rẫy",
-  ],
-  infomation: [
-    "Chuyên gia 30 năm kinh nghiệm lâm sàng dày dặn trong lĩnh vực Cơ xương khớp - Chấn thương chỉnh hình",
-    "Chuyên gia đầu ngành trong lĩnh vực chấn thương chỉnh hình và cơ xương khớp",
-    "Từng công tác tại các bệnh viện lớn như: Bệnh viện Chợ Rẫy, Bệnh viện Chấn thương chỉnh hình TP.HCM, Bệnh viện Pháp Việt (FV)",
-    "Trưởng khoa Chấn thương chỉnh hình tại Bệnh viện Quốc tế City (CIH)",
-    "Bác sĩ nổi tiếng là người tiên phong và có kinh nghiệm vượt trội trong các ca phẫu thuật thay khớp háng, khớp gối, đặc biệt là ở bệnh nhân lớn tuổi đòi hỏi trình độ chuyên môn cao",
-    "Bác sĩ được đánh giá cao về y đức và sự tận tình với bệnh nhân. Nhiều bệnh nhân và gia đình đã bày tỏ sự tin tưởng và yên tâm khi được bác sĩ thăm khám và điều trị",
-  ],
+const DAYS_VI = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+const DAYS_SHORT = { MON: "T2", TUE: "T3", WED: "T4", THU: "T5", FRI: "T6", SAT: "T7", SUN: "CN" };
 
-  examinationTreatment: [
-    "Chấn thương khớp gối, vai, cột sống (trong tai nạn sinh hoạt, chấn thương thể thao)",
-    "Đứt dây chằng gối, dẹp rách sụn gối - trật khớp vai",
-    "Chấn thương đứt dây chằng khớp gối",
-    "Chấn thương rách đứt dây chằng cổ chân",
-    "Chấn thương rách lật khớp vai",
-    "Chấn thương rách gân khớp vai",
-    "Thoái hóa khớp gối, cột sống cổ …",
-    "Các bệnh lý đặc biệt trong thể thao",
-    "Bệnh thoái hóa cột sống cổ tay đĩa đệm",
-    "Bệnh lý khớp gối",
-    "Hội chứng Tennis Elbow (viêm lồi cầu ngoài xương cánh tay là chấn thương thường gặp ở người chơi tennis)",
-    "Gai gót chân",
-    "Bệnh lý gối lệch trục xương ( vẹo trong , vẹo ngoài )",
-    "Thoái hóa khớp háng",
-  ],
+function formatDateLabel(dateStr) {
+  const d = new Date(dateStr + "T00:00:00");
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diff = Math.round((d - today) / 86400000);
+  const dayName = DAYS_VI[d.getDay()];
+  const ddmm = `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+  if (diff === 0) return { top: "Hôm nay", bottom: ddmm, dayName };
+  if (diff === 1) return { top: "Ngày mai", bottom: ddmm, dayName };
+  return { top: dayName, bottom: ddmm, dayName };
+}
 
-  workExperience: [
-    "Currently Head of Orthopedics Department, City International Hospital (2013 - present)",
-    "Lecturer in Orthopedics and Traumatology, Pham Ngoc Thach University of Medicine; Lecturer in Surgery, Faculty of Medicine, Vietnam National University Ho Chi Minh City (2013 - present)",
-    "Orthopedic Trauma Surgeon, French-Vietnamese Hospital (FV) (2002 - 2013)",
-    "Physician in the Lower Extremity Department, Ho Chi Minh City Orthopedic and Trauma Hospital (1993 - 2002)",
-    "Doctor in the Orthopedics Department, Cho Ray Hospital (1986 - 1993)",
-  ],
-
-  trainingProcess: [
-    "Tốt nghiệp Bác sĩ tại Đại học Y dược TPHCM (1986)",
-    "Tốt nghiệp Thạc sĩ chuyên ngành Chấn thương chỉnh hình, Đại học Y Dược TP.HCM (2002)",
-    "Tốt nghiệp Tiến sĩ chuyên ngành Chấn thương chỉnh hình Đại học Y Dược TP.HCM (2011)",
-    "Tốt nghiệp lớp đào tạo nội trú chuyên khoa Chấn thương chỉnh hình tại trường Đại học Y khoa Bordeaux 2, Pháp (1995)",
-    "Bác sĩ nội trú khoa Chấn thương chỉnh hình Bệnh viện DAX, Bordeaux, Pháp (1995)",
-  ],
-};
+function buildNext7Days() {
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    days.push(`${yyyy}-${mm}-${dd}`);
+  }
+  return days;
+}
 
 const DoctorDetailPage = () => {
-  const [selectedDate, setSelectedDate] = useState("");
-  const [selectedSlot, setSelectedSlot] = useState(null);
+  const { doctorSlug } = useParams();
+  const navigate = useNavigate();
 
-  // Lấy ngày hôm nay để set min date
-  const getTodayDate = () => {
-    const today = new Date();
-    return today.toISOString().split("T")[0];
+  const [doctor, setDoctor] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Slot state
+  const [selectedDate, setSelectedDate] = useState(buildNext7Days()[0]);
+  const [slots, setSlots] = useState([]);
+  const [isSlotsLoading, setIsSlotsLoading] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [dateOffset, setDateOffset] = useState(0); // for scrolling date strip
+
+  const dates = buildNext7Days();
+  const visibleDates = dates.slice(dateOffset, dateOffset + 5);
+
+  // Fetch doctor detail
+  useEffect(() => {
+    setIsLoading(true);
+    doctorService
+      .doctorDetail(doctorSlug)
+      .then((res) => {
+        setDoctor(res.data?.data || null);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error("Lỗi lấy thông tin bác sĩ:", err);
+        setError("Không thể tải thông tin bác sĩ.");
+        setIsLoading(false);
+      });
+  }, [doctorSlug]);
+
+  // Fetch slots when doctor loaded or date changes
+  useEffect(() => {
+    if (!doctor) return;
+    setIsSlotsLoading(true);
+    setSelectedSlot(null);
+    timeSlotService
+      .getTimeSlots({ doctorId: doctor.id, date: selectedDate })
+      .then((res) => {
+        const dateData = res.data?.data?.dates?.find((d) => d.date === selectedDate);
+        setSlots(dateData?.slots || []);
+        setIsSlotsLoading(false);
+      })
+      .catch((err) => {
+        console.error("Lỗi lấy slot:", err);
+        setSlots([]);
+        setIsSlotsLoading(false);
+      });
+  }, [doctor, selectedDate]);
+
+  const handleBook = () => {
+    if (!selectedSlot) return;
+    navigate(`/app/user/booking/${selectedSlot.id}`, { state: { doctor } });
   };
 
+  if (isLoading) return <div className="ddp-loading-wrap"><LoadingSpinner /></div>;
+  if (error || !doctor) return (
+    <div className="ddp-error">
+      <FaUserDoctor size={48} />
+      <p>{error || "Không tìm thấy bác sĩ."}</p>
+    </div>
+  );
+
+  const fullName = `${doctor.user?.lastName || ""} ${doctor.user?.firstName || ""}`.trim();
+  const avatar = doctor.imgURL || `${DEFAULT_AVATAR}${encodeURIComponent(fullName)}`;
+  const primarySpecialty = doctor.specialties?.find((s) => s.isPrimary)?.specialty;
+  const hospitalInfo = doctor.hospitals?.[0];
+  const workingDaysArr = hospitalInfo?.workingDays
+    ? hospitalInfo.workingDays.split(",").map((d) => DAYS_SHORT[d.trim()] || d)
+    : [];
+  const priceDisplay = doctor.consultationFee
+    ? doctor.consultationFee.toLocaleString("vi-VN") + "đ"
+    : "Liên hệ";
+  const selectedDateLabel = formatDateLabel(selectedDate);
+
   return (
-    <div className="doctor-detail">
-      {/* Hero Section */}
-      <div className="hero-section">
-        <div className="doctor-image">
-          <img src={doctor.img} alt={doctor.name} />
-        </div>
-        <div className="doctor-header">
-          <h2>{doctor.name}</h2>
-          <div className="doctor-meta">
-            <span className="meta-item spec">{doctor.spec}</span>
-            <span className="meta-item hospital">{doctor.hospital}</span>
-            <span className="meta-item location">{doctor.city}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Booking Section */}
-      <div className="info-section-full">
-        <div className="booking-container">
-          <h3 className="booking-title">Đặt lịch khám</h3>
-
-          {/* Date & Slot Selection */}
-          <div className="booking-form">
-            <div className="form-group">
-              <label htmlFor="examination-date" className="form-label">
-                Chọn ngày khám
-              </label>
-              <input
-                type="date"
-                id="examination-date"
-                className="form-input date-input"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                min={getTodayDate()}
-              />
-            </div>
-
-            {selectedDate && (
-              <div className="form-group">
-                <label className="form-label">Chọn giờ khám</label>
-                <div className="slots-grid">
-                  {doctor.slot.map((item, index) => (
-                    <div
-                      key={index}
-                      className={`slot-box ${selectedSlot === item ? "selected" : ""}`}
-                      onClick={() => setSelectedSlot(item)}
-                    >
-                      {item}
-                    </div>
-                  ))}
-                </div>
-              </div>
+    <div className="ddp-container">
+      {/* ── TOP CARD ─────────────────────────────── */}
+      <div className="ddp-top-card">
+        {/* Left: avatar + identity */}
+        <div className="ddp-identity">
+          <div className="ddp-avatar-wrap">
+            <img src={avatar} alt={fullName} className="ddp-avatar" />
+            {doctor.isVerified && (
+              <span className="ddp-verified-badge" title="Đã xác minh">
+                <FaCircleCheck />
+              </span>
             )}
-
-            {/* Examination Price */}
-            <div className="price-box">
-              <div className="price-header">
-                <span className="price-label">Giá khám:</span>
-                <span className="price-value">
-                  {doctor.examinationPrice.toLocaleString("vi-VN")} ₫
+          </div>
+          <div className="ddp-identity-info">
+            <h1 className="ddp-name">{fullName}</h1>
+            <div className="ddp-tags">
+              {primarySpecialty && (
+                <span className="ddp-tag specialty">
+                  <FaClipboardList /> {primarySpecialty.name}
+                </span>
+              )}
+              {doctor.experience && (
+                <span className="ddp-tag exp">{doctor.experience} năm kinh nghiệm</span>
+              )}
+              {doctor.licenseNumber && (
+                <span className="ddp-tag license">CC: {doctor.licenseNumber}</span>
+              )}
+            </div>
+            {hospitalInfo && (
+              <div className="ddp-hospital-row">
+                <FaHospital className="ddp-icon" />
+                <span>
+                  {hospitalInfo.hospital.name}, {hospitalInfo.hospital.city}
                 </span>
               </div>
-              <p className="price-note">*Giá chỉ mang tính chất tham khảo</p>
+            )}
+            {hospitalInfo && (
+              <div className="ddp-schedule-row">
+                <FaClock className="ddp-icon" />
+                <span>
+                  {hospitalInfo.startTime} – {hospitalInfo.endTime}
+                  {workingDaysArr.length > 0 && (
+                    <span className="ddp-working-days">
+                      &nbsp;({workingDaysArr.join(", ")})
+                    </span>
+                  )}
+                </span>
+              </div>
+            )}
+            {(doctor.rating > 0 || doctor.totalReviews > 0) && (
+              <div className="ddp-rating-row">
+                <FaStar className="ddp-star" />
+                <strong>{doctor.rating}</strong>
+                <span className="ddp-review-count">({doctor.totalReviews} đánh giá)</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right: price + slot picker */}
+        <div className="ddp-booking-panel">
+          <div className="ddp-price-block">
+            <span className="ddp-price">{priceDisplay}</span>
+            <span className="ddp-price-label">Phí khám</span>
+          </div>
+
+          {/* Date strip */}
+          <div className="ddp-date-section">
+            <div className="ddp-date-header">
+              <FaCalendarDays className="ddp-icon" />
+              <span>Chọn ngày khám</span>
+            </div>
+            <div className="ddp-date-strip">
+              <button
+                className="ddp-date-nav"
+                onClick={() => setDateOffset((o) => Math.max(0, o - 1))}
+                disabled={dateOffset === 0}
+              >
+                <FaChevronLeft />
+              </button>
+              <div className="ddp-date-list">
+                {visibleDates.map((d) => {
+                  const lbl = formatDateLabel(d);
+                  return (
+                    <button
+                      key={d}
+                      className={`ddp-date-btn ${selectedDate === d ? "active" : ""}`}
+                      onClick={() => setSelectedDate(d)}
+                    >
+                      <span className="ddp-date-top">{lbl.top}</span>
+                      <span className="ddp-date-bottom">{lbl.bottom}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                className="ddp-date-nav"
+                onClick={() => setDateOffset((o) => Math.min(dates.length - 5, o + 1))}
+                disabled={dateOffset >= dates.length - 5}
+              >
+                <FaChevronRight />
+              </button>
             </div>
           </div>
+
+          {/* Slots */}
+          <div className="ddp-slots-section">
+            <div className="ddp-slots-label">
+              Slot khả dụng —{" "}
+              <strong>{selectedDateLabel.top === "Hôm nay" || selectedDateLabel.top === "Ngày mai"
+                ? `${selectedDateLabel.top} (${selectedDateLabel.bottom})`
+                : `${selectedDateLabel.top}, ${selectedDateLabel.bottom}`}</strong>
+            </div>
+            {isSlotsLoading ? (
+              <div className="ddp-slots-loading">Đang tải...</div>
+            ) : slots.length === 0 ? (
+              <div className="ddp-slots-empty">Không còn slot trống cho ngày này.</div>
+            ) : (
+              <div className="ddp-slots-grid">
+                {slots.map((slot) => (
+                  <button
+                    key={slot.id}
+                    className={`ddp-slot-btn ${selectedSlot?.id === slot.id ? "active" : ""}`}
+                    onClick={() => setSelectedSlot(slot)}
+                  >
+                    {slot.startTime}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <button
+            className={`ddp-book-btn ${selectedSlot ? "ready" : "disabled"}`}
+            onClick={handleBook}
+            disabled={!selectedSlot}
+          >
+            {selectedSlot
+              ? `Đặt lịch lúc ${selectedSlot.startTime} – ${selectedSlot.endTime}`
+              : "Chọn slot để đặt lịch"}
+          </button>
         </div>
       </div>
 
-      <div className="info-section-full">
-        <h4>Thông tin bác sĩ</h4>
-        <ul>
-          {doctor.infomation.map((item, index) => (
-            <li key={index}>{item}</li>
-          ))}
-        </ul>
-      </div>
+      {/* ── INFORMATION & TREATMENT ──────────────── */}
+      {(doctor.information?.length > 0 || doctor.treatment?.length > 0) && (
+        <div className="ddp-detail-grid">
+          {doctor.information?.length > 0 && (
+            <div className="ddp-detail-block">
+              <h2 className="ddp-section-title">Giới thiệu</h2>
+              <ul className="ddp-detail-list">
+                {doctor.information.map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {doctor.treatment?.length > 0 && (
+            <div className="ddp-detail-block">
+              <h2 className="ddp-section-title">Phạm vi điều trị</h2>
+              <ul className="ddp-detail-list">
+                {doctor.treatment.map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
 
-      <div className="info-section-full">
-        <h4>Khám và điều trị</h4>
-        <ul>
-          {doctor.examinationTreatment.map((item, index) => (
-            <li key={index}>{item}</li>
-          ))}
-        </ul>
-      </div>
+      {/* ── REVIEWS ──────────────────────────────── */}
+      <div className="ddp-reviews-section">
+        <h2 className="ddp-section-title">
+          Đánh giá từ bệnh nhân
+          {doctor.totalReviews > 0 && (
+            <span className="ddp-reviews-count">{doctor.totalReviews} đánh giá</span>
+          )}
+        </h2>
 
-      <div className="info-section-full">
-        <h4>Quá trình công tác</h4>
-        <ul>
-          {doctor.workExperience.map((item, index) => (
-            <li key={index}>{item}</li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="info-section-full">
-        <h4>Quá trình đào tạo</h4>
-        <ul>
-          {doctor.trainingProcess.map((item, index) => (
-            <li key={index}>{item}</li>
-          ))}
-        </ul>
+        {doctor.reviews?.length === 0 ? (
+          <div className="ddp-reviews-empty">
+            <FaStar size={32} opacity={0.2} />
+            <p>Chưa có đánh giá nào. Hãy là người đầu tiên!</p>
+          </div>
+        ) : (
+          <div className="ddp-reviews-grid">
+            {doctor.reviews.map((review) => (
+              <div key={review.id} className="ddp-review-card">
+                <div className="ddp-review-header">
+                  <div className="ddp-review-avatar">
+                    {(review.patientProfile?.fullName?.[0] || "?").toUpperCase()}
+                  </div>
+                  <div className="ddp-review-meta">
+                    <span className="ddp-review-name">
+                      {review.patientProfile?.fullName || "Ẩn danh"}
+                    </span>
+                    <span className="ddp-review-date">
+                      {new Date(review.createdAt).toLocaleDateString("vi-VN")}
+                    </span>
+                  </div>
+                  <div className="ddp-review-stars">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <FaStar
+                        key={i}
+                        className={i < review.rating ? "star-filled" : "star-empty"}
+                      />
+                    ))}
+                  </div>
+                </div>
+                {review.comment && (
+                  <div className="ddp-review-body">
+                    <FaQuoteLeft className="ddp-quote-icon" />
+                    <p>{review.comment}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
