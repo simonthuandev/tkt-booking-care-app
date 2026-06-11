@@ -135,10 +135,6 @@
       font-size: 0.8rem;
       color: #9ca3af;
       margin-bottom: 8px;
-
-      .working-days {
-        font-style: italic;
-      }
     }
 
     .doctor-item-footer {
@@ -150,12 +146,9 @@
       .doctor-item-rating {
         display: flex;
         align-items: center;
-        gap: 6px;
-
-        .rating-text {
-          font-size: 0.8rem;
-          color: #6b7280;
-        }
+        gap: 4px;
+        font-size: 0.9rem;
+        color: #6b7280;
       }
 
       .doctor-item-exp {
@@ -325,6 +318,226 @@
     &.page-prev .page-link,
     &.page-next .page-link {
       font-size: 12px;
+    }
+  }
+}
+
+// ─────────────────────────────────────────
+// Filter bar (search + specialty dropdown)
+// ─────────────────────────────────────────
+.doctors-filter-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 28px;
+  align-items: stretch;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+  }
+}
+
+.doctors-search-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .search-icon {
+    position: absolute;
+    left: 14px;
+    color: #9ca3af;
+    font-size: 15px;
+    pointer-events: none;
+  }
+
+  .doctors-search-input {
+    width: 100%;
+    height: 46px;
+    padding: 0 40px 0 40px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    color: #111827;
+    background: #fff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    outline: none;
+
+    &::placeholder {
+      color: #9ca3af;
+    }
+
+    &:focus {
+      border-color: v.$primary;
+      box-shadow: 0 0 0 3px rgba(15, 163, 155, 0.1);
+    }
+  }
+
+  .search-clear-btn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 50%;
+    transition: color 0.2s ease, background 0.2s ease;
+
+    &:hover {
+      color: #374151;
+      background: #f3f4f6;
+    }
+  }
+}
+
+.doctors-specialty-dropdown {
+  position: relative;
+  flex-shrink: 0;
+
+  .specialty-dropdown-trigger {
+    height: 46px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 16px;
+    background: #fff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    color: #374151;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    min-width: 200px;
+
+    @media (max-width: 600px) {
+      width: 100%;
+      min-width: unset;
+    }
+
+    .trigger-icon {
+      color: v.$primary;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    span {
+      flex: 1;
+      text-align: left;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .trigger-chevron {
+      font-size: 12px;
+      color: #9ca3af;
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+
+      &.rotated {
+        transform: rotate(180deg);
+      }
+    }
+
+    &:hover,
+    &.open {
+      border-color: v.$primary;
+      box-shadow: 0 0 0 3px rgba(15, 163, 155, 0.1);
+    }
+  }
+
+  .specialty-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    max-height: 280px;
+    overflow-y: auto;
+    padding: 6px;
+
+    &::-webkit-scrollbar {
+      width: 5px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #e5e7eb;
+      border-radius: 10px;
+    }
+  }
+
+  .specialty-dropdown-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 9px 12px;
+    border: none;
+    background: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: #374151;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      background: #f0fdfb;
+      color: v.$primary;
+    }
+
+    &.active {
+      background: #e6faf9;
+      color: v.$primary;
+      font-weight: 600;
+    }
+  }
+}
+
+// ─────────────────────────────────────────
+// Active filter tags
+// ─────────────────────────────────────────
+.doctors-active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+  margin-top: -10px;
+
+  .filter-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #e6faf9;
+    color: v.$primary;
+    border: 1px solid rgba(15, 163, 155, 0.25);
+    padding: 4px 10px 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+
+    button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: v.$primary;
+      display: flex;
+      align-items: center;
+      padding: 2px;
+      border-radius: 50%;
+      transition: background 0.15s ease;
+      font-size: 11px;
+
+      &:hover {
+        background: rgba(15, 163, 155, 0.15);
+      }
     }
   }
 }

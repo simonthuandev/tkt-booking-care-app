@@ -1,56 +1,156 @@
 import { Link } from "react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import ReactPaginate from "react-paginate";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa6";
 import { specialtyService } from "../../api/appService";
 import LoadingSpinner from "../../components/Common/LoadingSpinner";
 import "./SpecialtiesPage.scss";
 
+const PAGE_LIMIT = 20;
+
 const SpecialtiesPage = () => {
   const [specialties, setSpecialties] = useState([]);
+  const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1 });
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0); // react-paginate 0-indexed
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");            // applied search term
 
   useEffect(() => {
     let isMounted = true;
-    specialtyService.specialties()
+    setIsLoading(true);
+
+    specialtyService.specialties({
+      page: currentPage + 1,
+      limit: PAGE_LIMIT,
+      ...(search.trim() && { search: search.trim() }),
+    })
       .then((res) => {
         if (!isMounted) return;
         setSpecialties(res.data?.data || []);
+        setMeta(res.data?.meta || { total: 0, page: 1, totalPages: 1 });
         setIsLoading(false);
       })
       .catch((err) => {
         console.error("Lỗi lấy danh sách chuyên khoa:", err);
         if (isMounted) setIsLoading(false);
       });
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
+    return () => { isMounted = false; };
+  }, [currentPage, search]);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setCurrentPage(0);
+    setSearch(searchInput);
+  };
+
+  const handlePageChange = ({ selected }) => {
+    setCurrentPage(selected);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
     <>
-      <div className="specialties-container">
-        {specialties.map((specialty, index) => {
-          const name = specialty.name || "ko có";
-          const slug = specialty.slug || "ko có";
-          const imgUrl = specialty.icon;
-
-          return (
-            <Link
-              key={specialty.id || index}
-              to={`/specialties/${slug}`}
-              className="specialty-card"
+      {/* ── Search bar ─────────────────────────────────── */}
+      <div className="specialties-search-bar">
+        <form onSubmit={handleSearchSubmit} className="specialties-search-form">
+          <input
+            type="text"
+            className="specialties-search-input"
+            placeholder="Tìm kiếm chuyên khoa..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+          <button type="submit" className="specialties-search-btn">Tìm kiếm</button>
+          {search && (
+            <button
+              type="button"
+              className="specialties-search-clear"
+              onClick={() => { setSearch(""); setSearchInput(""); setCurrentPage(0); }}
             >
-              <div className="specialty-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8f9fa', minHeight: '150px' }}>
-                <img src={imgUrl} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              </div>
-              <h3 className="specialty-name">{name}</h3>
-            </Link>
-          );
-        })}
+              Xoá
+            </button>
+          )}
+        </form>
+        {!isLoading && (
+          <p className="specialties-result-count">
+            {search
+              ? `Tìm thấy ${meta.total} kết quả cho "${search}"`
+              : `${meta.total} chuyên khoa`}
+          </p>
+        )}
       </div>
+
+      {/* ── Grid ──────────────────────────────────────── */}
+      {isLoading ? (
+        <LoadingSpinner />
+      ) : specialties.length === 0 ? (
+        <div className="specialties-empty">
+          <p>Không tìm thấy chuyên khoa nào{search ? ` cho "${search}"` : ""}.</p>
+        </div>
+      ) : (
+        <>
+          <div className="specialties-container">
+            {specialties.map((specialty, index) => {
+              const name   = specialty.name  || "Chưa có tên";
+              const slug   = specialty.slug  || "";
+              const imgUrl = specialty.imgURL;
+              const doctorCount = specialty._count?.doctors ?? 0;
+
+              return (
+                <Link
+                  key={specialty.id || index}
+                  to={`/specialties/${slug}`}
+                  className="specialty-card"
+                >
+                  <div className="specialty-image">
+                    {imgUrl ? (
+                      <img
+                        src={imgUrl}
+                        alt={name}
+                        onError={(e) => { e.currentTarget.style.display = "none"; }}
+                      />
+                    ) : null}
+                  </div>
+                  <h3 className="specialty-name">{name}</h3>
+                  <span className="specialty-count">{doctorCount} bác sĩ</span>
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* ── Pagination ─────────────────────────────── */}
+          {meta.totalPages > 1 && (
+            <div className="specialties-pagination-wrap">
+              <ReactPaginate
+                pageCount={meta.totalPages}
+                pageRangeDisplayed={5}
+                marginPagesDisplayed={1}
+                onPageChange={handlePageChange}
+                forcePage={currentPage}
+                previousLabel={<FaChevronLeft />}
+                nextLabel={<FaChevronRight />}
+                breakLabel="..."
+                containerClassName="specialties-pagination"
+                pageClassName="page-item"
+                pageLinkClassName="page-link"
+                previousClassName="page-item"
+                previousLinkClassName="page-link"
+                nextClassName="page-item"
+                nextLinkClassName="page-link"
+                breakClassName="page-item"
+                breakLinkClassName="page-link"
+                activeClassName="active"
+                disabledClassName="disabled"
+              />
+              <p className="specialties-pagination-info">
+                Trang {currentPage + 1} / {meta.totalPages} &nbsp;·&nbsp; Tổng {meta.total} chuyên khoa
+              </p>
+            </div>
+          )}
+        </>
+      )}
     </>
   );
 };

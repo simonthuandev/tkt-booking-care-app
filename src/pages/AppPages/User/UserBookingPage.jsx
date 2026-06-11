@@ -1,838 +1,367 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// UserBookingPage.jsx  —  3-step appointment booking flow
-// Step 1: Chọn bác sĩ  →  Step 2: Chọn ngày/giờ  →  Step 3: Xác nhận
-// ─────────────────────────────────────────────────────────────────────────────
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
+import { useParams, useLocation, useNavigate } from "react-router";
 import {
-  FaUserMd,
-  FaCalendarAlt,
-  FaClock,
-  FaStethoscope,
+  FaUserDoctor,
   FaHospital,
-  FaCheckCircle,
-  FaChevronRight,
-  FaChevronLeft,
-  FaArrowRight,
+  FaClock,
+  FaCalendarDays,
+  FaUser,
+  FaUsers,
+  FaCircleCheck,
   FaStar,
-  FaPhone,
-  FaBirthdayCake,
+  FaChevronRight,
   FaClipboardList,
-  FaStickyNote,
-  FaTimesCircle,
-  FaSearch,
-  FaFilter,
+  FaNotesMedical,
+  FaArrowLeft,
+  FaCircleXmark,
+  FaCreditCard,
   FaMoneyBillWave,
-} from "react-icons/fa";
-import { BsCalendar2WeekFill, BsClockFill } from "react-icons/bs";
+} from "react-icons/fa6";
+import { patientProfileService, appointmentService } from "../../../api/appService" 
+import LoadingSpinner from "../../../components/Common/LoadingSpinner";
 import "./UserBookingPage.scss";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MOCK DATA
-// ─────────────────────────────────────────────────────────────────────────────
-const DOCTORS = [
-  {
-    id: 1,
-    name: "Dr. Nguyen Van An",
-    specialty: "Cardiology",
-    hospital: "TKT Medical",
-    rating: 4.9,
-    fee: 500000,
-    avatarUrl: "https://i.pravatar.cc/150?img=11",
-  },
-  {
-    id: 2,
-    name: "Dr. Le Thi Bich",
-    specialty: "Neurology",
-    hospital: "City Hospital",
-    rating: 4.8,
-    fee: 600000,
-    avatarUrl: "https://i.pravatar.cc/150?img=47",
-  },
-  {
-    id: 3,
-    name: "Dr. Tran Quoc Hung",
-    specialty: "Dermatology",
-    hospital: "Riverside",
-    rating: 4.7,
-    fee: 400000,
-    avatarUrl: "https://i.pravatar.cc/150?img=15",
-  },
-  {
-    id: 4,
-    name: "Dr. Pham Duc Minh",
-    specialty: "Orthopedics",
-    hospital: "TKT Medical",
-    rating: 4.7,
-    fee: 700000,
-    avatarUrl: "https://i.pravatar.cc/150?img=12",
-  },
-  {
-    id: 5,
-    name: "Dr. Vo Thi Lan",
-    specialty: "Ophthalmology",
-    hospital: "Riverside",
-    rating: 4.6,
-    fee: 450000,
-    avatarUrl: "https://i.pravatar.cc/150?img=48",
-  },
-  {
-    id: 6,
-    name: "Dr. Hoang Van Nam",
-    specialty: "Pediatrics",
-    hospital: "TKT Medical",
-    rating: 4.8,
-    fee: 350000,
-    avatarUrl: "https://i.pravatar.cc/150?img=57",
-  },
-];
+const DEFAULT_AVATAR =
+  "https://ui-avatars.com/api/?background=0fa39b&color=fff&size=200&name=";
 
-const SPECIALTIES = [
-  "All",
-  "Cardiology",
-  "Neurology",
-  "Dermatology",
-  "Orthopedics",
-  "Ophthalmology",
-  "Pediatrics",
-];
+const RELATIONSHIP_LABELS = {
+  self: "Bản thân",
+  parent: "Bố / Mẹ",
+  child: "Con",
+  spouse: "Vợ / Chồng",
+  sibling: "Anh / Chị / Em",
+  other: "Khác",
+};
 
-const ALL_SLOTS = [
-  "08:00",
-  "09:00",
-  "10:00",
-  "11:00",
-  "13:00",
-  "14:00",
-  "15:00",
-  "16:00",
-];
-const BOOKED_SLOTS = ["09:00", "13:00"]; // mock đã booked
-
-const APPT_TYPES = ["Check-up", "Follow-up", "Consultation"];
-
-const STEPS = [
-  { num: 1, label: "Choose Doctor" },
-  { num: 2, label: "Pick Date & Time" },
-  { num: 3, label: "Confirm Booking" },
-];
-
-const fmtPrice = (p) => `₫${Number(p).toLocaleString()}`;
-
-// Tạo booking reference ngẫu nhiên
-const genRef = () => Math.random().toString(36).slice(2, 10).toUpperCase();
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: StepIndicator
-// ─────────────────────────────────────────────────────────────────────────────
-function StepIndicator({ current }) {
-  return (
-    <div className="step-indicator">
-      {STEPS.map(({ num, label }, idx) => {
-        const done = num < current;
-        const active = num === current;
-        return (
-          <div key={num} className="step-indicator__item">
-            <div
-              className={`step-indicator__circle ${done ? "done" : ""} ${active ? "active" : ""}`}
-            >
-              {done ? <FaCheckCircle /> : num}
-            </div>
-            <span className={`step-indicator__label ${active ? "active" : ""}`}>
-              {label}
-            </span>
-            {idx < STEPS.length - 1 && (
-              <div className={`step-indicator__line ${done ? "done" : ""}`} />
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
+function formatDob(dobStr) {
+  if (!dobStr) return null;
+  const d = new Date(dobStr);
+  return d.toLocaleDateString("vi-VN");
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: DoctorCard
-// ─────────────────────────────────────────────────────────────────────────────
-function DoctorCard({ doc, selected, onSelect }) {
+function formatGender(g) {
+  if (g === "male") return "Nam";
+  if (g === "female") return "Nữ";
+  return "Khác";
+}
+
+/* ── Payment Modal ──────────────────────────────────────── */
+const PaymentModal = ({ onClose, appointmentId }) => {
   return (
-    <div
-      className={`booking-doctor-card ${selected ? "booking-doctor-card--selected" : ""}`}
-      onClick={() => onSelect(doc)}
-    >
-      {selected && (
-        <span className="booking-doctor-card__check">
-          <FaCheckCircle />
-        </span>
-      )}
-      <img
-        src={doc.avatarUrl}
-        alt={doc.name}
-        className="booking-doctor-card__avatar"
-        onError={(e) => {
-          e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(doc.name)}&background=0ba3a3&color=fff`;
-        }}
-      />
-      <div className="booking-doctor-card__info">
-        <p className="booking-doctor-card__name">{doc.name}</p>
-        <p className="booking-doctor-card__spec">
-          <FaStethoscope /> {doc.specialty}
+    <div className="ubp-modal-overlay" onClick={onClose}>
+      <div className="ubp-modal" onClick={(e) => e.stopPropagation()}>
+        <button className="ubp-modal-close" onClick={onClose}>
+          <FaCircleXmark />
+        </button>
+
+        <div className="ubp-modal-icon">
+          <FaCircleCheck />
+        </div>
+        <h2 className="ubp-modal-title">Đặt lịch thành công!</h2>
+        <p className="ubp-modal-subtitle">Bạn muốn thanh toán bằng hình thức nào?</p>
+
+        <div className="ubp-payment-options">
+          <button className="ubp-payment-btn online">
+            <span className="ubp-payment-icon"><FaCreditCard /></span>
+            <div className="ubp-payment-info">
+              <span className="ubp-payment-label">Thanh toán online</span>
+              <span className="ubp-payment-desc">Chuyển khoản, ví điện tử, thẻ ngân hàng</span>
+            </div>
+            <FaChevronRight className="ubp-payment-arrow" />
+          </button>
+
+          <button className="ubp-payment-btn counter">
+            <span className="ubp-payment-icon"><FaMoneyBillWave /></span>
+            <div className="ubp-payment-info">
+              <span className="ubp-payment-label">Thanh toán tại quầy</span>
+              <span className="ubp-payment-desc">Trả tiền trực tiếp sau khi khám xong</span>
+            </div>
+            <FaChevronRight className="ubp-payment-arrow" />
+          </button>
+        </div>
+
+        <p className="ubp-modal-note">
+          Mã lịch hẹn: <strong>#{appointmentId?.slice(0, 8).toUpperCase()}</strong>
         </p>
-        <p className="booking-doctor-card__hospital">
-          <FaHospital /> {doc.hospital}
-        </p>
-        <div className="booking-doctor-card__meta">
-          <span className="booking-doctor-card__rating">
-            <FaStar /> {doc.rating}
-          </span>
-          <span className="booking-doctor-card__fee">
-            <FaMoneyBillWave /> {fmtPrice(doc.fee)}
-          </span>
+      </div>
+    </div>
+  );
+};
+
+/* ── Main Page ──────────────────────────────────────────── */
+const UserBookingPage = () => {
+  const { timeSlotId } = useParams();
+  const { state } = useLocation();
+  const navigate = useNavigate();
+  const doctor = state?.doctor || null;
+
+  const [profiles, setProfiles] = useState([]);
+  const [selectedProfileId, setSelectedProfileId] = useState(null);
+  const [reason, setReason] = useState("");
+  const [isProfilesLoading, setIsProfilesLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const [createdAppointmentId, setCreatedAppointmentId] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+  // Fetch patient profiles
+  useEffect(() => {
+    patientProfileService
+      .getProfiles()
+      .then((res) => {
+        const data = res.data?.data || [];
+        setProfiles(data);
+        const def = data.find((p) => p.isDefault);
+        if (def) setSelectedProfileId(def.id);
+        else if (data.length > 0) setSelectedProfileId(data[0].id);
+      })
+      .catch((err) => {
+        console.error("Lỗi lấy hồ sơ bệnh nhân:", err);
+      })
+      .finally(() => setIsProfilesLoading(false));
+  }, []);
+
+  const handleSubmit = async () => {
+    if (!selectedProfileId || !timeSlotId) return;
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      const res = await appointmentService.createAppointment({
+        timeSlotId,
+        patientProfileId: selectedProfileId,
+        ...(reason.trim() ? { reason: reason.trim() } : {}),
+      });
+      const id = res.data?.data?.id || res.data?.id || null;
+      setCreatedAppointmentId(id);
+      setShowPaymentModal(true);
+    } catch (err) {
+      console.error("Lỗi đặt lịch:", err);
+      const msg =
+        err?.response?.data?.message || "Đặt lịch thất bại. Vui lòng thử lại.";
+      setSubmitError(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Doctor derived values
+  const fullName = doctor
+    ? `${doctor.user?.lastName || ""} ${doctor.user?.firstName || ""}`.trim()
+    : "";
+  const avatar = doctor?.imgURL || `${DEFAULT_AVATAR}${encodeURIComponent(fullName)}`;
+  const primarySpecialty = doctor?.specialties?.find((s) => s.isPrimary)?.specialty;
+  const hospitalInfo = doctor?.hospitals?.[0];
+  const priceDisplay = doctor?.consultationFee
+    ? doctor.consultationFee.toLocaleString("vi-VN") + "đ"
+    : "Liên hệ";
+
+  const canSubmit = !!selectedProfileId && !isSubmitting;
+
+  return (
+    <div className="ubp-container">
+      {/* ── Header ── */}
+      <div className="ubp-header">
+        <button className="ubp-back-btn" onClick={() => navigate(-1)}>
+          <FaArrowLeft />
+          <span>Quay lại</span>
+        </button>
+        <h1 className="ubp-page-title">Xác nhận đặt lịch khám</h1>
+      </div>
+
+      <div className="ubp-layout">
+        {/* ── LEFT COLUMN ── */}
+        <div className="ubp-left">
+
+          {/* Profile selector */}
+          <section className="ubp-section">
+            <div className="ubp-section-head">
+              <FaUsers className="ubp-section-icon" />
+              <h2>Hồ sơ bệnh nhân</h2>
+            </div>
+
+            {isProfilesLoading ? (
+              <div className="ubp-profiles-loading"><LoadingSpinner /></div>
+            ) : profiles.length === 0 ? (
+              <div className="ubp-profiles-empty">
+                <FaUser size={28} opacity={0.25} />
+                <p>Bạn chưa có hồ sơ nào. Vui lòng tạo hồ sơ trước.</p>
+              </div>
+            ) : (
+              <div className="ubp-profiles-list">
+                {profiles.map((p) => (
+                  <button
+                    key={p.id}
+                    className={`ubp-profile-card ${selectedProfileId === p.id ? "selected" : ""}`}
+                    onClick={() => setSelectedProfileId(p.id)}
+                  >
+                    <div className="ubp-profile-avatar">
+                      {(p.fullName?.[0] || "?").toUpperCase()}
+                    </div>
+                    <div className="ubp-profile-details">
+                      <div className="ubp-profile-name-row">
+                        <span className="ubp-profile-name">{p.fullName}</span>
+                        {p.isDefault && (
+                          <span className="ubp-profile-default-badge">Mặc định</span>
+                        )}
+                      </div>
+                      <div className="ubp-profile-meta">
+                        <span>{formatGender(p.gender)}</span>
+                        {p.dob && <span>·</span>}
+                        {p.dob && <span>{formatDob(p.dob)}</span>}
+                        {p.relationship && <span>·</span>}
+                        {p.relationship && (
+                          <span>{RELATIONSHIP_LABELS[p.relationship] || p.relationship}</span>
+                        )}
+                      </div>
+                      {p.phoneNumber && (
+                        <div className="ubp-profile-phone">{p.phoneNumber}</div>
+                      )}
+                    </div>
+                    <div className="ubp-profile-check">
+                      {selectedProfileId === p.id && <FaCircleCheck />}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Reason */}
+          <section className="ubp-section">
+            <div className="ubp-section-head">
+              <FaNotesMedical className="ubp-section-icon" />
+              <h2>Lý do khám</h2>
+              <span className="ubp-optional-tag">Không bắt buộc</span>
+            </div>
+            <textarea
+              className="ubp-reason-textarea"
+              placeholder="Mô tả triệu chứng hoặc lý do khám để bác sĩ chuẩn bị tốt hơn..."
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={4}
+              maxLength={500}
+            />
+            <div className="ubp-reason-count">{reason.length}/500</div>
+          </section>
+
+          {/* Submit error */}
+          {submitError && (
+            <div className="ubp-error-banner">
+              <FaCircleXmark />
+              <span>{submitError}</span>
+            </div>
+          )}
+
+          {/* CTA */}
+          <button
+            className={`ubp-confirm-btn ${canSubmit ? "ready" : "disabled"}`}
+            onClick={handleSubmit}
+            disabled={!canSubmit}
+          >
+            {isSubmitting ? "Đang đặt lịch..." : "Xác nhận đặt lịch"}
+          </button>
+        </div>
+
+        {/* ── RIGHT COLUMN: summary ── */}
+        <div className="ubp-right">
+          <div className="ubp-summary-card">
+            <div className="ubp-summary-title">Thông tin lịch khám</div>
+
+            {/* Doctor */}
+            {doctor ? (
+              <div className="ubp-summary-doctor">
+                <img src={avatar} alt={fullName} className="ubp-summary-avatar" />
+                <div className="ubp-summary-doctor-info">
+                  <div className="ubp-summary-doctor-name">
+                    {fullName}
+                    {doctor.isVerified && (
+                      <FaCircleCheck className="ubp-verified-icon" title="Đã xác minh" />
+                    )}
+                  </div>
+                  {primarySpecialty && (
+                    <div className="ubp-summary-specialty">
+                      <FaClipboardList />
+                      <span>{primarySpecialty.name}</span>
+                    </div>
+                  )}
+                  {(doctor.rating > 0 || doctor.totalReviews > 0) && (
+                    <div className="ubp-summary-rating">
+                      <FaStar className="ubp-summary-star" />
+                      <strong>{doctor.rating}</strong>
+                      <span className="ubp-summary-review-count">
+                        ({doctor.totalReviews} đánh giá)
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="ubp-summary-no-doctor">
+                <FaUserDoctor size={24} opacity={0.3} />
+                <span>Không có thông tin bác sĩ</span>
+              </div>
+            )}
+
+            <div className="ubp-summary-divider" />
+
+            {/* Slot info */}
+            <div className="ubp-summary-rows">
+              {hospitalInfo && (
+                <div className="ubp-summary-row">
+                  <FaHospital className="ubp-srow-icon" />
+                  <div>
+                    <div className="ubp-srow-label">Cơ sở khám</div>
+                    <div className="ubp-srow-value">
+                      {hospitalInfo.hospital.name}
+                      {hospitalInfo.hospital.city && `, ${hospitalInfo.hospital.city}`}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {state?.slot && (
+                <div className="ubp-summary-row">
+                  <FaCalendarDays className="ubp-srow-icon" />
+                  <div>
+                    <div className="ubp-srow-label">Ngày khám</div>
+                    <div className="ubp-srow-value">{state.slot.date || "—"}</div>
+                  </div>
+                </div>
+              )}
+
+              {state?.slot && (
+                <div className="ubp-summary-row">
+                  <FaClock className="ubp-srow-icon" />
+                  <div>
+                    <div className="ubp-srow-label">Giờ khám</div>
+                    <div className="ubp-srow-value">
+                      {state.slot.startTime} – {state.slot.endTime}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="ubp-summary-row fee-row">
+                <div className="ubp-srow-label">Phí khám</div>
+                <div className="ubp-srow-value ubp-fee">{priceDisplay}</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <button
-        className={`booking-doctor-card__btn ${selected ? "selected" : ""}`}
-        onClick={(e) => {
-          e.stopPropagation();
-          onSelect(doc);
-        }}
-      >
-        {selected ? "Selected ✓" : "Select"}
-      </button>
-    </div>
-  );
-}
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: MiniCalendar
-// ─────────────────────────────────────────────────────────────────────────────
-function MiniCalendar({ selectedDate, onSelectDate }) {
-  const today = new Date();
-  const [viewMonth, setViewMonth] = useState(
-    new Date(today.getFullYear(), today.getMonth(), 1),
-  );
-
-  const year = viewMonth.getFullYear();
-  const month = viewMonth.getMonth();
-
-  const monthLabel = viewMonth.toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
-
-  // Ngày đầu tiên của tháng là thứ mấy (0=Sun, chuyển về Mon-based)
-  const firstDow = (new Date(year, month, 1).getDay() + 6) % 7;
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  const cells = [];
-  for (let i = 0; i < firstDow; i++) cells.push(null);
-  for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
-
-  const isSameDay = (a, b) =>
-    a &&
-    b &&
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate();
-
-  const isPast = (d) =>
-    d && d < new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
-  const prevMonth = () => setViewMonth(new Date(year, month - 1, 1));
-  const nextMonth = () => setViewMonth(new Date(year, month + 1, 1));
-
-  return (
-    <div className="mini-cal">
-      {/* Nav */}
-      <div className="mini-cal__nav">
-        <button className="mini-cal__nav-btn" onClick={prevMonth}>
-          <FaChevronLeft />
-        </button>
-        <span className="mini-cal__month">{monthLabel}</span>
-        <button className="mini-cal__nav-btn" onClick={nextMonth}>
-          <FaChevronRight />
-        </button>
-      </div>
-
-      {/* Day headers */}
-      <div className="mini-cal__grid">
-        {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
-          <div key={d} className="mini-cal__day-header">
-            {d}
-          </div>
-        ))}
-
-        {/* Cells */}
-        {cells.map((date, idx) => {
-          if (!date) return <div key={`e${idx}`} />;
-          const past = isPast(date);
-          const isToday = isSameDay(date, today);
-          const isSelect = isSameDay(date, selectedDate);
-          return (
-            <button
-              key={idx}
-              disabled={past}
-              className={`mini-cal__day ${isToday ? "today" : ""} ${isSelect ? "selected" : ""} ${past ? "past" : ""}`}
-              onClick={() => !past && onSelectDate(date)}
-            >
-              {date.getDate()}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: TimeSlotGrid
-// ─────────────────────────────────────────────────────────────────────────────
-function TimeSlotGrid({ selectedTime, onSelect }) {
-  return (
-    <div className="time-slot-grid">
-      {ALL_SLOTS.map((slot) => {
-        const booked = BOOKED_SLOTS.includes(slot);
-        const isSelect = selectedTime === slot;
-        return (
-          <button
-            key={slot}
-            disabled={booked}
-            className={`time-slot ${isSelect ? "time-slot--selected" : ""} ${booked ? "time-slot--booked" : ""}`}
-            onClick={() => !booked && onSelect(slot)}
-          >
-            <BsClockFill /> {slot}
-            {booked && <span className="time-slot__booked-label">Booked</span>}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: BookingSummary (hiển thị trong Step 3)
-// ─────────────────────────────────────────────────────────────────────────────
-function BookingSummary({ doctor, date, time, type }) {
-  const displayDate = date?.toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-
-  return (
-    <div className="booking-summary">
-      <p className="booking-summary__title">Booking Summary</p>
-
-      {/* Doctor */}
-      <div className="booking-summary__doctor">
-        <img
-          src={doctor.avatarUrl}
-          alt={doctor.name}
-          className="booking-summary__avatar"
-          onError={(e) => {
-            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(doctor.name)}&background=0ba3a3&color=fff`;
+      {/* ── Payment Modal ── */}
+      {showPaymentModal && (
+        <PaymentModal
+          appointmentId={createdAppointmentId}
+          onClose={() => {
+            setShowPaymentModal(false);
+            navigate("/app/user/appointments");
           }}
         />
-        <div>
-          <p className="booking-summary__doctor-name">{doctor.name}</p>
-          <p className="booking-summary__doctor-spec">
-            <FaStethoscope /> {doctor.specialty}
-          </p>
-        </div>
-      </div>
-
-      {/* Details */}
-      <div className="booking-summary__details">
-        <div className="booking-summary__row">
-          <BsCalendar2WeekFill />
-          <span>{displayDate}</span>
-        </div>
-        <div className="booking-summary__row">
-          <BsClockFill />
-          <span>{time}</span>
-        </div>
-        <div className="booking-summary__row">
-          <FaStethoscope />
-          <span>{type}</span>
-        </div>
-        <div className="booking-summary__row">
-          <FaHospital />
-          <span>{doctor.hospital}</span>
-        </div>
-        <div className="booking-summary__row booking-summary__row--fee">
-          <FaMoneyBillWave />
-          <span>{fmtPrice(doctor.fee)}</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: SuccessModal
-// ─────────────────────────────────────────────────────────────────────────────
-function SuccessModal({
-  bookingRef,
-  doctor,
-  date,
-  time,
-  onViewAppts,
-  onBookAnother,
-}) {
-  const displayDate = date?.toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-
-  return (
-    <>
-      <div className="modal-backdrop-success" />
-      <div className="success-modal">
-        <div className="success-modal__icon">✅</div>
-        <h2 className="success-modal__title">Booking Confirmed!</h2>
-        <p className="success-modal__ref">
-          Reference: <strong>#{bookingRef}</strong>
-        </p>
-
-        <div className="success-modal__info">
-          <img
-            src={doctor.avatarUrl}
-            alt={doctor.name}
-            className="success-modal__avatar"
-            onError={(e) => {
-              e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(doctor.name)}&background=0ba3a3&color=fff`;
-            }}
-          />
-          <div>
-            <p className="success-modal__doctor">{doctor.name}</p>
-            <p className="success-modal__datetime">
-              <BsCalendar2WeekFill /> {displayDate} &nbsp;
-              <BsClockFill /> {time}
-            </p>
-          </div>
-        </div>
-
-        <p className="success-modal__note">
-          A confirmation has been sent to your email. Please arrive 10 minutes
-          early.
-        </p>
-
-        <div className="success-modal__actions">
-          <button
-            className="success-btn success-btn--primary"
-            onClick={onViewAppts}
-          >
-            View My Appointments
-          </button>
-          <button
-            className="success-btn success-btn--secondary"
-            onClick={onBookAnother}
-          >
-            Book Another
-          </button>
-        </div>
-      </div>
-    </>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN PAGE
-// ─────────────────────────────────────────────────────────────────────────────
-export default function UserBookingPage() {
-  // ── Stepper state ─────────────────────────────────────────────────────────
-  const [step, setStep] = useState(1);
-  const [selectedDoctor, setSelectedDoctor] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedTime, setSelectedTime] = useState(null);
-  const [appointmentType, setAppointmentType] = useState("Check-up");
-  const [patientForm, setPatientForm] = useState({
-    name: "Tran Thi Mai",
-    phone: "+84 912 345 678",
-    dob: "Mar 12, 1990",
-    reason: "",
-    notes: "",
-  });
-  const [confirmed, setConfirmed] = useState(false);
-  const [bookingRef, setBookingRef] = useState("");
-  const [agree, setAgree] = useState(false);
-  const [errors, setErrors] = useState({});
-
-  // ── Step 1 filters ────────────────────────────────────────────────────────
-  const [specFilter, setSpecFilter] = useState("All");
-  const [search, setSearch] = useState("");
-
-  const filteredDoctors = useMemo(() => {
-    let list = [...DOCTORS];
-    if (specFilter !== "All")
-      list = list.filter((d) => d.specialty === specFilter);
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter((d) => d.name.toLowerCase().includes(q));
-    }
-    return list;
-  }, [specFilter, search]);
-
-  // ── Validation ────────────────────────────────────────────────────────────
-  const validateStep = (s) => {
-    const errs = {};
-    if (s === 1 && !selectedDoctor)
-      errs.doctor = "Please select a doctor to continue.";
-    if (s === 2) {
-      if (!selectedDate) errs.date = "Please select a date.";
-      if (!selectedTime) errs.time = "Please select a time slot.";
-    }
-    if (s === 3) {
-      if (!patientForm.name.trim()) errs.name = "Full name is required.";
-      if (!patientForm.phone.trim()) errs.phone = "Phone number is required.";
-      if (!patientForm.reason.trim())
-        errs.reason = "Please describe your reason for visit.";
-      if (!agree) errs.agree = "Please confirm the information is correct.";
-    }
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  };
-
-  const handleNext = () => {
-    if (validateStep(step)) setStep((s) => s + 1);
-  };
-
-  const handleBack = () => {
-    setErrors({});
-    setStep((s) => s - 1);
-  };
-
-  const handleConfirm = () => {
-    if (validateStep(3)) {
-      setBookingRef(genRef());
-      setConfirmed(true);
-    }
-  };
-
-  const handleBookAnother = () => {
-    setStep(1);
-    setSelectedDoctor(null);
-    setSelectedDate(null);
-    setSelectedTime(null);
-    setAppointmentType("Check-up");
-    setPatientForm({
-      name: "Tran Thi Mai",
-      phone: "+84 912 345 678",
-      dob: "Mar 12, 1990",
-      reason: "",
-      notes: "",
-    });
-    setAgree(false);
-    setErrors({});
-    setConfirmed(false);
-  };
-
-  const handleFormChange = (e) =>
-    setPatientForm({ ...patientForm, [e.target.name]: e.target.value });
-
-  return (
-    <div className="booking-page">
-      {/* Page header */}
-      <div className="booking-page__header">
-        <h1 className="booking-page__title">Book an Appointment</h1>
-        <p className="booking-page__sub">
-          Follow the steps below to schedule your visit.
-        </p>
-      </div>
-
-      {/* Step indicator */}
-      <StepIndicator current={step} />
-
-      {/* ── STEP 1: Choose Doctor ──────────────────────────────────────────── */}
-      {step === 1 && (
-        <div className="booking-step booking-step--fade">
-          <div className="booking-step__header">
-            <h2 className="booking-step__title">
-              <FaUserMd /> Choose a Doctor
-            </h2>
-          </div>
-
-          {/* Filters */}
-          <div className="booking-filters">
-            <div className="booking-search">
-              <FaSearch className="booking-search__icon" />
-              <input
-                placeholder="Search by name..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-            <div className="toolbar-select">
-              <FaFilter className="toolbar-select__icon" />
-              <select
-                value={specFilter}
-                onChange={(e) => setSpecFilter(e.target.value)}
-              >
-                {SPECIALTIES.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Error */}
-          {errors.doctor && <p className="booking-error">{errors.doctor}</p>}
-
-          {/* Doctor grid */}
-          <div className="booking-doctors-grid">
-            {filteredDoctors.map((doc) => (
-              <DoctorCard
-                key={doc.id}
-                doc={doc}
-                selected={selectedDoctor?.id === doc.id}
-                onSelect={setSelectedDoctor}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── STEP 2: Pick Date & Time ───────────────────────────────────────── */}
-      {step === 2 && (
-        <div className="booking-step booking-step--fade">
-          <div className="booking-step__header">
-            <h2 className="booking-step__title">
-              <BsCalendar2WeekFill /> Pick Date & Time
-            </h2>
-          </div>
-
-          {/* Mini doctor card */}
-          <div className="booking-selected-doctor">
-            <img
-              src={selectedDoctor.avatarUrl}
-              alt={selectedDoctor.name}
-              className="booking-selected-doctor__avatar"
-              onError={(e) => {
-                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedDoctor.name)}&background=0ba3a3&color=fff`;
-              }}
-            />
-            <div>
-              <p className="booking-selected-doctor__name">
-                {selectedDoctor.name}
-              </p>
-              <p className="booking-selected-doctor__spec">
-                <FaStethoscope /> {selectedDoctor.specialty} ·{" "}
-                {selectedDoctor.hospital}
-              </p>
-            </div>
-          </div>
-
-          <div className="booking-datetime-grid">
-            {/* Calendar */}
-            <div>
-              <p className="booking-section-label">
-                <FaCalendarAlt /> Select Date
-              </p>
-              {errors.date && <p className="booking-error">{errors.date}</p>}
-              <MiniCalendar
-                selectedDate={selectedDate}
-                onSelectDate={setSelectedDate}
-              />
-            </div>
-
-            {/* Time slots + type */}
-            <div>
-              <p className="booking-section-label">
-                <BsClockFill /> Select Time
-              </p>
-              {errors.time && <p className="booking-error">{errors.time}</p>}
-              {selectedDate ? (
-                <TimeSlotGrid
-                  selectedTime={selectedTime}
-                  onSelect={setSelectedTime}
-                />
-              ) : (
-                <p className="booking-hint">Please select a date first.</p>
-              )}
-
-              {/* Appointment type */}
-              <p
-                className="booking-section-label"
-                style={{ marginTop: "1.5rem" }}
-              >
-                <FaStethoscope /> Appointment Type
-              </p>
-              <div className="booking-type-group">
-                {APPT_TYPES.map((t) => (
-                  <label
-                    key={t}
-                    className={`booking-type-btn ${appointmentType === t ? "booking-type-btn--active" : ""}`}
-                  >
-                    <input
-                      type="radio"
-                      name="apptType"
-                      value={t}
-                      checked={appointmentType === t}
-                      onChange={() => setAppointmentType(t)}
-                    />
-                    {t}
-                  </label>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── STEP 3: Confirm ───────────────────────────────────────────────── */}
-      {step === 3 && (
-        <div className="booking-step booking-step--fade">
-          <div className="booking-step__header">
-            <h2 className="booking-step__title">
-              <FaCheckCircle /> Confirm Your Booking
-            </h2>
-          </div>
-
-          <div className="booking-confirm-grid">
-            {/* Left: summary */}
-            <BookingSummary
-              doctor={selectedDoctor}
-              date={selectedDate}
-              time={selectedTime}
-              type={appointmentType}
-            />
-
-            {/* Right: patient form */}
-            <div className="booking-patient-form">
-              <p className="booking-section-label">
-                <FaClipboardList /> Your Information
-              </p>
-
-              <div className="booking-form-group">
-                <label>
-                  Full Name <span className="req">*</span>
-                </label>
-                <input
-                  name="name"
-                  value={patientForm.name}
-                  onChange={handleFormChange}
-                  placeholder="Your full name"
-                />
-                {errors.name && (
-                  <span className="field-error">{errors.name}</span>
-                )}
-              </div>
-
-              <div className="booking-form-group">
-                <label>
-                  Phone Number <span className="req">*</span>
-                </label>
-                <div className="booking-input-icon">
-                  <FaPhone className="input-icon" />
-                  <input
-                    name="phone"
-                    value={patientForm.phone}
-                    onChange={handleFormChange}
-                    placeholder="+84 ..."
-                  />
-                </div>
-                {errors.phone && (
-                  <span className="field-error">{errors.phone}</span>
-                )}
-              </div>
-
-              <div className="booking-form-group">
-                <label>Date of Birth</label>
-                <div className="booking-input-icon">
-                  <FaBirthdayCake className="input-icon" />
-                  <input
-                    name="dob"
-                    value={patientForm.dob}
-                    onChange={handleFormChange}
-                    placeholder="Mar 12, 1990"
-                  />
-                </div>
-              </div>
-
-              <div className="booking-form-group">
-                <label>
-                  Reason for Visit <span className="req">*</span>
-                </label>
-                <textarea
-                  name="reason"
-                  rows={3}
-                  value={patientForm.reason}
-                  onChange={handleFormChange}
-                  placeholder="Describe your symptoms or reason for appointment..."
-                />
-                {errors.reason && (
-                  <span className="field-error">{errors.reason}</span>
-                )}
-              </div>
-
-              <div className="booking-form-group">
-                <label>
-                  Notes for Doctor{" "}
-                  <small className="optional">(optional)</small>
-                </label>
-                <textarea
-                  name="notes"
-                  rows={2}
-                  value={patientForm.notes}
-                  onChange={handleFormChange}
-                  placeholder="Any allergies, medications, or special requests..."
-                />
-              </div>
-
-              {/* Agree checkbox */}
-              <label
-                className={`booking-agree ${agree ? "booking-agree--checked" : ""}`}
-              >
-                <input
-                  type="checkbox"
-                  checked={agree}
-                  onChange={(e) => setAgree(e.target.checked)}
-                />
-                <span className="booking-agree__box">{agree && "✓"}</span>I
-                confirm the information above is correct.
-              </label>
-              {errors.agree && (
-                <span className="field-error">{errors.agree}</span>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Navigation buttons ─────────────────────────────────────────────── */}
-      <div className="booking-nav">
-        {step > 1 && (
-          <button className="booking-nav__back" onClick={handleBack}>
-            <FaChevronLeft /> Back
-          </button>
-        )}
-        <div style={{ flex: 1 }} />
-        {step < 3 && (
-          <button className="booking-nav__next" onClick={handleNext}>
-            Next <FaChevronRight />
-          </button>
-        )}
-        {step === 3 && (
-          <button className="booking-nav__confirm" onClick={handleConfirm}>
-            <FaCheckCircle /> Confirm Booking
-          </button>
-        )}
-      </div>
-
-      {/* ── Success Modal ─────────────────────────────────────────────────── */}
-      {confirmed && (
-        <SuccessModal
-          bookingRef={bookingRef}
-          doctor={selectedDoctor}
-          date={selectedDate}
-          time={selectedTime}
-          onViewAppts={() => (window.location.href = "/app/user/appointments")}
-          onBookAnother={handleBookAnother}
-        />
       )}
     </div>
   );
-}
+};
+
+export default UserBookingPage;

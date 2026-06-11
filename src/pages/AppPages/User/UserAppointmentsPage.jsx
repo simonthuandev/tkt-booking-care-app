@@ -1,278 +1,530 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// UserAppointmentsPage.jsx
-// Trang quản lý lịch hẹn của user – tabs Upcoming / History
-// ─────────────────────────────────────────────────────────────────────────────
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
-  BsCalendar2WeekFill,
-  BsClockFill,
-  BsFileEarmarkMedicalFill,
-} from "react-icons/bs";
-import {
-  FaHospital,
-  FaRedo,
-  FaTimes,
+  FaCalendarAlt,
   FaEye,
-  FaCheckCircle,
-  FaClock,
   FaBan,
+  FaClock,
+  FaCheckCircle,
+  FaCheckDouble,
+  FaTimesCircle,
+  FaUserMd,
+  FaHospital,
+  FaChevronLeft,
+  FaChevronRight,
+  FaStethoscope,
+  FaMoneyBillWave,
 } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { appointmentService } from "../../../api/appService";
+import LoadingSpinner from "../../../components/Common/LoadingSpinner";
 import "./UserAppointmentsPage.scss";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MOCK DATA
+// CONFIG
 // ─────────────────────────────────────────────────────────────────────────────
-const mockAppointments = [
-  // ── Upcoming ──────────────────────────────────────────────────────────────
-  {
-    id: 1,
-    tab: "upcoming",
-    doctor: "Dr. Nguyen Van An",
-    specialty: "Cardiology",
-    date: "Thu, Apr 17, 2026",
-    time: "09:00 AM",
-    location: "TKT Medical Center – Room 302",
-    status: "confirmed",
-    avatarUrl: "https://i.pravatar.cc/150?img=11",
-  },
-  {
-    id: 2,
-    tab: "upcoming",
-    doctor: "Dr. Le Thi Bich",
-    specialty: "Neurology",
-    date: "Sat, Apr 19, 2026",
-    time: "02:30 PM",
-    location: "City Hospital – Room 105",
-    status: "pending",
-    avatarUrl: "https://i.pravatar.cc/150?img=47",
-  },
-  {
-    id: 3,
-    tab: "upcoming",
-    doctor: "Dr. Tran Quoc Hung",
-    specialty: "Dermatology",
-    date: "Mon, Apr 21, 2026",
-    time: "10:00 AM",
-    location: "Skin & Care Clinic – Room 201",
-    status: "confirmed",
-    avatarUrl: "https://i.pravatar.cc/150?img=15",
-  },
+const PAGE_LIMIT = 10;
 
-  // ── History ───────────────────────────────────────────────────────────────
-  {
-    id: 4,
-    tab: "history",
-    doctor: "Dr. Pham Duc Minh",
-    specialty: "Orthopedics",
-    date: "Mon, Apr 7, 2026",
-    time: "08:00 AM",
-    location: "Bone & Joint Hospital – Room 401",
-    status: "completed",
-    avatarUrl: "https://i.pravatar.cc/150?img=12",
-  },
-  {
-    id: 5,
-    tab: "history",
-    doctor: "Dr. Vo Thi Lan",
-    specialty: "Ophthalmology",
-    date: "Wed, Mar 26, 2026",
-    time: "03:00 PM",
-    location: "Eye Care Center – Room 102",
-    status: "cancelled",
-    avatarUrl: "https://i.pravatar.cc/150?img=48",
-  },
-  {
-    id: 6,
-    tab: "history",
-    doctor: "Dr. Hoang Van Nam",
-    specialty: "Pediatrics",
-    date: "Fri, Mar 14, 2026",
-    time: "11:00 AM",
-    location: "Children's Hospital – Room 203",
-    status: "completed",
-    avatarUrl: "https://i.pravatar.cc/150?img=53",
-  },
-];
+const STATUS_CFG = {
+  pending: { label: "Chờ xác nhận", color: "#f5a623", bg: "#fff8e6", icon: FaClock },
+  confirmed: { label: "Đã xác nhận", color: "#0ba3a3", bg: "#e6f7f7", icon: FaCheckCircle },
+  processing: { label: "Đang khám", color: "#3b82f6", bg: "#eff6ff", icon: FaStethoscope },
+  completed: { label: "Hoàn thành", color: "#1a9e5c", bg: "#e6f9f0", icon: FaCheckDouble },
+  cancelled: { label: "Đã hủy", color: "#e24b4a", bg: "#fef2f2", icon: FaTimesCircle },
+};
 
-// ── Cấu hình badge theo trạng thái ─────────────────────────────────────────
-const STATUS_CONFIG = {
-  confirmed: {
-    label: "Confirmed",
-    icon: FaCheckCircle,
-    className: "badge--confirmed",
-  },
-  pending: {
-    label: "Pending",
-    icon: FaClock,
-    className: "badge--pending",
-  },
-  completed: {
-    label: "Completed",
-    icon: FaCheckCircle,
-    className: "badge--completed",
-  },
-  cancelled: {
-    label: "Cancelled",
-    icon: FaBan,
-    className: "badge--cancelled",
-  },
+const PAYMENT_STATUS_CFG = {
+  pending: { label: "Chờ thanh toán", color: "#f5a623" },
+  completed: { label: "Đã thanh toán", color: "#1a9e5c" },
+  refunded: { label: "Đã hoàn tiền", color: "#6b7f8e" },
+  failed: { label: "Lỗi thanh toán", color: "#e24b4a" },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: AppointmentCard
+// HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
-function AppointmentCard({ appointment, tab }) {
-  const {
-    doctor, specialty, date, time,
-    location, status, avatarUrl,
-  } = appointment;
+const formatCurrency = (amount) => {
+  if (amount == null) return "Miễn phí";
+  return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
+};
 
-  const statusCfg = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
+const formatDateTime = (dateStr, startTime, endTime) => {
+  if (!dateStr) return "N/A";
+  const date = new Date(dateStr).toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
+  });
+  if (startTime && endTime) {
+    return `${startTime} - ${endTime} | ${date}`;
+  }
+  return date;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUB-COMPONENT: AppointmentRow
+// ─────────────────────────────────────────────────────────────────────────────
+const AppointmentRow = ({ appt, onView, onCancel }) => {
+  const statusCfg = STATUS_CFG[appt.status] || STATUS_CFG.pending;
   const StatusIcon = statusCfg.icon;
 
+  const paymentStatus = PAYMENT_STATUS_CFG[appt.paymentStatus] || PAYMENT_STATUS_CFG.pending;
+
   return (
-    <div className="appt-card">
-      {/* ── Left: Avatar ───────────────────────────────── */}
-      <img
-        src={avatarUrl}
-        alt={doctor}
-        className="appt-card__avatar"
-        onError={(e) => {
-          e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(doctor)}&background=0ba3a3&color=fff`;
-        }}
-      />
-
-      {/* ── Center: Info ───────────────────────────────── */}
-      <div className="appt-card__info">
-        <p className="appt-card__doctor">{doctor}</p>
-
-        <p className="appt-card__specialty">
-          <FaHospital />
-          {specialty}
+    <div className="user-appt-row">
+      <div className="user-appt-row__doctor">
+        <p className="user-appt-row__name">
+          <FaUserMd className="me-1 text-primary" /> {appt.doctor?.user?.lastName} {appt.doctor?.user?.firstName}
         </p>
-
-        <div className="appt-card__meta">
-          <span className="appt-card__meta-item">
-            <BsCalendar2WeekFill />
-            {date}
-          </span>
-          <span className="appt-card__meta-item">
-            <BsClockFill />
-            {time}
-          </span>
-          <span className="appt-card__meta-item appt-card__meta-item--location">
-            <BsFileEarmarkMedicalFill />
-            {location}
-          </span>
-        </div>
+        <p className="user-appt-row__hospital text-truncate" title={appt.hospital?.name}>
+          <FaHospital className="me-1 text-muted" /> {appt.hospital?.name || "N/A"}
+        </p>
       </div>
 
-      {/* ── Right: Status + Actions ────────────────────── */}
-      <div className="appt-card__right">
-        {/* Status badge */}
-        <span className={`appt-badge ${statusCfg.className}`}>
-          <StatusIcon />
-          {statusCfg.label}
-        </span>
+      <div className="user-appt-row__patient">
+        <p className="user-appt-row__title">Hồ sơ khám</p>
+        <p className="fw-semibold mb-0">{appt.patientProfile?.fullName || "N/A"}</p>
+      </div>
 
-        {/* Action buttons */}
-        <div className="appt-card__actions">
-          {tab === "upcoming" ? (
-            <>
-              <button className="appt-btn appt-btn--reschedule">
-                <FaRedo />
-                Reschedule
-              </button>
-              <button className="appt-btn appt-btn--cancel">
-                <FaTimes />
-                Cancel
-              </button>
-            </>
-          ) : (
-            <button className="appt-btn appt-btn--view">
-              <FaEye />
-              View Details
-            </button>
-          )}
-        </div>
+      <div className="user-appt-row__datetime">
+        <span className="fw-semibold text-dark">
+          {appt.timeSlot?.startTime} - {appt.timeSlot?.endTime}
+        </span>
+        <span className="text-muted small">
+          {appt.timeSlot?.date ? new Date(appt.timeSlot.date).toLocaleDateString("vi-VN") : "N/A"}
+        </span>
+      </div>
+
+      <div className="user-appt-row__payment">
+        <span className="fw-semibold">{formatCurrency(appt.totalAmount)}</span>
+        <span className="small fw-semibold" style={{ color: paymentStatus.color }}>
+          {paymentStatus.label}
+        </span>
+      </div>
+
+      <div className="user-appt-row__status">
+        <span
+          className="user-appt-status-badge"
+          style={{ color: statusCfg.color, background: statusCfg.bg }}
+        >
+          <StatusIcon /> {statusCfg.label}
+        </span>
+      </div>
+
+      <div className="user-appt-row__actions">
+        <button className="user-appt-btn user-appt-btn--view" onClick={() => onView(appt)} title="Xem chi tiết">
+          <FaEye />
+        </button>
+        {/* Chỉ cho phép hủy nếu lịch đang ở trạng thái pending hoặc confirmed */}
+        {(appt.status === 'pending' || appt.status === 'confirmed') && (
+          <button className="user-appt-btn user-appt-btn--cancel" onClick={() => onCancel(appt)} title="Hủy lịch">
+            <FaBan />
+          </button>
+        )}
       </div>
     </div>
   );
-}
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MAIN PAGE COMPONENT
+// SUB-COMPONENT: CancelModal
 // ─────────────────────────────────────────────────────────────────────────────
-export default function UserAppointmentsPage() {
-  // Tab active: "upcoming" | "history"
-  const [activeTab, setActiveTab] = useState("upcoming");
-
-  // Lọc appointment theo tab đang chọn
-  const filtered = mockAppointments.filter((a) => a.tab === activeTab);
+const CancelModal = ({ appt, onConfirm, onClose, saving }) => {
+  if (!appt) return null;
+  const [cancelReason, setCancelReason] = useState("");
 
   return (
-    <div className="appt-page">
+    <>
+      <div className="modal-backdrop fade show" onClick={onClose} />
+      <div className="modal fade show d-block" tabIndex="-1">
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title text-danger">Hủy lịch hẹn</h5>
+              <button className="btn-close" onClick={onClose} disabled={saving} />
+            </div>
+            <div className="modal-body py-4">
+              <div className="alert alert-warning">
+                Bạn có chắc chắn muốn hủy lịch hẹn khám với bác sĩ <strong>{appt.doctor?.user?.lastName} {appt.doctor?.user?.firstName}</strong> không?
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Lý do hủy (Không bắt buộc)</label>
+                <textarea
+                  className="form-control"
+                  rows="3"
+                  placeholder="Nhập lý do hủy lịch..."
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  maxLength={500}
+                  disabled={saving}
+                ></textarea>
+                <div className="form-text text-end">{cancelReason.length}/500</div>
+              </div>
+            </div>
+            <div className="modal-footer border-0 pt-0">
+              <button className="btn btn-light border" onClick={onClose} disabled={saving}>Đóng</button>
+              <button className="btn btn-danger" onClick={() => onConfirm(appt.id, cancelReason)} disabled={saving}>
+                {saving ? "Đang xử lý..." : "Xác nhận Hủy"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
 
-      {/* ── Page Header ──────────────────────────────────── */}
-      <div className="appt-page__header">
+// ─────────────────────────────────────────────────────────────────────────────
+// SUB-COMPONENT: AppointmentViewModal
+// ─────────────────────────────────────────────────────────────────────────────
+const AppointmentViewModal = ({ appt, onClose }) => {
+  if (!appt) return null;
+  const statusCfg = STATUS_CFG[appt.status] || STATUS_CFG.pending;
+  const paymentStatus = PAYMENT_STATUS_CFG[appt.paymentStatus] || PAYMENT_STATUS_CFG.pending;
+
+  return (
+    <>
+      <div className="modal-backdrop fade show" onClick={onClose} />
+      <div className="modal fade show d-block" tabIndex="-1">
+        <div className="modal-dialog modal-lg modal-dialog-centered">
+          <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '16px' }}>
+            <div className="modal-header bg-light border-bottom-0" style={{ borderRadius: '16px 16px 0 0' }}>
+              <h5 className="modal-title fw-bold text-dark">Chi tiết lịch hẹn</h5>
+              <button className="btn-close" onClick={onClose} />
+            </div>
+
+            <div className="modal-body p-4">
+              <div className="d-flex justify-content-between align-items-center mb-4 p-3 bg-white rounded border shadow-sm">
+                <div>
+                  <small className="text-muted d-block mb-1">Mã lịch hẹn</small>
+                  <strong className="text-dark fs-5">#{appt.id.substring(0, 8).toUpperCase()}</strong>
+                </div>
+                <div className="text-end">
+                  <span className="user-appt-status-badge px-3 py-2 fs-6 mb-2" style={{ color: statusCfg.color, background: statusCfg.bg }}>
+                    <statusCfg.icon className="me-2" /> {statusCfg.label}
+                  </span>
+                  <div className="small fw-semibold mt-1" style={{ color: paymentStatus.color }}>
+                    Thanh toán: {paymentStatus.label}
+                  </div>
+                </div>
+              </div>
+
+              <div className="row g-4">
+                {/* Patient Info */}
+                <div className="col-md-6">
+                  <div className="h-100 p-3 bg-light rounded border">
+                    <h6 className="fw-bold text-primary mb-3 border-bottom pb-2 d-flex align-items-center">
+                      <FaStethoscope className="me-2" /> Hồ sơ bệnh nhân
+                    </h6>
+                    <div className="mb-2">
+                      <small className="text-muted d-block">Họ và tên</small>
+                      <div className="fw-semibold fs-6">{appt.patientProfile?.fullName || "N/A"}</div>
+                    </div>
+                    <div className="row">
+                      <div className="col-6 mb-2">
+                        <small className="text-muted d-block">Số điện thoại</small>
+                        <div>{appt.patientProfile?.phoneNumber || "N/A"}</div>
+                      </div>
+                      <div className="col-6 mb-2">
+                        <small className="text-muted d-block">Giới tính</small>
+                        <div className="text-capitalize">{appt.patientProfile?.gender === 'male' ? 'Nam' : appt.patientProfile?.gender === 'female' ? 'Nữ' : 'Khác'}</div>
+                      </div>
+                    </div>
+                    <div className="mb-2">
+                      <small className="text-muted d-block">Ngày sinh</small>
+                      <div>{appt.patientProfile?.dob ? new Date(appt.patientProfile.dob).toLocaleDateString('vi-VN') : "N/A"}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Doctor Info */}
+                <div className="col-md-6">
+                  <div className="h-100 p-3 bg-light rounded border">
+                    <h6 className="fw-bold text-primary mb-3 border-bottom pb-2 d-flex align-items-center">
+                      <FaUserMd className="me-2" /> Thông tin bác sĩ
+                    </h6>
+                    <div className="mb-2">
+                      <small className="text-muted d-block">Bác sĩ phụ trách</small>
+                      <div className="fw-semibold fs-6">{appt.doctor?.user?.lastName} {appt.doctor?.user?.firstName}</div>
+                    </div>
+                    <div className="mb-2">
+                      <small className="text-muted d-block">Bệnh viện / Phòng khám</small>
+                      <div className="fw-semibold">{appt.hospital?.name}</div>
+                      <div className="small text-muted">{appt.hospital?.address}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Schedule Info */}
+                <div className="col-md-6">
+                  <div className="h-100 p-3 bg-light rounded border">
+                    <h6 className="fw-bold text-primary mb-3 border-bottom pb-2 d-flex align-items-center">
+                      <FaCalendarAlt className="me-2" /> Lịch khám
+                    </h6>
+                    <div className="mb-2">
+                      <small className="text-muted d-block">Thời gian</small>
+                      <div className="fw-bold text-dark fs-6">
+                        {formatDateTime(appt.timeSlot?.date, appt.timeSlot?.startTime, appt.timeSlot?.endTime)}
+                      </div>
+                    </div>
+                    <div className="mb-2">
+                      <small className="text-muted d-block">Tổng phí</small>
+                      <div className="fw-bold text-success fs-5">{formatCurrency(appt.totalAmount)}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Info */}
+                <div className="col-md-6">
+                  <div className="h-100 p-3 bg-light rounded border">
+                    <h6 className="fw-bold text-primary mb-3 border-bottom pb-2 d-flex align-items-center">
+                      <FaMoneyBillWave className="me-2" /> Ghi chú & Khác
+                    </h6>
+                    <div className="mb-2">
+                      <small className="text-muted d-block">Lý do khám</small>
+                      <div className="p-2 bg-white rounded border">{appt.reason || "Không có ghi chú"}</div>
+                    </div>
+                    {appt.cancelReason && (
+                      <div className="mb-2 mt-3">
+                        <small className="text-danger d-block fw-semibold">Lý do hủy</small>
+                        <div className="p-2 bg-danger-subtle text-danger rounded border border-danger">{appt.cancelReason}</div>
+                      </div>
+                    )}
+                    <div className="mb-2 mt-3 text-end">
+                      <small className="text-muted">Ngày tạo: {appt.createdAt ? new Date(appt.createdAt).toLocaleString('vi-VN') : "N/A"}</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-footer border-0 justify-content-end bg-light" style={{ borderRadius: '0 0 16px 16px' }}>
+              <button className="btn btn-secondary px-4 rounded-pill" onClick={onClose}>Đóng</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MAIN PAGE
+// ─────────────────────────────────────────────────────────────────────────────
+export default function UserAppointmentsPage() {
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
+  // Filters
+  const [filterStatus, setFilterStatus] = useState("");
+
+  // Modals
+  const [modal, setModal] = useState(null); // 'view' | 'cancel'
+  const [selectedAppt, setSelectedAppt] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  // Fetch Appointments
+  const fetchAppointments = async () => {
+    try {
+      setLoading(true);
+      const params = {
+        page: currentPage + 1, // backend 1-indexed
+        limit: PAGE_LIMIT,
+      };
+
+      if (filterStatus) params.status = filterStatus;
+
+      const res = await appointmentService.getMyAppointments(params);
+
+      // Handle backend response structure
+      const respData = res.data?.data;
+
+      if (Array.isArray(respData)) {
+        setAppointments(respData);
+        setTotalPages(res.data?.meta?.totalPages ?? 1);
+        setTotalCount(res.data?.meta?.total ?? 0);
+      } else {
+        setAppointments(respData?.items || respData?.appointments || []);
+        const metaObj = respData?.meta || respData?.pagination || res.data?.meta || {};
+        setTotalPages(metaObj.totalPages ?? 1);
+        setTotalCount(metaObj.totalItems ?? metaObj.total ?? 0);
+      }
+    } catch (err) {
+      console.error("Failed to fetch user appointments", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAppointments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, filterStatus]);
+
+  // Handlers
+  const handleFilterChange = (status) => {
+    setFilterStatus(status);
+    setCurrentPage(0);
+  };
+
+  const handlePageChange = (pageIndex) => {
+    setCurrentPage(pageIndex);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const closeModal = () => {
+    setModal(null);
+    setSelectedAppt(null);
+  };
+
+  const openModal = (type, appt) => {
+    setSelectedAppt(appt);
+    setModal(type);
+  };
+
+  const handleConfirmCancel = async (id, reason) => {
+    setSaving(true);
+    try {
+      await appointmentService.cancelAppointment(id, { cancelReason: reason });
+      toast.success("Hủy lịch thành công!");
+      closeModal();
+      fetchAppointments();
+    } catch (err) {
+      console.error("Failed to cancel appointment", err);
+      toast.error(err?.response?.data?.message || "Không thể hủy lịch. Vui lòng thử lại sau.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="user-appts-page">
+      {/* Header */}
+      <div className="user-appts-header">
         <div>
-          <h1 className="appt-page__title">My Appointments</h1>
-          <p className="appt-page__subtitle">
-            Manage and track all your medical appointments.
+          <h1 className="user-appts-title">Quản lý Lịch hẹn</h1>
+          <p className="user-appts-sub text-muted">
+            Theo dõi và quản lý lịch khám bệnh của bạn.
           </p>
         </div>
-
-        {/* Tổng số theo tab */}
-        <div className="appt-page__count">
-          <BsCalendar2WeekFill />
-          {filtered.length} {activeTab === "upcoming" ? "upcoming" : "past"} appointments
+        <div className="user-appts-header__right">
+          <span className="user-appts-badge bg-primary text-white px-3 py-2 rounded-pill">
+            <FaCalendarAlt className="me-2" /> Tổng cộng: {totalCount}
+          </span>
         </div>
       </div>
 
-      {/* ── Tabs ─────────────────────────────────────────── */}
-      <div className="appt-tabs">
-        <button
-          className={`appt-tabs__btn ${activeTab === "upcoming" ? "appt-tabs__btn--active" : ""}`}
-          onClick={() => setActiveTab("upcoming")}
-        >
-          <BsCalendar2WeekFill />
-          Upcoming
-          <span className="appt-tabs__count">
-            {mockAppointments.filter((a) => a.tab === "upcoming").length}
-          </span>
-        </button>
-
-        <button
-          className={`appt-tabs__btn ${activeTab === "history" ? "appt-tabs__btn--active" : ""}`}
-          onClick={() => setActiveTab("history")}
-        >
-          <BsFileEarmarkMedicalFill />
-          History
-          <span className="appt-tabs__count">
-            {mockAppointments.filter((a) => a.tab === "history").length}
-          </span>
-        </button>
+      {/* Toolbar / Filters */}
+      <div className="card shadow-sm border-0 mb-4 p-3 bg-white rounded-3">
+        <div className="row g-2 align-items-center">
+          <div className="col-12 col-md-4">
+            <label className="form-label text-muted small fw-semibold">Lọc theo trạng thái</label>
+            <select className="form-select" value={filterStatus} onChange={(e) => handleFilterChange(e.target.value)}>
+              <option value="">Tất cả lịch hẹn</option>
+              {Object.entries(STATUS_CFG).map(([key, cfg]) => (
+                <option key={key} value={key}>{cfg.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
 
-      {/* ── Appointment List ──────────────────────────────── */}
-      <div className="appt-list">
-        {filtered.length === 0 ? (
-          // Empty state
-          <div className="appt-empty">
-            <BsCalendar2WeekFill className="appt-empty__icon" />
-            <p className="appt-empty__text">No appointments found.</p>
+      {/* List */}
+      <div className="user-appts-list position-relative" style={{ minHeight: "300px" }}>
+        {loading && (
+          <div className="position-absolute w-100 h-100 d-flex justify-content-center align-items-center rounded-3" style={{ backgroundColor: "rgba(255,255,255,0.8)", zIndex: 10 }}>
+            <LoadingSpinner />
+          </div>
+        )}
+
+        {!loading && appointments.length === 0 ? (
+          <div className="user-appts-empty py-5 text-center text-muted bg-white rounded-3 shadow-sm border">
+            <div className="mb-3 d-inline-flex justify-content-center align-items-center" style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#f8f9fa' }}>
+              <FaCalendarAlt style={{ fontSize: '2.5rem', color: '#dee2e6' }} />
+            </div>
+            <p className="mb-1 fs-5 fw-semibold text-dark">Chưa có lịch hẹn nào</p>
+            <span className="small">Hãy đặt lịch khám để trải nghiệm dịch vụ của chúng tôi.</span>
           </div>
         ) : (
-          filtered.map((appt) => (
-            <AppointmentCard
-              key={appt.id}
-              appointment={appt}
-              tab={activeTab}
-            />
-          ))
+          <div className="d-flex flex-column gap-3">
+            {appointments.map((appt) => (
+              <AppointmentRow
+                key={appt.id}
+                appt={appt}
+                onView={(a) => openModal("view", a)}
+                onCancel={(a) => openModal("cancel", a)}
+              />
+            ))}
+          </div>
         )}
       </div>
 
+      {/* Pagination */}
+      {!loading && totalPages > 1 && (
+        <div className="mt-5">
+          <nav aria-label="Page navigation">
+            <ul className="pagination justify-content-center">
+              <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>
+                <button
+                  className="page-link shadow-sm border-0"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 0}
+                >
+                  <FaChevronLeft className="me-1" /> Trước
+                </button>
+              </li>
+
+              {Array.from({ length: totalPages }, (_, i) => {
+                const start = Math.max(0, currentPage - 2);
+                const end = Math.min(totalPages, start + 5);
+                const adjustedStart = Math.max(0, end - 5);
+
+                if (i < adjustedStart || i >= end) return null;
+
+                return (
+                  <li
+                    key={i}
+                    className={`page-item mx-1 ${i === currentPage ? "active" : ""}`}
+                  >
+                    <button
+                      className={`page-link shadow-sm border-0 rounded-3 ${i === currentPage ? 'bg-primary text-white' : ''}`}
+                      onClick={() => handlePageChange(i)}
+                    >
+                      {i + 1}
+                    </button>
+                  </li>
+                );
+              })}
+
+              <li className={`page-item ms-1 ${currentPage === totalPages - 1 ? "disabled" : ""}`}>
+                <button
+                  className="page-link shadow-sm border-0"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages - 1}
+                >
+                  Sau <FaChevronRight className="ms-1" />
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      )}
+
+      {/* Modals */}
+      <AppointmentViewModal
+        appt={modal === "view" ? selectedAppt : null}
+        onClose={closeModal}
+      />
+      <CancelModal
+        appt={modal === "cancel" ? selectedAppt : null}
+        onConfirm={handleConfirmCancel}
+        onClose={closeModal}
+        saving={saving}
+      />
     </div>
   );
 }

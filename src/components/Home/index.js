@@ -5,7 +5,4 @@ export {default as SpecialtiesSection} from "./SpecialtiesSection";
 export {default as HowSection} from "./HowSection";
 export {default as DoctorsSection} from "./DoctorsSection";
 export {default as HospitalSection} from "./HospitalSection";
-export {default as ServicesSection} from "./ServicesSection";
-export {default as TestimonialsSection} from "./TestimonialsSection";
-export {default as NewsSection} from "./NewsSection";
 export {default as PartnerSection} from "./PartnerSection";

@@ -28,7 +28,7 @@ export default function HeroSection() {
           <div className="col-lg-6 hero-content">
             <div className="hero-badge">
               <BsShieldFillCheck className="me-2" />
-              Nền tảng y tế uy tín #1 Việt Nam
+              Nền tảng y tế uy tín top đầu Việt Nam
             </div>
 
             <h1 className="hero-title">

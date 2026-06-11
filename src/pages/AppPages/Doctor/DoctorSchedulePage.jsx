@@ -1,17 +1,7 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// DoctorSchedulePage.jsx
-// Weekly calendar: 7 cột ngày, time slots, modal thêm slot, popover detail
-//
-// Flow:
-//   available → click → ConfirmBlockDialog → xác nhận → blocked
-//   blocked   → click → toggle về available (không cần xác nhận)
-//   booked    → do bệnh nhân đặt → click → SlotPopover (Confirm / Cancel)
-// ─────────────────────────────────────────────────────────────────────────────
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import ReactDOM from "react-dom";
 import { BsCalendar2WeekFill, BsClockFill } from "react-icons/bs";
 import {
-  FaPlus,
   FaChevronLeft,
   FaChevronRight,
   FaTimes,
@@ -20,8 +10,12 @@ import {
   FaClock,
   FaBan,
   FaLock,
+  FaFilter,
 } from "react-icons/fa";
+import { toast } from "react-toastify";
 import "./DoctorSchedulePage.scss";
+import { timeSlotService } from "../../../api/appService";
+import LoadingSpinner from "../../../components/Common/LoadingSpinner";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
@@ -48,7 +42,6 @@ function getWeekDays(monday) {
 
 const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-// So sánh 2 ngày bỏ qua giờ
 function isSameDay(a, b) {
   return (
     a.getFullYear() === b.getFullYear() &&
@@ -57,317 +50,164 @@ function isSameDay(a, b) {
   );
 }
 
-// "2026-04-17"
+// "YYYY-MM-DD" theo giờ địa phương (tránh lỗi lệch múi giờ toISOString)
 function dateKey(date) {
-  return date.toISOString().slice(0, 10);
+  if (typeof date === 'string') return date.substring(0, 10);
+  
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}`;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MOCK DATA GENERATOR
-// slot "booked"    = bệnh nhân đã đặt từ phía User (bác sĩ không tạo)
-// slot "available" = bác sĩ mở khung giờ cho BN đặt
-// slot "blocked"   = bác sĩ tự block (bận / nghỉ)
-// ─────────────────────────────────────────────────────────────────────────────
-const HOURS = [
-  "08:00",
-  "09:00",
-  "10:00",
-  "11:00",
-  "13:00",
-  "14:00",
-  "15:00",
-  "16:00",
-];
-
-const BOOKED_PATIENTS = [
-  { patient: "Tran Thi Mai", type: "Check-up", bookingStatus: "waiting" },
-  { patient: "Le Van Binh", type: "Follow-up", bookingStatus: "confirmed" },
-  { patient: "Pham Duc Thanh", type: "Consultation", bookingStatus: "waiting" },
-  { patient: "Nguyen Thi Lan", type: "Check-up", bookingStatus: "confirmed" },
-  { patient: "Vo Minh Khoa", type: "Follow-up", bookingStatus: "waiting" },
-  {
-    patient: "Hoang Thi Thu",
-    type: "Consultation",
-    bookingStatus: "confirmed",
-  },
-  { patient: "Dang Van Long", type: "Check-up", bookingStatus: "waiting" },
-  { patient: "Bui Thi Huong", type: "Follow-up", bookingStatus: "confirmed" },
-];
-
-function generateSlots(monday) {
-  const slots = {};
-  const week = getWeekDays(monday);
-  const today = new Date();
-
-  week.forEach((day, dayIdx) => {
-    const key = dateKey(day);
-    slots[key] = {};
-
-    HOURS.forEach((hour, hourIdx) => {
-      const r = (dayIdx * 11 + hourIdx * 3) % 7;
-
-      if (day < today && !isSameDay(day, today)) {
-        // Quá khứ: booked hoặc blocked
-        if (r < 3) {
-          const pb =
-            BOOKED_PATIENTS[(dayIdx * 8 + hourIdx) % BOOKED_PATIENTS.length];
-          slots[key][hour] = { status: "booked", ...pb };
-        } else {
-          slots[key][hour] = { status: "blocked" };
-        }
-      } else {
-        // Hôm nay + tương lai: available / booked / blocked
-        if (r < 3) {
-          slots[key][hour] = { status: "available" };
-        } else if (r < 5) {
-          const pb =
-            BOOKED_PATIENTS[(dayIdx * 8 + hourIdx) % BOOKED_PATIENTS.length];
-          slots[key][hour] = { status: "booked", ...pb };
-        } else {
-          slots[key][hour] = { status: "blocked" };
-        }
-      }
-    });
-  });
-
-  return slots;
+// Xác định trạng thái của slot từ dữ liệu backend
+function getSlotStatus(slot) {
+  if (slot.isBooked) return "booked";
+  if (slot.isBlocked) return "blocked";
+  return "available";
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SUB-COMPONENT: ConfirmBlockDialog
-// Hiện khi bác sĩ click vào slot "available"
-// Hỏi xác nhận trước khi block slot đó
-//
-// Render qua Portal (position: fixed) để không bị clip
-// Props:
-//   dateStr, hour  — slot cần block
-//   onConfirm      — xác nhận block
-//   onCancel       — hủy, không làm gì
+// Hỏi xác nhận trước khi block slot
 // ─────────────────────────────────────────────────────────────────────────────
-function ConfirmBlockDialog({ dateStr, hour, onConfirm, onCancel }) {
+function ConfirmBlockDialog({ slot, onConfirm, onCancel, saving }) {
   const ref = useRef();
 
   // Đóng khi click ra ngoài
   useEffect(() => {
     const handler = (e) => {
-      if (ref.current && ref.current.contains(e.target)) return;
-      onCancel();
+      if (ref.current && !ref.current.contains(e.target) && !saving) onCancel();
     };
-    const t = setTimeout(
-      () => document.addEventListener("mousedown", handler),
-      0,
-    );
+    const t = setTimeout(() => document.addEventListener("mousedown", handler), 0);
     return () => {
       clearTimeout(t);
       document.removeEventListener("mousedown", handler);
     };
-  }, [onCancel]);
+  }, [onCancel, saving]);
 
   // Đóng bằng Escape
   useEffect(() => {
     const handler = (e) => {
-      if (e.key === "Escape") onCancel();
+      if (e.key === "Escape" && !saving) onCancel();
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  }, [onCancel]);
+  }, [onCancel, saving]);
 
-  // Format ngày hiển thị
-  const displayDate = new Date(dateStr + "T00:00:00").toLocaleDateString(
-    "en-US",
-    {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    },
-  );
+  const displayDate = new Date(slot.date).toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
 
   return ReactDOM.createPortal(
-    // Backdrop mờ
-    <div
-      className="confirm-block-backdrop"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onCancel();
-      }}
-    >
+    <div className="confirm-block-backdrop">
       <div className="confirm-block-dialog" ref={ref}>
-        {/* Icon */}
         <div className="confirm-block-dialog__icon">
           <FaLock />
         </div>
-
-        {/* Title */}
-        <h3 className="confirm-block-dialog__title">Block this slot?</h3>
-
-        {/* Thông tin slot */}
+        <h3 className="confirm-block-dialog__title">Khoá khung giờ này?</h3>
         <p className="confirm-block-dialog__info">
           <BsCalendar2WeekFill /> {displayDate}
           <span className="confirm-block-dialog__sep">·</span>
-          <BsClockFill /> {hour}
+          <BsClockFill /> {slot.startTime} - {slot.endTime}
         </p>
-
         <p className="confirm-block-dialog__desc">
-          This slot will be marked as unavailable. Patients will not be able to
-          book it.
+          Bệnh nhân sẽ không thể đặt lịch vào khung giờ này nếu bạn chọn khoá.
         </p>
-
-        {/* Actions */}
         <div className="confirm-block-dialog__actions">
-          <button
-            className="confirm-block-dialog__btn confirm-block-dialog__btn--cancel"
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={onCancel}
-          >
-            Keep Available
+          <button className="confirm-block-dialog__btn confirm-block-dialog__btn--cancel" onClick={onCancel} disabled={saving}>
+            Giữ nguyên
           </button>
-          <button
-            className="confirm-block-dialog__btn confirm-block-dialog__btn--confirm"
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={onConfirm}
-          >
-            <FaLock /> Block Slot
+          <button className="confirm-block-dialog__btn confirm-block-dialog__btn--confirm" onClick={() => onConfirm(slot)} disabled={saving}>
+            {saving ? <span className="spinner-border spinner-border-sm" /> : <><FaLock /> Xác nhận Khóa</>}
           </button>
         </div>
       </div>
     </div>,
-    document.body,
+    document.body
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SUB-COMPONENT: SlotPopover
-// Hiện khi click slot "booked" — xem thông tin bệnh nhân
-// Bác sĩ có thể Confirm (nếu waiting) hoặc Cancel lịch hẹn
-// Render qua Portal tránh bị clip bởi overflow của calendar grid
 // ─────────────────────────────────────────────────────────────────────────────
-function SlotPopover({ slot, hour, anchorRect, onClose, onConfirm, onCancel }) {
+function SlotPopover({ slot, anchorRect, onClose }) {
   const ref = useRef();
 
-  // Đóng khi mousedown ra ngoài
   useEffect(() => {
     const handler = (e) => {
-      if (ref.current && ref.current.contains(e.target)) return;
-      onClose();
+      if (ref.current && !ref.current.contains(e.target)) onClose();
     };
-    const t = setTimeout(
-      () => document.addEventListener("mousedown", handler),
-      0,
-    );
+    const t = setTimeout(() => document.addEventListener("mousedown", handler), 0);
     return () => {
       clearTimeout(t);
       document.removeEventListener("mousedown", handler);
     };
   }, [onClose]);
 
-  // Tính vị trí: bên phải cell, fallback bên trái nếu tràn
-  const POPOVER_W = 220;
+  const POPOVER_W = 240;
   const GAP = 8;
   let left = anchorRect.right + GAP;
   let top = anchorRect.top;
-  if (left + POPOVER_W > window.innerWidth - 12)
-    left = anchorRect.left - POPOVER_W - GAP;
-  if (top + 210 > window.innerHeight - 12) top = window.innerHeight - 210 - 12;
+  if (left + POPOVER_W > window.innerWidth - 12) left = anchorRect.left - POPOVER_W - GAP;
+  if (top + 180 > window.innerHeight - 12) top = window.innerHeight - 180 - 12;
 
-  const isWaiting = slot.bookingStatus === "waiting";
-
+  const appt = slot.appointment;
+  const isWaiting = appt?.status === "pending" || appt?.status === "waiting";
+  
   return ReactDOM.createPortal(
-    <div
-      className="slot-popover"
-      ref={ref}
-      style={{ position: "fixed", top, left }}
-      onMouseDown={(e) => e.stopPropagation()}
-    >
-      {/* Nút X — dùng onMouseDown để chạy trước global handler */}
-      <button
-        className="slot-popover__close"
-        onMouseDown={(e) => {
-          e.stopPropagation();
-          onClose();
-        }}
-      >
-        <FaTimes />
-      </button>
-
-      {/* Thông tin bệnh nhân */}
+    <div className="slot-popover" ref={ref} style={{ position: "fixed", top, left }}>
+      <button className="slot-popover__close" onClick={onClose}><FaTimes /></button>
       <p className="slot-popover__patient">
-        <FaUserInjured /> {slot.patient}
+        <FaUserInjured /> {appt?.patientProfile?.fullName || "Bệnh nhân"}
       </p>
-      <p className="slot-popover__type">{slot.type}</p>
+      <p className="slot-popover__type small text-muted mb-2">Lịch khám bệnh</p>
       <p className="slot-popover__time">
-        <BsClockFill /> {hour}
+        <BsClockFill /> {slot.startTime} - {slot.endTime}
       </p>
+      <p className="small text-muted mb-2 mt-1">Cơ sở: {slot.hospital?.name}</p>
 
-      {/* Badge trạng thái */}
-      <span
-        className={`slot-popover__status-badge ${isWaiting ? "slot-popover__status-badge--waiting" : "slot-popover__status-badge--confirmed"}`}
-      >
-        {isWaiting ? <FaClock /> : <FaCheckCircle />}
-        {isWaiting ? "Waiting" : "Confirmed"}
+      <span className={`slot-popover__status-badge ${isWaiting ? "slot-popover__status-badge--waiting" : "slot-popover__status-badge--confirmed"}`}>
+        {isWaiting ? <FaClock className="me-1" /> : <FaCheckCircle className="me-1" />}
+        {isWaiting ? "Chờ xác nhận" : appt?.status === "completed" ? "Đã khám" : "Đã xác nhận"}
       </span>
-
-      {/* Actions */}
-      <div className="slot-popover__actions">
-        {/* Confirm: chỉ hiện khi waiting */}
-        {isWaiting && (
-          <button
-            className="slot-popover__action-btn slot-popover__action-btn--confirm"
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={onConfirm}
-          >
-            <FaCheckCircle /> Confirm
-          </button>
-        )}
-        <button
-          className="slot-popover__action-btn slot-popover__action-btn--cancel"
-          onMouseDown={(e) => e.stopPropagation()}
-          onClick={onCancel}
-        >
-          <FaBan /> Cancel
-        </button>
+      
+      {/* Để quản lý, bác sĩ nên qua tab Lịch hẹn. Popover này chỉ để xem nhanh */}
+      <div className="mt-2 pt-2 border-top text-center">
+        <small className="text-muted fst-italic">Vào mục Quản lý Lịch hẹn để thao tác</small>
       </div>
     </div>,
-    document.body,
+    document.body
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SUB-COMPONENT: SlotCell
-// Mỗi ô time slot trong calendar
-//
-// Click behavior:
-//   available → mở ConfirmBlockDialog → xác nhận → blocked
-//   blocked   → toggle về available ngay (không cần xác nhận)
-//   booked    → mở SlotPopover (Confirm / Cancel)
 // ─────────────────────────────────────────────────────────────────────────────
 function SlotCell({
-  hour,
   slotData,
-  dateStr,
   onRequestBlock,
   onUnblock,
   onBookedClick,
-  activePopover,
+  activePopoverId,
   onClosePopover,
-  onConfirmAppt,
-  onCancelAppt,
 }) {
-  const { status, patient, type, bookingStatus } = slotData;
-  const isPopoverOpen =
-    activePopover?.dateStr === dateStr && activePopover?.hour === hour;
+  const status = getSlotStatus(slotData);
+  const isPopoverOpen = activePopoverId === slotData.id;
   const cellRef = useRef();
 
   const handleClick = (e) => {
     e.stopPropagation();
-
     if (status === "available") {
-      // Mở confirm dialog trước khi block
-      onRequestBlock(dateStr, hour);
+      onRequestBlock(slotData);
     } else if (status === "blocked") {
-      // Unblock ngay, không cần xác nhận
-      onUnblock(dateStr, hour);
+      onUnblock(slotData);
     } else if (status === "booked") {
       const rect = cellRef.current?.getBoundingClientRect();
-      onBookedClick(dateStr, hour, rect);
+      onBookedClick(slotData.id, rect);
     }
   };
 
@@ -378,155 +218,35 @@ function SlotCell({
       onClick={handleClick}
       title={
         status === "available"
-          ? "Click to block this slot"
+          ? "Click để khóa slot này"
           : status === "blocked"
-            ? "Click to unblock"
-            : `${patient} · ${type}`
+            ? "Click để mở khóa"
+            : `Đã đặt bởi ${slotData.appointment?.patientProfile?.fullName || "Bệnh nhân"}`
       }
     >
-      {/* Giờ */}
-      <span className="slot-cell__hour">{hour}</span>
+      <span className="slot-cell__hour">{slotData.startTime}</span>
 
-      {status === "available" && (
-        <span className="slot-cell__available-label">Available</span>
-      )}
-
-      {status === "blocked" && (
-        <span className="slot-cell__blocked-label">Blocked</span>
-      )}
+      {status === "available" && <span className="slot-cell__available-label">Trống</span>}
+      {status === "blocked" && <span className="slot-cell__blocked-label">Đã khóa</span>}
 
       {status === "booked" && (
         <div className="slot-cell__booked-info">
-          <span className="slot-cell__patient">{patient}</span>
-          <span className="slot-cell__type">{type}</span>
-          {/* Mini badge trạng thái booking */}
-          <span
-            className={`slot-cell__booking-badge ${bookingStatus === "waiting" ? "slot-cell__booking-badge--waiting" : "slot-cell__booking-badge--confirmed"}`}
-          >
-            {bookingStatus === "waiting" ? "Pending" : "✓"}
+          <span className="slot-cell__patient text-truncate" style={{ maxWidth: '100%' }}>
+            {slotData.appointment?.patientProfile?.fullName?.split(" ").pop() || "BN"}
+          </span>
+          <span className={`slot-cell__booking-badge ${slotData.appointment?.status === "pending" ? "slot-cell__booking-badge--waiting" : "slot-cell__booking-badge--confirmed"}`}>
+            ✓
           </span>
         </div>
       )}
 
-      {/* Popover qua Portal */}
-      {isPopoverOpen && status === "booked" && activePopover?.rect && (
+      {isPopoverOpen && status === "booked" && (
         <SlotPopover
           slot={slotData}
-          hour={hour}
-          anchorRect={activePopover.rect}
+          anchorRect={cellRef.current?.getBoundingClientRect()}
           onClose={onClosePopover}
-          onConfirm={() => {
-            onConfirmAppt(dateStr, hour);
-            onClosePopover();
-          }}
-          onCancel={() => {
-            onCancelAppt(dateStr, hour);
-            onClosePopover();
-          }}
         />
       )}
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENT: AddSlotModal
-// Bác sĩ tự thêm khung giờ available mới
-// ─────────────────────────────────────────────────────────────────────────────
-function AddSlotModal({ onClose, weekDays, onAdd }) {
-  const [form, setForm] = useState({
-    date: dateKey(weekDays[0]),
-    startTime: "08:00",
-    endTime: "09:00",
-  });
-
-  const handle = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-
-  const handleBackdrop = (e) => {
-    if (e.target === e.currentTarget) onClose();
-  };
-
-  const timeOptions = [
-    "07:00",
-    "08:00",
-    "09:00",
-    "10:00",
-    "11:00",
-    "12:00",
-    "13:00",
-    "14:00",
-    "15:00",
-    "16:00",
-    "17:00",
-  ];
-
-  return (
-    <div className="modal-backdrop" onClick={handleBackdrop}>
-      <div className="add-slot-modal">
-        <div className="add-slot-modal__header">
-          <h3 className="add-slot-modal__title">
-            <BsCalendar2WeekFill /> Add Available Slot
-          </h3>
-          <button className="add-slot-modal__close" onClick={onClose}>
-            <FaTimes />
-          </button>
-        </div>
-
-        <div className="add-slot-modal__body">
-          <div className="modal-form__group">
-            <label>Date</label>
-            <select name="date" value={form.date} onChange={handle}>
-              {weekDays.map((d) => (
-                <option key={dateKey(d)} value={dateKey(d)}>
-                  {d.toLocaleDateString("en-US", {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="modal-form__row">
-            <div className="modal-form__group">
-              <label>Start Time</label>
-              <select name="startTime" value={form.startTime} onChange={handle}>
-                {timeOptions.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="modal-form__group">
-              <label>End Time</label>
-              <select name="endTime" value={form.endTime} onChange={handle}>
-                {timeOptions.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div className="add-slot-modal__footer">
-          <button className="modal-btn modal-btn--cancel" onClick={onClose}>
-            Cancel
-          </button>
-          <button
-            className="modal-btn modal-btn--add"
-            onClick={() => {
-              onAdd(form.date, form.startTime);
-              onClose();
-            }}
-          >
-            <FaPlus /> Add Slot
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
@@ -538,110 +258,140 @@ export default function DoctorSchedulePage() {
   const today = new Date();
 
   const [weekStart, setWeekStart] = useState(getMonday(today));
-  const [slots, setSlots] = useState(() => generateSlots(getMonday(today)));
-  const [showModal, setShowModal] = useState(false);
-  const [activePopover, setActivePopover] = useState(null); // { dateStr, hour, rect }
+  const [slots, setSlots] = useState([]);
+  const [loading, setLoading] = useState(false);
+  
+  // Filters
+  const [filterStatus, setFilterStatus] = useState("");
 
-  // Slot đang chờ xác nhận block: { dateStr, hour } | null
   const [blockTarget, setBlockTarget] = useState(null);
+  const [savingBlock, setSavingBlock] = useState(false);
+  const [activePopoverId, setActivePopoverId] = useState(null);
 
-  const weekDays = getWeekDays(weekStart);
+  const weekDays = useMemo(() => getWeekDays(weekStart), [weekStart]);
 
-  // ── Chuyển tuần ────────────────────────────────────────────────────────────
+  // Fetch slots for the current week
+  const fetchWeekSlots = async () => {
+    try {
+      setLoading(true);
+      const sunday = new Date(weekStart);
+      sunday.setDate(sunday.getDate() + 6);
+      
+      const params = {
+        fromDate: dateKey(weekStart),
+        toDate: dateKey(sunday),
+        limit: 200, // Đủ lớn để lấy hết slot trong 1 tuần
+      };
+      
+      // Apply filters if any
+      if (filterStatus === "booked") params.isBooked = true;
+      else if (filterStatus === "blocked") params.isBlocked = true;
+      else if (filterStatus === "available") {
+        params.isBooked = false;
+        params.isBlocked = false;
+      }
+
+      const res = await timeSlotService.getDoctorTimeSlots(params);
+      const fetchedSlots = res.data?.data?.data || res.data?.data || [];
+      setSlots(fetchedSlots);
+    } catch (error) {
+      console.error("Lỗi khi tải lịch làm việc:", error);
+      toast.error("Không thể tải lịch làm việc. Vui lòng thử lại sau.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchWeekSlots();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [weekStart, filterStatus]);
+
+  // Handlers for Navigation
   const prevWeek = () => {
     const d = new Date(weekStart);
     d.setDate(d.getDate() - 7);
     setWeekStart(d);
-    setSlots((prev) => ({ ...generateSlots(d), ...prev }));
   };
 
   const nextWeek = () => {
     const d = new Date(weekStart);
     d.setDate(d.getDate() + 7);
     setWeekStart(d);
-    setSlots((prev) => ({ ...generateSlots(d), ...prev }));
   };
 
-  // ── Click available → lưu target, mở ConfirmBlockDialog ──────────────────
-  const handleRequestBlock = (dateStr, hour) => {
-    setBlockTarget({ dateStr, hour });
+  // Organize slots into grid data structure
+  // slotsByDateAndHour[dateKey][startTime] = slot
+  const { gridSlots, uniqueHours } = useMemo(() => {
+    const grid = {};
+    const hoursSet = new Set();
+    
+    weekDays.forEach(d => {
+      grid[dateKey(d)] = {};
+    });
+
+    slots.forEach(slot => {
+      const dk = dateKey(slot.date);
+      if (grid[dk]) {
+        grid[dk][slot.startTime] = slot;
+      }
+      hoursSet.add(slot.startTime);
+    });
+
+    // Sắp xếp các giờ từ bé đến lớn
+    const sortedHours = Array.from(hoursSet).sort((a, b) => {
+      const [hA, mA] = a.split(':').map(Number);
+      const [hB, mB] = b.split(':').map(Number);
+      return (hA * 60 + mA) - (hB * 60 + mB);
+    });
+
+    return { gridSlots: grid, uniqueHours: sortedHours };
+  }, [slots, weekDays]);
+
+  // Handlers for Slot actions
+  const handleRequestBlock = (slot) => {
+    setBlockTarget(slot);
   };
 
-  // ── Xác nhận block → đổi available thành blocked ─────────────────────────
-  const handleConfirmBlock = () => {
-    const { dateStr, hour } = blockTarget;
-    setSlots((prev) => ({
-      ...prev,
-      [dateStr]: {
-        ...prev[dateStr],
-        [hour]: { status: "blocked" },
-      },
-    }));
-    setBlockTarget(null);
+  const handleConfirmBlock = async (slot) => {
+    try {
+      setSavingBlock(true);
+      await timeSlotService.doctorBlockTimeSlot(slot.id, { isBlocked: true });
+      toast.success("Khóa slot thành công!");
+      setBlockTarget(null);
+      fetchWeekSlots();
+    } catch (error) {
+      console.error("Lỗi khóa slot:", error);
+      toast.error(error.response?.data?.message || "Không thể khóa slot này.");
+    } finally {
+      setSavingBlock(false);
+    }
   };
 
-  // ── Unblock → đổi blocked về available (không cần xác nhận) ──────────────
-  const handleUnblock = (dateStr, hour) => {
-    setSlots((prev) => ({
-      ...prev,
-      [dateStr]: {
-        ...prev[dateStr],
-        [hour]: { status: "available" },
-      },
-    }));
+  const handleUnblock = async (slot) => {
+    try {
+      await timeSlotService.doctorBlockTimeSlot(slot.id, { isBlocked: false });
+      toast.success("Mở khóa slot thành công!");
+      fetchWeekSlots();
+    } catch (error) {
+      console.error("Lỗi mở khóa slot:", error);
+      toast.error(error.response?.data?.message || "Không thể mở khóa slot này.");
+    }
   };
 
-  // ── Click booked → mở popover ─────────────────────────────────────────────
-  const handleBookedClick = (dateStr, hour, rect) => {
-    setActivePopover((prev) =>
-      prev?.dateStr === dateStr && prev?.hour === hour
-        ? null
-        : { dateStr, hour, rect },
-    );
+  const handleBookedClick = (id, rect) => {
+    setActivePopoverId((prev) => (prev === id ? null : id));
   };
 
-  // ── Bác sĩ Confirm lịch bệnh nhân đặt → bookingStatus: "confirmed" ────────
-  const handleConfirmAppt = (dateStr, hour) => {
-    setSlots((prev) => ({
-      ...prev,
-      [dateStr]: {
-        ...prev[dateStr],
-        [hour]: { ...prev[dateStr][hour], bookingStatus: "confirmed" },
-      },
-    }));
-  };
-
-  // ── Bác sĩ Cancel lịch hẹn → slot trở về available ───────────────────────
-  const handleCancelAppt = (dateStr, hour) => {
-    setSlots((prev) => ({
-      ...prev,
-      [dateStr]: {
-        ...prev[dateStr],
-        [hour]: { status: "available" },
-      },
-    }));
-  };
-
-  // ── Thêm slot available mới từ modal ──────────────────────────────────────
-  const handleAddSlot = (dateStr, hour) => {
-    setSlots((prev) => ({
-      ...prev,
-      [dateStr]: { ...prev[dateStr], [hour]: { status: "available" } },
-    }));
-  };
-
-  const monthLabel = weekStart.toLocaleDateString("en-US", {
+  const monthLabel = weekStart.toLocaleDateString("vi-VN", {
     month: "long",
     year: "numeric",
   });
 
-  const allSlots = weekDays.flatMap((d) =>
-    Object.values(slots[dateKey(d)] || {}),
-  );
   const countByStatus = {
-    available: allSlots.filter((s) => s.status === "available").length,
-    booked: allSlots.filter((s) => s.status === "booked").length,
-    blocked: allSlots.filter((s) => s.status === "blocked").length,
+    available: slots.filter((s) => !s.isBooked && !s.isBlocked).length,
+    booked: slots.filter((s) => s.isBooked).length,
+    blocked: slots.filter((s) => s.isBlocked).length,
   };
 
   return (
@@ -649,41 +399,56 @@ export default function DoctorSchedulePage() {
       {/* ── Page Header ─────────────────────────────────── */}
       <div className="schedule-page__header">
         <div>
-          <h1 className="schedule-page__title">My Schedule</h1>
+          <h1 className="schedule-page__title">Lịch làm việc của tôi</h1>
           <p className="schedule-page__subtitle">
-            Set your available hours. Patients will book from open slots.
+            Xem và quản lý các khung giờ làm việc. Click để mở/khoá slot.
           </p>
         </div>
-        <button
-          className="schedule-page__add-btn"
-          onClick={() => setShowModal(true)}
-        >
-          <FaPlus /> Add Slot
-        </button>
       </div>
 
-      {/* ── Week summary badges ──────────────────────────── */}
-      <div className="week-summary">
-        <span className="week-summary__item week-summary__item--available">
-          <FaCheckCircle /> {countByStatus.available} Available
-        </span>
-        <span className="week-summary__item week-summary__item--booked">
-          <FaUserInjured /> {countByStatus.booked} Booked
-        </span>
-        <span className="week-summary__item week-summary__item--blocked">
-          <FaBan /> {countByStatus.blocked} Blocked
-        </span>
+      {/* ── Toolbar & Filters ────────────────────────────── */}
+      <div className="card shadow-sm border-0 mb-4 p-3 bg-white rounded-3">
+        <div className="row g-3 align-items-center justify-content-between">
+          <div className="col-12 col-md-6 d-flex flex-wrap gap-2 week-summary">
+            <span className="week-summary__item week-summary__item--available">
+              <FaCheckCircle /> {countByStatus.available} Trống
+            </span>
+            <span className="week-summary__item week-summary__item--booked">
+              <FaUserInjured /> {countByStatus.booked} Đã đặt
+            </span>
+            <span className="week-summary__item week-summary__item--blocked">
+              <FaBan /> {countByStatus.blocked} Đã khóa
+            </span>
+          </div>
+          <div className="col-12 col-md-3">
+            <div className="d-flex align-items-center">
+              <FaFilter className="text-muted me-2" />
+              <select className="form-select border-0 bg-light" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+                <option value="">Tất cả trạng thái</option>
+                <option value="available">Chỉ xem slot trống</option>
+                <option value="booked">Chỉ xem slot đã đặt</option>
+                <option value="blocked">Chỉ xem slot đã khóa</option>
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* ── Calendar ─────────────────────────────────────── */}
-      <div className="calendar-card">
+      <div className="calendar-card position-relative" style={{ minHeight: '300px' }}>
+        {loading && (
+          <div className="position-absolute w-100 h-100 d-flex justify-content-center align-items-center" style={{ backgroundColor: "rgba(255,255,255,0.7)", zIndex: 10 }}>
+            <LoadingSpinner />
+          </div>
+        )}
+
         {/* Nav */}
         <div className="calendar-nav">
           <button className="calendar-nav__btn" onClick={prevWeek}>
             <FaChevronLeft />
           </button>
-          <h2 className="calendar-nav__month">
-            <BsCalendar2WeekFill /> {monthLabel}
+          <h2 className="calendar-nav__month text-capitalize">
+            <BsCalendar2WeekFill /> Tháng {weekStart.getMonth() + 1}, {weekStart.getFullYear()}
           </h2>
           <button className="calendar-nav__btn" onClick={nextWeek}>
             <FaChevronRight />
@@ -696,20 +461,14 @@ export default function DoctorSchedulePage() {
             {weekDays.map((day, idx) => {
               const key = dateKey(day);
               const isToday = isSameDay(day, today);
-              const daySlots = slots[key] || {};
+              const daySlots = gridSlots[key];
 
               return (
                 <div key={key} className="calendar-col">
                   {/* Day header */}
-                  <div
-                    className={`calendar-col__header ${isToday ? "calendar-col__header--today" : ""}`}
-                  >
-                    <span className="calendar-col__day-name">
-                      {DAY_NAMES[idx]}
-                    </span>
-                    <span
-                      className={`calendar-col__day-num ${isToday ? "calendar-col__day-num--today" : ""}`}
-                    >
+                  <div className={`calendar-col__header ${isToday ? "calendar-col__header--today" : ""}`}>
+                    <span className="calendar-col__day-name">{DAY_NAMES[idx]}</span>
+                    <span className={`calendar-col__day-num ${isToday ? "calendar-col__day-num--today" : ""}`}>
                       {day.getDate()}
                     </span>
                     {isToday && <span className="calendar-col__today-dot" />}
@@ -717,26 +476,30 @@ export default function DoctorSchedulePage() {
 
                   {/* Slots */}
                   <div className="calendar-col__slots">
-                    {HOURS.map((hour) => {
-                      const slotData = daySlots[hour] || {
-                        status: "available",
-                      };
-                      return (
-                        <SlotCell
-                          key={hour}
-                          hour={hour}
-                          slotData={slotData}
-                          dateStr={key}
-                          onRequestBlock={handleRequestBlock}
-                          onUnblock={handleUnblock}
-                          onBookedClick={handleBookedClick}
-                          activePopover={activePopover}
-                          onClosePopover={() => setActivePopover(null)}
-                          onConfirmAppt={handleConfirmAppt}
-                          onCancelAppt={handleCancelAppt}
-                        />
-                      );
-                    })}
+                    {uniqueHours.length === 0 ? (
+                      <div className="text-center py-4 text-muted small opacity-50">Không có slot</div>
+                    ) : (
+                      uniqueHours.map((hour) => {
+                        const slotData = daySlots[hour];
+                        if (!slotData) {
+                          return (
+                            <div key={hour} className="slot-cell-empty" style={{ height: '52px' }} />
+                          );
+                        }
+
+                        return (
+                          <SlotCell
+                            key={slotData.id}
+                            slotData={slotData}
+                            onRequestBlock={handleRequestBlock}
+                            onUnblock={handleUnblock}
+                            onBookedClick={handleBookedClick}
+                            activePopoverId={activePopoverId}
+                            onClosePopover={() => setActivePopoverId(null)}
+                          />
+                        );
+                      })
+                    )}
                   </div>
                 </div>
               );
@@ -748,36 +511,26 @@ export default function DoctorSchedulePage() {
         <div className="calendar-legend">
           <span className="calendar-legend__item">
             <span className="calendar-legend__dot calendar-legend__dot--available" />
-            Available — click to block
+            Trống — Nhấn để khoá
           </span>
           <span className="calendar-legend__item">
             <span className="calendar-legend__dot calendar-legend__dot--booked" />
-            Booked by patient
+            Bệnh nhân đã đặt
           </span>
           <span className="calendar-legend__item">
             <span className="calendar-legend__dot calendar-legend__dot--blocked" />
-            Blocked — click to unblock
+            Đã khoá — Nhấn để mở
           </span>
         </div>
       </div>
 
-      {/* ── Add Slot Modal ───────────────────────────────── */}
-      {showModal && (
-        <AddSlotModal
-          weekDays={weekDays}
-          onClose={() => setShowModal(false)}
-          onAdd={handleAddSlot}
-        />
-      )}
-
       {/* ── Confirm Block Dialog ─────────────────────────── */}
-      {/* Hiện khi bác sĩ click slot available, hỏi xác nhận trước khi block */}
       {blockTarget && (
         <ConfirmBlockDialog
-          dateStr={blockTarget.dateStr}
-          hour={blockTarget.hour}
+          slot={blockTarget}
           onConfirm={handleConfirmBlock}
           onCancel={() => setBlockTarget(null)}
+          saving={savingBlock}
         />
       )}
     </div>

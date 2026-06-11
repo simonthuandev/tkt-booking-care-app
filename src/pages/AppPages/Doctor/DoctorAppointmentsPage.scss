@@ -1,14 +1,8 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// DoctorAppointmentsPage.scss
-// ─────────────────────────────────────────────────────────────────────────────
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap");
 
-// ── Design tokens ──────────────────────────────────────────────────────────
 $primary: #0ba3a3;
 $primary-dk: #077d7d;
 $primary-lt: #e6f7f7;
-$accent: #ff6b35;
-$accent-lt: #fff1ec;
 $navy: #0d2b45;
 $navy-lt: #e6eef5;
 $text: #1a2b3c;
@@ -23,6 +17,8 @@ $danger: #e24b4a;
 $danger-lt: #fef2f2;
 $star: #f5a623;
 $star-lt: #fff8e6;
+$purple: #9b59b6;
+$purple-lt: #f4e9f5;
 $ff-head: "Playfair Display", serif;
 $ff-body: "DM Sans", sans-serif;
 $radius: 16px;
@@ -37,15 +33,11 @@ $shadow-hover: 0 12px 40px rgba(13, 43, 69, 0.14);
   border: 1px solid $border;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PAGE
-// ─────────────────────────────────────────────────────────────────────────────
 .doc-appts-page {
   font-family: $ff-body;
   max-width: 1400px;
 }
 
-// ── Header ───────────────────────────────────────────────────────────────────
 .doc-appts-page__header {
   display: flex;
   align-items: flex-end;
@@ -73,27 +65,6 @@ $shadow-hover: 0 12px 40px rgba(13, 43, 69, 0.14);
   margin: 0;
 }
 
-.doc-appts-page__today-badge {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: $primary-dk;
-  background: $primary-lt;
-  padding: 6px 14px;
-  border-radius: 100px;
-  border: 1px solid rgba($primary, 0.25);
-  white-space: nowrap;
-
-  svg {
-    font-size: 0.82rem;
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// TABS
-// ─────────────────────────────────────────────────────────────────────────────
 .doc-appts-tabs {
   display: flex;
   gap: 4px;
@@ -122,10 +93,7 @@ $shadow-hover: 0 12px 40px rgba(13, 43, 69, 0.14);
   cursor: pointer;
   white-space: nowrap;
   border-radius: $radius-sm $radius-sm 0 0;
-  transition:
-    color 0.18s,
-    border-color 0.18s,
-    background 0.18s;
+  transition: color 0.18s, border-color 0.18s, background 0.18s;
 
   &:hover {
     color: $primary;
@@ -136,147 +104,31 @@ $shadow-hover: 0 12px 40px rgba(13, 43, 69, 0.14);
     color: $primary;
     border-bottom-color: $primary;
     font-weight: 600;
-
-    .doc-appts-tabs__count {
-      background: $primary-lt;
-      color: $primary;
-    }
   }
 }
 
-.doc-appts-tabs__count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  border-radius: 100px;
-  font-size: 0.68rem;
-  font-weight: 600;
-  background: $border;
-  color: $text-muted;
-  transition:
-    background 0.18s,
-    color 0.18s;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// TOOLBAR
-// ─────────────────────────────────────────────────────────────────────────────
-.doc-appts-toolbar {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 0.75rem;
-  flex-wrap: wrap;
-}
-
-// ── Search ───────────────────────────────────────────────────────────────────
-.doc-appts-search {
-  flex: 1;
-  min-width: 200px;
-  position: relative;
-
-  &__icon {
-    position: absolute;
-    left: 13px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: $text-muted;
-    font-size: 0.8rem;
-    pointer-events: none;
-  }
-
-  &__input {
-    width: 100%;
-    padding: 0.55rem 1rem 0.55rem 2.35rem;
-    border: 1px solid $border;
-    border-radius: $radius-sm;
-    font-family: $ff-body;
-    font-size: 0.85rem;
-    color: $text;
-    background: $bg-card;
-    outline: none;
-    transition:
-      border-color 0.18s,
-      box-shadow 0.18s;
-
-    &::placeholder {
-      color: $text-muted;
-    }
-    &:focus {
-      border-color: $primary;
-      box-shadow: 0 0 0 3px rgba($primary, 0.12);
-    }
-  }
-}
-
-// ── Select dropdowns ──────────────────────────────────────────────────────────
-.doc-appts-select-wrap {
-  position: relative;
-  flex-shrink: 0;
-
-  &__icon {
-    position: absolute;
-    left: 11px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: $text-muted;
-    font-size: 0.78rem;
-    pointer-events: none;
-  }
-
-  select {
-    padding: 0.55rem 1rem 0.55rem 2.1rem;
-    border: 1px solid $border;
-    border-radius: $radius-sm;
-    font-family: $ff-body;
-    font-size: 0.85rem;
-    color: $text;
-    background: $bg-card;
-    outline: none;
-    cursor: pointer;
-    appearance: none;
-    transition: border-color 0.18s;
-
-    &:focus {
-      border-color: $primary;
-    }
-  }
-}
-
-// ── Results count ─────────────────────────────────────────────────────────────
 .doc-appts-results-count {
   font-size: 0.8rem;
   color: $text-muted;
-  margin: 0 0 1rem;
 
   strong {
     color: $text;
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// APPOINTMENT LIST
-// ─────────────────────────────────────────────────────────────────────────────
 .doc-appts-list {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// APPOINTMENT ROW
-// ─────────────────────────────────────────────────────────────────────────────
 .doc-appt-row {
   @include card-base;
   display: flex;
   align-items: center;
   gap: 1rem;
   padding: 1rem 1.25rem;
-  transition:
-    box-shadow 0.2s,
-    transform 0.2s;
+  transition: box-shadow 0.2s, transform 0.2s;
 
   &:hover {
     box-shadow: $shadow-hover;
@@ -292,51 +144,51 @@ $shadow-hover: 0 12px 40px rgba(13, 43, 69, 0.14);
   }
 }
 
-// ── Avatar ────────────────────────────────────────────────────────────────────
 .doc-appt-row__avatar {
   width: 46px;
   height: 46px;
   border-radius: 50%;
   color: $white;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.05em;
 }
 
-// ── Patient ───────────────────────────────────────────────────────────────────
 .doc-appt-row__patient {
   flex: 1;
-  min-width: 140px;
+  min-width: 160px;
 }
 
 .doc-appt-row__name {
   font-size: 0.9rem;
   font-weight: 700;
   color: $text;
-  margin: 0 0 5px;
+  margin: 0;
   display: flex;
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
 }
 
-.doc-appt-row__age {
+.doc-appt-row__age, .doc-appt-row__gender {
   font-size: 0.75rem;
   font-weight: 400;
   color: $text-muted;
+  background: $bg-main;
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
-// ── Datetime ──────────────────────────────────────────────────────────────────
 .doc-appt-row__datetime {
   display: flex;
   flex-direction: column;
   gap: 4px;
   flex-shrink: 0;
-  min-width: 130px;
+  min-width: 140px;
 }
 
 .doc-appt-row__date,
@@ -353,10 +205,9 @@ $shadow-hover: 0 12px 40px rgba(13, 43, 69, 0.14);
   }
 }
 
-// ── Status col ────────────────────────────────────────────────────────────────
 .doc-appt-row__status {
   flex-shrink: 0;
-  min-width: 100px;
+  min-width: 120px;
   display: flex;
   justify-content: center;
 
@@ -365,13 +216,13 @@ $shadow-hover: 0 12px 40px rgba(13, 43, 69, 0.14);
   }
 }
 
-// ── Actions ───────────────────────────────────────────────────────────────────
 .doc-appt-row__actions {
   display: flex;
   gap: 7px;
   flex-shrink: 0;
   flex-wrap: wrap;
   justify-content: flex-end;
+  min-width: 220px;
 
   @media (max-width: 900px) {
     justify-content: flex-start;
@@ -379,44 +230,6 @@ $shadow-hover: 0 12px 40px rgba(13, 43, 69, 0.14);
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// TYPE TAG
-// ─────────────────────────────────────────────────────────────────────────────
-.appt-type-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 9px;
-  border-radius: 100px;
-  font-size: 0.7rem;
-  font-weight: 600;
-
-  svg {
-    font-size: 0.62rem;
-  }
-
-  &.type--checkup {
-    background: $primary-lt;
-    color: $primary-dk;
-    border: 1px solid rgba($primary, 0.2);
-  }
-
-  &.type--followup {
-    background: $navy-lt;
-    color: $navy;
-    border: 1px solid rgba($navy, 0.15);
-  }
-
-  &.type--consultation {
-    background: $accent-lt;
-    color: darken($accent, 12%);
-    border: 1px solid rgba($accent, 0.25);
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// STATUS BADGE
-// ─────────────────────────────────────────────────────────────────────────────
 .appt-status-badge {
   display: inline-flex;
   align-items: center;
@@ -431,7 +244,7 @@ $shadow-hover: 0 12px 40px rgba(13, 43, 69, 0.14);
     font-size: 0.65rem;
   }
 
-  &.status--waiting {
+  &.status--pending {
     background: $star-lt;
     color: darken($star, 15%);
     border: 1px solid rgba($star, 0.35);
@@ -443,10 +256,22 @@ $shadow-hover: 0 12px 40px rgba(13, 43, 69, 0.14);
     border: 1px solid rgba($primary, 0.25);
   }
 
+  &.status--processing {
+    background: $purple-lt;
+    color: $purple;
+    border: 1px solid rgba($purple, 0.25);
+  }
+
   &.status--completed {
     background: $green-lt;
     color: $green;
     border: 1px solid rgba($green, 0.25);
+  }
+  
+  &.status--noshow {
+    background: $navy-lt;
+    color: $navy;
+    border: 1px solid rgba($navy, 0.25);
   }
 
   &.status--cancelled {
@@ -456,12 +281,10 @@ $shadow-hover: 0 12px 40px rgba(13, 43, 69, 0.14);
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ACTION BUTTONS
-// ─────────────────────────────────────────────────────────────────────────────
 .doc-appt-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
   padding: 5px 12px;
   border-radius: $radius-sm;
@@ -470,19 +293,21 @@ $shadow-hover: 0 12px 40px rgba(13, 43, 69, 0.14);
   font-weight: 600;
   cursor: pointer;
   border: none;
-  transition:
-    background 0.18s,
-    box-shadow 0.15s,
-    transform 0.12s;
+  transition: background 0.18s, box-shadow 0.15s, transform 0.12s;
 
   svg {
     font-size: 0.68rem;
   }
+  
   &:active {
     transform: scale(0.97);
   }
+  
+  &:disabled {
+    opacity: 0.7;
+    pointer-events: none;
+  }
 
-  // Confirm – teal
   &--confirm {
     background: $primary-lt;
     color: $primary-dk;
@@ -495,7 +320,18 @@ $shadow-hover: 0 12px 40px rgba(13, 43, 69, 0.14);
     }
   }
 
-  // Mark Done – green
+  &--processing {
+    background: $purple-lt;
+    color: $purple;
+    border: 1px solid rgba($purple, 0.3);
+
+    &:hover {
+      background: $purple;
+      color: $white;
+      box-shadow: 0 4px 12px rgba($purple, 0.35);
+    }
+  }
+
   &--done {
     background: $green-lt;
     color: $green;
@@ -508,7 +344,6 @@ $shadow-hover: 0 12px 40px rgba(13, 43, 69, 0.14);
     }
   }
 
-  // Cancel – red
   &--cancel {
     background: $danger-lt;
     color: $danger;
@@ -521,8 +356,7 @@ $shadow-hover: 0 12px 40px rgba(13, 43, 69, 0.14);
     }
   }
 
-  // View Notes – navy
-  &--view {
+  &--noshow {
     background: $navy-lt;
     color: $navy;
     border: 1px solid rgba($navy, 0.2);
@@ -535,9 +369,6 @@ $shadow-hover: 0 12px 40px rgba(13, 43, 69, 0.14);
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// EMPTY STATE
-// ─────────────────────────────────────────────────────────────────────────────
 .doc-appts-empty {
   @include card-base;
   padding: 3.5rem 2rem;
@@ -565,4 +396,83 @@ $shadow-hover: 0 12px 40px rgba(13, 43, 69, 0.14);
   font-size: 0.8rem;
   color: $text-muted;
   margin: 0;
+}
+
+.doc-appts-toolbar {
+  // Đảm bảo toolbar không bóp nghẹt nội dung bên trong
+  overflow: visible !important; 
+}
+
+.doc-appts-date-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  // Wrapper trick: đặt direction: rtl trên wrapper giúp
+  // trình duyệt mở calendar popup về phía bên TRÁI của input
+  // thay vì bên phải — tránh tràn ra ngoài màn hình ở lề phải.
+  .doc-appts-date-filter__input-wrap {
+    direction: rtl;
+
+    input[type="date"] {
+      // Đảo ngược lại direction bên trong để text vẫn hiển thị ltr bình thường
+      direction: ltr;
+      max-width: 160px;
+      cursor: pointer;
+
+      &::-webkit-calendar-picker-indicator {
+        cursor: pointer;
+        padding: 5px;
+        filter: invert(48%) sepia(13%) saturate(3207%) hue-rotate(130deg) brightness(95%) contrast(80%);
+      }
+
+      @media (max-width: 768px) {
+        max-width: 140px;
+      }
+    }
+  }
+
+  // Đảm bảo nút xóa không làm vỡ layout
+  button {
+    flex-shrink: 0;
+  }
+}
+
+// Bổ sung thêm style cho thông tin liên hệ mới thêm vào JSX
+.doc-appt-row__contact-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.pagination {
+  .page-link {
+    color: $text-muted;
+    background-color: $white;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    transition: all 0.2s;
+
+    &:hover {
+      color: $primary;
+      background-color: $primary-lt;
+    }
+
+    &:focus {
+      box-shadow: 0 0 0 0.25rem rgba($primary, 0.25);
+    }
+  }
+
+  .page-item.active .page-link {
+    background-color: $primary;
+    border-color: $primary;
+    color: $white;
+  }
+
+  .page-item.disabled .page-link {
+    color: #94a3b8;
+    background-color: #f8fafc;
+    border-color: #e2e8f0;
+  }
 }
