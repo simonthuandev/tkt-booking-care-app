@@ -146,7 +146,7 @@ export const timeSlotService = {
   adminDeleteTimeSlot: (id) => axiosInstance.delete(`/admin/timeslots/${id}`),
 
   // Admin: Xóa hàng loạt theo ngày (nếu chưa ai đặt)
-  adminBulkDeleteTimeSlots: (params = {}) => axiosInstance.delete("/admin/timeslots/bulk", { params }),
+  adminBulkDeleteTimeSlots: (data = {}) => axiosInstance.delete("/admin/timeslots/bulk", { data }),
 };
 
 // ==========================================

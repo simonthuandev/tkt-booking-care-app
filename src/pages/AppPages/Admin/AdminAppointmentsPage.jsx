@@ -17,6 +17,7 @@ import {
   FaHospital,
   FaChevronLeft,
   FaChevronRight,
+  FaStethoscope,
 } from "react-icons/fa";
 import { appointmentService } from "../../../api/appService";
 import LoadingSpinner from "../../../components/Common/LoadingSpinner";
@@ -30,9 +31,18 @@ const PAGE_LIMIT = 12;
 const STATUS_CFG = {
   pending: { label: "Pending", color: "#f5a623", bg: "#fff8e6", icon: FaClock },
   confirmed: { label: "Confirmed", color: "#0ba3a3", bg: "#e6f7f7", icon: FaCheckCircle },
+  processing: { label: "Processing", color: "#3b82f6", bg: "#eff6ff", icon: FaStethoscope },
   completed: { label: "Completed", color: "#1a9e5c", bg: "#e6f9f0", icon: FaCheckDouble },
-  // no_show: { label: "No_show", color: "#1a9e5c", bg: "#e6f9f0", icon: FaCheckDouble },
+  no_show: { label: "No show", color: "#6b7280", bg: "#f3f4f6", icon: FaBan },
   cancelled: { label: "Cancelled", color: "#e24b4a", bg: "#fef2f2", icon: FaTimesCircle },
+};
+
+const TERMINAL_STATUSES = ["completed", "cancelled", "no_show"];
+
+const ADMIN_NEXT_STATUSES = {
+  pending: ["confirmed", "cancelled"],
+  confirmed: ["processing", "cancelled"],
+  processing: ["completed", "no_show", "cancelled"],
 };
 
 const PAYMENT_STATUS_CFG = {
@@ -71,6 +81,7 @@ const AppointmentRow = ({ appt, onView, onEditStatus, onCancel }) => {
   const StatusIcon = statusCfg.icon;
 
   const paymentStatus = PAYMENT_STATUS_CFG[appt.paymentStatus] || PAYMENT_STATUS_CFG.pending;
+  const isTerminal = TERMINAL_STATUSES.includes(appt.status);
 
   return (
     <div className="appt-row">
@@ -121,10 +132,12 @@ const AppointmentRow = ({ appt, onView, onEditStatus, onCancel }) => {
         <button className="appt-btn appt-btn--view" onClick={() => onView(appt)} title="View Detail">
           <FaEye />
         </button>
-        <button className="appt-btn appt-btn--edit" onClick={() => onEditStatus(appt)} title="Change Status">
-          <FaEdit />
-        </button>
-        {appt.status !== 'cancelled' && (
+        {!isTerminal && (
+          <button className="appt-btn appt-btn--edit" onClick={() => onEditStatus(appt)} title="Change Status">
+            <FaEdit />
+          </button>
+        )}
+        {!isTerminal && (
           <button className="appt-btn appt-btn--ban" onClick={() => onCancel(appt)} title="Force Cancel">
             <FaBan />
           </button>
@@ -138,9 +151,10 @@ const AppointmentRow = ({ appt, onView, onEditStatus, onCancel }) => {
 // SUB-COMPONENT: StatusModal
 // ─────────────────────────────────────────────────────────────────────────────
 const StatusModal = ({ appt, onSave, onClose, saving }) => {
+  const [status, setStatus] = useState(appt?.status || "pending");
   if (!appt) return null;
-  const [status, setStatus] = useState(appt.status || "pending");
   const currentStatusCfg = STATUS_CFG[appt.status] || STATUS_CFG.pending;
+  const statusOptions = ADMIN_NEXT_STATUSES[appt.status] || [];
 
   return (
     <>
@@ -162,14 +176,18 @@ const StatusModal = ({ appt, onSave, onClose, saving }) => {
               </div>
               <label className="form-label">New Status</label>
               <select className="form-select" value={status} onChange={e => setStatus(e.target.value)} disabled={saving}>
-                {Object.entries(STATUS_CFG).map(([key, cfg]) => (
+                <option value={appt.status}>{currentStatusCfg.label}</option>
+                {statusOptions.map((key) => {
+                  const cfg = STATUS_CFG[key];
+                  return (
                   <option key={key} value={key}>{cfg.label}</option>
-                ))}
+                  );
+                })}
               </select>
             </div>
             <div className="modal-footer border-0 pt-0">
               <button className="btn btn-light border w-100 mb-2" onClick={onClose} disabled={saving}>Cancel</button>
-              <button className="btn btn-save w-100 m-0" onClick={() => onSave(appt.id, status)} disabled={saving}>
+              <button className="btn btn-save w-100 m-0" onClick={() => onSave(appt.id, status)} disabled={saving || status === appt.status}>
                 {saving ? "Saving..." : "Save Status"}
               </button>
             </div>
@@ -184,8 +202,8 @@ const StatusModal = ({ appt, onSave, onClose, saving }) => {
 // SUB-COMPONENT: CancelModal
 // ─────────────────────────────────────────────────────────────────────────────
 const CancelModal = ({ appt, onConfirm, onClose, saving }) => {
-  if (!appt) return null;
   const [cancelReason, setCancelReason] = useState("");
+  if (!appt) return null;
 
   return (
     <>
@@ -614,18 +632,22 @@ export default function AdminAppointmentsPage() {
         appt={modal === "view" ? selectedAppt : null}
         onClose={closeModal}
       />
-      <StatusModal
-        appt={modal === "status" ? selectedAppt : null}
-        onSave={handleSaveStatus}
-        onClose={closeModal}
-        saving={saving}
-      />
-      <CancelModal
-        appt={modal === "cancel" ? selectedAppt : null}
-        onConfirm={handleConfirmCancel}
-        onClose={closeModal}
-        saving={saving}
-      />
+      {modal === "status" && (
+        <StatusModal
+          appt={selectedAppt}
+          onSave={handleSaveStatus}
+          onClose={closeModal}
+          saving={saving}
+        />
+      )}
+      {modal === "cancel" && (
+        <CancelModal
+          appt={selectedAppt}
+          onConfirm={handleConfirmCancel}
+          onClose={closeModal}
+          saving={saving}
+        />
+      )}
     </div>
   );
 }

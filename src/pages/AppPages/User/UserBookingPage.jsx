@@ -186,10 +186,30 @@ const UserBookingPage = () => {
     }
   };
 
-  const handlePayAtCounter = () => {
-    toast.success("Đặt lịch thành công. Bạn có thể thanh toán trực tiếp tại quầy.");
-    setShowPaymentModal(false);
-    navigate("/app/user/appointments");
+  const handlePayAtCounter = async () => {
+    if (!createdAppointmentId) {
+      toast.error("Không tìm thấy mã lịch hẹn để ghi nhận thanh toán tại quầy.");
+      return;
+    }
+
+    setIsProcessingPayment(true);
+    try {
+      await paymentService.createPaymentUrl({
+        appointmentId: createdAppointmentId,
+        provider: "cash",
+      });
+      toast.success("Đặt lịch thành công. Bạn có thể thanh toán trực tiếp tại quầy.");
+      setShowPaymentModal(false);
+      navigate("/app/user/appointments");
+    } catch (err) {
+      console.error("Lỗi ghi nhận thanh toán tại quầy:", err);
+      toast.error(
+        err?.response?.data?.message ||
+          "Không thể ghi nhận hình thức thanh toán tại quầy. Vui lòng thử lại."
+      );
+    } finally {
+      setIsProcessingPayment(false);
+    }
   };
 
   // Doctor derived values

@@ -3,7 +3,7 @@
 // Bootstrap Modal (React state controlled)
 // Align đầy đủ với CreateDoctorDto & UpdateDoctorDto (Admin)
 // ─────────────────────────────────────────────────────────────────────────────
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import ReactPaginate from "react-paginate";
 import {
   FaUserMd,
@@ -844,6 +844,12 @@ export default function AdminDoctorsPage() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState(null);
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [filterSpecialtyId, setFilterSpecialtyId] = useState("");
+  const [filterHospitalId, setFilterHospitalId] = useState("");
+  const [filterActive, setFilterActive] = useState("");
+  const [filterVerified, setFilterVerified] = useState("");
 
   // ── Fetch options (chạy 1 lần) ───────────────────────────────────────────
   useEffect(() => {
@@ -859,11 +865,21 @@ export default function AdminDoctorsPage() {
   }, []);
 
   // ── Fetch danh sách bác sĩ ───────────────────────────────────────────────
-  const fetchDoctors = (page) => {
+  const fetchDoctors = useCallback((page) => {
     setIsLoading(true);
     setError(null);
+    const params = {
+      page: page + 1,
+      limit: PAGE_LIMIT,
+      ...(search.trim() && { search: search.trim() }),
+      ...(filterSpecialtyId && { specialtyId: filterSpecialtyId }),
+      ...(filterHospitalId && { hospitalId: filterHospitalId }),
+      ...(filterActive !== "" && { isActive: filterActive }),
+      ...(filterVerified !== "" && { isVerified: filterVerified }),
+    };
+
     doctorService
-      .adminGetDoctors({ page: page + 1, limit: PAGE_LIMIT })
+      .adminGetDoctors(params)
       .then((res) => {
         setDoctors(res.data?.data ?? []);
         setMeta(res.data?.meta ?? {});
@@ -873,11 +889,17 @@ export default function AdminDoctorsPage() {
         setError("Không thể tải danh sách bác sĩ.");
       })
       .finally(() => setIsLoading(false));
-  };
+  }, [filterActive, filterHospitalId, filterSpecialtyId, filterVerified, search]);
 
   useEffect(() => {
     fetchDoctors(currentPage);
-  }, [currentPage]);
+  }, [currentPage, fetchDoctors]);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setCurrentPage(0);
+    setSearch(searchInput);
+  };
 
   // ── Helpers map doc detail → form state ──────────────────────────────────
   const docToForm = (doc) => ({
@@ -1023,6 +1045,98 @@ export default function AdminDoctorsPage() {
       {error && (
         <div className="alert alert-danger" role="alert">{error}</div>
       )}
+
+      <div className="card shadow-sm border-0 mb-4 p-3 bg-white">
+        <div className="row g-2 align-items-center">
+          <div className="col-12 col-xl-3">
+            <form onSubmit={handleSearchSubmit} className="input-group">
+              <input
+                className="form-control"
+                placeholder="Tìm tên hoặc email bác sĩ..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+              />
+              <button className="btn btn-primary" type="submit">Tìm</button>
+            </form>
+          </div>
+          <div className="col-12 col-md-6 col-xl-2">
+            <select
+              className="form-select"
+              value={filterSpecialtyId}
+              onChange={(e) => {
+                setFilterSpecialtyId(e.target.value);
+                setCurrentPage(0);
+              }}
+            >
+              <option value="">Tất cả chuyên khoa</option>
+              {specialties.map((spec) => (
+                <option key={spec.id} value={spec.id}>{spec.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="col-12 col-md-6 col-xl-2">
+            <select
+              className="form-select"
+              value={filterHospitalId}
+              onChange={(e) => {
+                setFilterHospitalId(e.target.value);
+                setCurrentPage(0);
+              }}
+            >
+              <option value="">Tất cả cơ sở</option>
+              {hospitals.map((hosp) => (
+                <option key={hosp.id} value={hosp.id}>{hosp.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="col-12 col-md-4 col-xl-2">
+            <select
+              className="form-select"
+              value={filterActive}
+              onChange={(e) => {
+                setFilterActive(e.target.value);
+                setCurrentPage(0);
+              }}
+            >
+              <option value="">Tất cả hoạt động</option>
+              <option value="true">Đang hoạt động</option>
+              <option value="false">Ngừng hoạt động</option>
+            </select>
+          </div>
+          <div className="col-12 col-md-4 col-xl-2">
+            <select
+              className="form-select"
+              value={filterVerified}
+              onChange={(e) => {
+                setFilterVerified(e.target.value);
+                setCurrentPage(0);
+              }}
+            >
+              <option value="">Tất cả xác thực</option>
+              <option value="true">Đã xác thực</option>
+              <option value="false">Chưa xác thực</option>
+            </select>
+          </div>
+          {(search || filterSpecialtyId || filterHospitalId || filterActive || filterVerified) && (
+            <div className="col-12 col-md-4 col-xl-1">
+              <button
+                className="btn btn-light border w-100"
+                onClick={() => {
+                  setSearch("");
+                  setSearchInput("");
+                  setFilterSpecialtyId("");
+                  setFilterHospitalId("");
+                  setFilterActive("");
+                  setFilterVerified("");
+                  setCurrentPage(0);
+                }}
+              >
+                Xóa
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Grid */}
       {isLoading ? (
