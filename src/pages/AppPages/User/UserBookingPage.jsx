@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router";
+import { toast } from "react-toastify";
 import {
   FaUserDoctor,
   FaHospital,
@@ -17,7 +18,7 @@ import {
   FaCreditCard,
   FaMoneyBillWave,
 } from "react-icons/fa6";
-import { patientProfileService, appointmentService } from "../../../api/appService" 
+import { patientProfileService, appointmentService, paymentService } from "../../../api/appService";
 import LoadingSpinner from "../../../components/Common/LoadingSpinner";
 import "./UserBookingPage.scss";
 
@@ -46,7 +47,7 @@ function formatGender(g) {
 }
 
 /* ── Payment Modal ──────────────────────────────────────── */
-const PaymentModal = ({ onClose, appointmentId }) => {
+const PaymentModal = ({ onClose, appointmentId, onPayOnline, onPayAtCounter, isProcessingPayment }) => {
   return (
     <div className="ubp-modal-overlay" onClick={onClose}>
       <div className="ubp-modal" onClick={(e) => e.stopPropagation()}>
@@ -61,16 +62,26 @@ const PaymentModal = ({ onClose, appointmentId }) => {
         <p className="ubp-modal-subtitle">Bạn muốn thanh toán bằng hình thức nào?</p>
 
         <div className="ubp-payment-options">
-          <button className="ubp-payment-btn online">
+          <button
+            className="ubp-payment-btn online"
+            onClick={onPayOnline}
+            disabled={isProcessingPayment}
+          >
             <span className="ubp-payment-icon"><FaCreditCard /></span>
             <div className="ubp-payment-info">
-              <span className="ubp-payment-label">Thanh toán online</span>
-              <span className="ubp-payment-desc">Chuyển khoản, ví điện tử, thẻ ngân hàng</span>
+              <span className="ubp-payment-label">
+                {isProcessingPayment ? "Đang tạo link thanh toán..." : "Thanh toán online"}
+              </span>
+              <span className="ubp-payment-desc">Thanh toán an toàn qua VNPAY</span>
             </div>
             <FaChevronRight className="ubp-payment-arrow" />
           </button>
 
-          <button className="ubp-payment-btn counter">
+          <button
+            className="ubp-payment-btn counter"
+            onClick={onPayAtCounter}
+            disabled={isProcessingPayment}
+          >
             <span className="ubp-payment-icon"><FaMoneyBillWave /></span>
             <div className="ubp-payment-info">
               <span className="ubp-payment-label">Thanh toán tại quầy</span>
@@ -103,6 +114,7 @@ const UserBookingPage = () => {
   const [submitError, setSubmitError] = useState(null);
   const [createdAppointmentId, setCreatedAppointmentId] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   // Fetch patient profiles
   useEffect(() => {
@@ -142,6 +154,42 @@ const UserBookingPage = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handlePayOnline = async () => {
+    if (!createdAppointmentId) {
+      toast.error("Không tìm thấy mã lịch hẹn để thanh toán.");
+      return;
+    }
+
+    setIsProcessingPayment(true);
+    try {
+      const response = await paymentService.createPaymentUrl({
+        appointmentId: createdAppointmentId,
+        provider: "vn_pay",
+      });
+
+      const payUrl = response.data?.payUrl;
+      if (!payUrl) {
+        throw new Error("Không nhận được link thanh toán từ hệ thống.");
+      }
+
+      window.location.href = payUrl;
+    } catch (err) {
+      console.error("Lỗi tạo link thanh toán:", err);
+      toast.error(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Không thể tạo link thanh toán. Vui lòng thử lại."
+      );
+      setIsProcessingPayment(false);
+    }
+  };
+
+  const handlePayAtCounter = () => {
+    toast.success("Đặt lịch thành công. Bạn có thể thanh toán trực tiếp tại quầy.");
+    setShowPaymentModal(false);
+    navigate("/app/user/appointments");
   };
 
   // Doctor derived values
@@ -354,6 +402,9 @@ const UserBookingPage = () => {
       {showPaymentModal && (
         <PaymentModal
           appointmentId={createdAppointmentId}
+          isProcessingPayment={isProcessingPayment}
+          onPayOnline={handlePayOnline}
+          onPayAtCounter={handlePayAtCounter}
           onClose={() => {
             setShowPaymentModal(false);
             navigate("/app/user/appointments");

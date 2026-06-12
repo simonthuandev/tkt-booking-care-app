@@ -33,6 +33,7 @@ import {
   hospitalService,
   specialtyService,
 } from "../../../api/appService";
+import ImageUploadField from "../../../components/Common/ImageUploadField";
 import LoadingSpinner from "../../../components/Common/LoadingSpinner";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -445,24 +446,13 @@ const DoctorFormModal = ({
                 </div>
 
                 <div className="col-md-6">
-                  <label className="form-label">Ảnh đại diện bác sĩ (imgURL)</label>
-                  <div className="d-flex gap-2 align-items-center">
-                    <input
-                      className="form-control"
-                      name="imgURL"
-                      value={form.imgURL}
-                      onChange={onChange}
-                      placeholder="https://..."
-                    />
-                    {form.imgURL && (
-                      <img
-                        src={form.imgURL}
-                        alt="preview"
-                        className="avatar-preview"
-                        onError={(e) => { e.target.style.display = "none"; }}
-                      />
-                    )}
-                  </div>
+                  <ImageUploadField
+                    label="Ảnh đại diện bác sĩ (imgURL)"
+                    value={form.imgURL}
+                    uploadType="doctors"
+                    onChange={(imgURL) => onFormChange({ ...form, imgURL })}
+                    disabled={saving}
+                  />
                 </div>
 
                 <div className="col-md-6">
@@ -723,17 +713,21 @@ const DoctorViewModal = ({ doc, onEdit, onClose }) => {
                   { icon: FaCalendarAlt, label: "Kinh nghiệm", val: doc.experience != null ? `${doc.experience} năm` : "—" },
                   { icon: FaStar, label: "Đánh giá", val: doc.rating ?? "Chưa có" },
                   { icon: FaMoneyBillWave, label: "Phí tư vấn", val: `₫${Number(doc.consultationFee || 0).toLocaleString()}` },
-                ].map(({ icon: Icon, label, val }) => (
-                  <div key={label} className="col-md-6">
-                    <div className="view-info-item">
-                      <Icon className="view-info-icon" />
-                      <div>
-                        <p className="view-info-label">{label}</p>
-                        <p className="view-info-val">{val}</p>
+                ].map((item) => {
+                  const InfoIcon = item.icon;
+
+                  return (
+                    <div key={item.label} className="col-md-6">
+                      <div className="view-info-item">
+                        <InfoIcon className="view-info-icon" />
+                        <div>
+                          <p className="view-info-label">{item.label}</p>
+                          <p className="view-info-val">{item.val}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Information */}

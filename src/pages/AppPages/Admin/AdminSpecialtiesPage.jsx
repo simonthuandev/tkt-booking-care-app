@@ -16,6 +16,7 @@ import {
 } from "react-icons/fa";
 import "./AdminSpecialtiesPage.scss";
 import { specialtyService } from "../../../api/appService";
+import ImageUploadField from "../../../components/Common/ImageUploadField";
 import LoadingSpinner from "../../../components/Common/LoadingSpinner";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -132,11 +133,13 @@ const SpecialtyFormModal = ({
                 </div>
 
                 <div className="col-12">
-                  <label className="form-label">Hình ảnh minh họa (URL)</label>
-                  <div className="d-flex gap-2">
-                    {form.imgURL && <img src={form.imgURL} alt="Preview" className="avatar-preview rounded" style={{width: 36, height: 36, objectFit: "cover"}} />}
-                    <input type="text" className="form-control" name="imgURL" value={form.imgURL} onChange={onChange} placeholder="https://..." />
-                  </div>
+                  <ImageUploadField
+                    label="Hình ảnh minh họa"
+                    value={form.imgURL}
+                    uploadType="specialties"
+                    onChange={(imgURL) => onFormChange({ ...form, imgURL })}
+                    disabled={saving}
+                  />
                 </div>
 
                 <div className="col-12">
