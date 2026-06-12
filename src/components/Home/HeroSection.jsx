@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Container } from "react-bootstrap";
 import { BsShieldFillCheck } from "react-icons/bs";
 import { FaSearch, FaCalendarCheck } from "react-icons/fa";
 import { FaLocationDot, FaFaceSmile } from "react-icons/fa6";
 import StarRating from "../Common/StarRating";
 import DynamicIcon from "../Icons/DynamicIcon";
-import { Link } from "react-router-dom";
-import { toSlug } from "../../utils/helpers";
+import { Link, useNavigate } from "react-router-dom";
+import { doctorService, hospitalService, specialtyService } from "../../api/appService";
 
 const tabs = [
   { key: "doctor", icon: "bsPersonBadgeFill", label: "Bác sĩ" },
@@ -14,8 +14,113 @@ const tabs = [
   { key: "hospital", icon: "faHospital", label: "Bệnh viện" },
 ];
 
-export default function HeroSection() {
+const FALLBACK_QUICK_TAGS = ["Tim mạch", "Nha khoa", "Nhi khoa", "Da liễu", "Mắt"];
+const DEFAULT_AVATAR =
+  "https://ui-avatars.com/api/?background=0fa39b&color=fff&size=200&name=";
+const FALLBACK_DOCTOR = {
+  slug: "",
+  name: "BS. Nguyễn Thị Lan",
+  avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+  specialty: "Tim mạch",
+  hospital: "BV Chợ Rẫy",
+  rating: 4.8,
+  totalReviews: 320,
+};
+
+const formatNumber = (value, fallback) =>
+  value === undefined || value === null ? fallback : value.toLocaleString("vi-VN");
+
+const getDoctorName = (doctor) => {
+  const fullName = `${doctor?.user?.lastName || ""} ${doctor?.user?.firstName || ""}`.trim();
+  return fullName || FALLBACK_DOCTOR.name;
+};
+
+const mapFeaturedDoctor = (doctor) => {
+  if (!doctor) return FALLBACK_DOCTOR;
+
+  const name = getDoctorName(doctor);
+  const specialty =
+    doctor.specialties?.find((item) => item.isPrimary)?.specialty?.name ||
+    doctor.specialties?.[0]?.specialty?.name ||
+    "Chưa cập nhật";
+  const hospital = doctor.hospitals?.[0]?.hospital?.name || "Chưa cập nhật";
+
+  return {
+    slug: doctor.slug || "",
+    name,
+    avatar: doctor.imgURL || doctor.user?.avatar || `${DEFAULT_AVATAR}${encodeURIComponent(name)}`,
+    specialty,
+    hospital,
+    rating: doctor.rating || 0,
+    totalReviews: doctor.totalReviews || 0,
+  };
+};
+
+export default function HeroSection({ stats }) {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("doctor");
+  const [searchInput, setSearchInput] = useState("");
+  const [selectedCity, setSelectedCity] = useState("");
+  const [cities, setCities] = useState([]);
+  const [quickTags, setQuickTags] = useState(FALLBACK_QUICK_TAGS);
+  const [featuredDoctor, setFeaturedDoctor] = useState(FALLBACK_DOCTOR);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    specialtyService
+      .specialties({ page: 1, limit: 5 })
+      .then((res) => {
+        if (!isMounted) return;
+        const names = (res.data?.data || []).map((item) => item.name).filter(Boolean);
+        if (names.length > 0) setQuickTags(names);
+      })
+      .catch((err) => console.error("Lỗi lấy chuyên khoa tìm nhanh:", err));
+
+    hospitalService
+      .getCities()
+      .then((res) => {
+        if (!isMounted) return;
+        setCities(res.data?.data || []);
+      })
+      .catch((err) => console.error("Lỗi lấy danh sách thành phố:", err));
+
+    doctorService
+      .doctors({ page: 1, limit: 1 })
+      .then((res) => {
+        if (!isMounted) return;
+        setFeaturedDoctor(mapFeaturedDoctor(res.data?.data?.[0]));
+      })
+      .catch((err) => console.error("Lỗi lấy bác sĩ nổi bật:", err));
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const heroNumbers = useMemo(
+    () => ({
+      doctors: formatNumber(stats?.doctors?.total, "0"),
+      hospitals: formatNumber(stats?.hospitals?.total, "0"),
+      todayAppointments: formatNumber(stats?.appointments?.today, "0"),
+      satisfactionRate: formatNumber(stats?.reviews?.satisfactionRate, "0"),
+    }),
+    [stats],
+  );
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    const keyword = searchInput.trim();
+
+    if (!keyword) {
+      navigate("/search");
+      return;
+    }
+
+    const params = new URLSearchParams({ q: keyword, type: activeTab });
+    if (selectedCity) params.set("city", selectedCity);
+    navigate(`/search?${params.toString()}`);
+  };
 
   return (
     <section className="hero-section" id="home">
@@ -24,7 +129,6 @@ export default function HeroSection() {
 
       <Container>
         <div className="row align-items-center min-vh-100 pt-5">
-          {/* Left */}
           <div className="col-lg-6 hero-content">
             <div className="hero-badge">
               <BsShieldFillCheck className="me-2" />
@@ -38,17 +142,17 @@ export default function HeroSection() {
             </h1>
 
             <p className="hero-desc">
-              Kết nối bạn với hơn <strong>5.000+ bác sĩ</strong> chuyên khoa và{" "}
-              <strong>200+ bệnh viện</strong> trên toàn quốc. Đặt lịch trong 60
+              Kết nối bạn với hơn <strong>{heroNumbers.doctors}+ bác sĩ</strong> chuyên khoa và{" "}
+              <strong>{heroNumbers.hospitals}+ bệnh viện</strong> trên toàn quốc. Đặt lịch trong 60
               giây, nhận xác nhận ngay lập tức.
             </p>
 
-            {/* Search box */}
-            <div className="hero-search-box">
+            <form className="hero-search-box" onSubmit={handleSearchSubmit}>
               <div className="search-tabs">
                 {tabs.map(({ key, icon, label }) => (
                   <button
                     key={key}
+                    type="button"
                     className={`stab${activeTab === key ? " active" : ""}`}
                     onClick={() => setActiveTab(key)}
                   >
@@ -64,71 +168,80 @@ export default function HeroSection() {
                   <input
                     type="text"
                     placeholder="Tìm bác sĩ, chuyên khoa, bệnh viện..."
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
                   />
                 </div>
                 <div className="si-group si-location">
                   <FaLocationDot />
-                  <select>
-                    <option>Hồ Chí Minh</option>
-                    <option>Hà Nội</option>
-                    <option>Đà Nẵng</option>
-                    <option>Cần Thơ</option>
+                  <select
+                    value={selectedCity}
+                    onChange={(e) => setSelectedCity(e.target.value)}
+                    aria-label="Lọc theo thành phố"
+                  >
+                    <option value="">Tất cả thành phố</option>
+                    {cities.map((city) => (
+                      <option key={city} value={city}>
+                        {city}
+                      </option>
+                    ))}
                   </select>
                 </div>
-                <Link className="btn-search-go" to="/search">
+                <button className="btn-search-go" type="submit">
                   <FaSearch className="me-2" />
                   Tìm kiếm
-                </Link>
+                </button>
               </div>
-            </div>
+            </form>
 
-            {/* Quick tags */}
             <div className="quick-tags">
               <span className="qt-label">Tìm nhanh:</span>
-              {["Tim mạch", "Nha khoa", "Nhi khoa", "Da liễu", "Mắt"].map(
-                (t) => (
-                  <Link
-                    key={t}
-                    to={`/search?q=${encodeURIComponent(t)}`}
-                    className="qt"
-                  >
-                    {t}
-                  </Link>
-                ),
-              )}
+              {quickTags.map((tag) => (
+                <Link
+                  key={tag}
+                  to={`/search?q=${encodeURIComponent(tag)}&type=specialty`}
+                  className="qt"
+                >
+                  {tag}
+                </Link>
+              ))}
             </div>
           </div>
 
-          {/* Right visual */}
           <div className="col-lg-6 hero-visual d-none d-lg-flex justify-content-center">
             <div className="hero-card-stack">
               <div className="hcard hcard-main">
                 <div className="hcard-avatar">
-                  <img
-                    src="https://randomuser.me/api/portraits/women/44.jpg"
-                    alt="Doctor"
-                  />
+                  <img src={featuredDoctor.avatar} alt={featuredDoctor.name} />
                   <div className="hcard-status" />
                 </div>
                 <div className="hcard-info">
-                  <div className="hcard-name">BS. Nguyễn Thị Lan</div>
-                  <div className="hcard-spec">Tim mạch – BV Chợ Rẫy</div>
+                  <div className="hcard-name">{featuredDoctor.name}</div>
+                  <div className="hcard-spec">
+                    {featuredDoctor.specialty} – {featuredDoctor.hospital}
+                  </div>
                   <div className="hcard-stars">
-                    <StarRating rating={4.8} half={true} />
-                    <span>4.8 (320 đánh giá)</span>
+                    <StarRating rating={featuredDoctor.rating} half={true} />
+                    <span>
+                      {featuredDoctor.rating} ({featuredDoctor.totalReviews} đánh giá)
+                    </span>
                   </div>
                 </div>
-                <button className="hcard-btn">
-                  <Link to={`/doctors/${toSlug("BS . Nguyễn Thị Lan")}`}>
+                {featuredDoctor.slug ? (
+                  <Link to={`/doctors/${featuredDoctor.slug}`} className="hcard-btn">
                     Xem bác sĩ
                   </Link>
-                </button>
+                ) : (
+                  <Link to="/doctors" className="hcard-btn">
+                    Xem bác sĩ
+                  </Link>
+                )}
               </div>
 
               <div className="hfloat hfloat-1">
                 <FaCalendarCheck />
                 <div>
-                  <div className="hf-num">1,240</div>
+                  <div className="hf-num">{heroNumbers.todayAppointments}</div>
                   <div className="hf-lbl">Lịch hôm nay</div>
                 </div>
               </div>
@@ -136,7 +249,7 @@ export default function HeroSection() {
               <div className="hfloat hfloat-2">
                 <FaFaceSmile />
                 <div>
-                  <div className="hf-num">98%</div>
+                  <div className="hf-num">{heroNumbers.satisfactionRate}%</div>
                   <div className="hf-lbl">Hài lòng</div>
                 </div>
               </div>
