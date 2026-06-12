@@ -82,7 +82,7 @@ const LoginPage = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="ten@gmail.com"
+                placeholder="example@gmail.com"
               />
             </div>
           </div>
@@ -136,7 +136,7 @@ const LoginPage = () => {
           </button>
 
           <p className="auth-switch">
-            Chưa có tài khoản?{" "}
+            Chưa có tài khoản?
             <Link to="/auth/register">
               <FaUserPlus /> Đăng ký ngay
             </Link>

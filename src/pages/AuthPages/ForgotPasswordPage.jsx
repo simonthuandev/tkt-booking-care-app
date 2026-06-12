@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { FaArrowRight, FaRegEnvelope } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import authService from "../../api/authService";
 import { BrandLogo } from "../../components/Common/BrandLogo";
 import "./LoginPage.scss";
 
@@ -41,7 +44,7 @@ const ForgotPasswordPage = () => {
       </section>
 
       <section className="auth-panel">
-        <div className="auth-card auth-card--compact">
+        <form className="auth-card auth-card--compact" onSubmit={handleSubmit}>
           <div className="auth-card__brand">
             <BrandLogo />
           </div>
@@ -58,20 +61,31 @@ const ForgotPasswordPage = () => {
               <input
                 id="reset-email"
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="ten@gmail.com"
+                required
               />
             </div>
           </div>
 
-          <button type="button" className="auth-primary-btn">
-            <span>Tiếp tục</span>
+          <button type="submit" className="auth-primary-btn" disabled={loading}>
+            <span>{loading ? "Đang xử lý..." : "Tiếp tục"}</span>
             <FaArrowRight />
           </button>
+
+          {devLink && (
+            <div className="alert alert-info mt-3 mb-0" style={{ wordBreak: "break-all" }}>
+              <strong>Dev reset link:</strong>
+              <br />
+              <Link to={devLink.replace(window.location.origin, "")}>{devLink}</Link>
+            </div>
+          )}
 
           <p className="auth-switch">
             <Link to="/auth/login">Quay lại trang đăng nhập</Link>
           </p>
-        </div>
+        </form>
       </section>
     </main>
   );

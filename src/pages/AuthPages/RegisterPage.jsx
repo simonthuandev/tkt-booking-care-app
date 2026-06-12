@@ -119,7 +119,7 @@ export default function RegisterInvite() {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="An"
+                  placeholder="Van A"
                 />
               </div>
             </div>
@@ -135,7 +135,7 @@ export default function RegisterInvite() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="ten@gmail.com"
+                placeholder="example@gmail.com"
               />
             </div>
           </div>

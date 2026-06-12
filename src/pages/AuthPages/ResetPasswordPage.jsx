@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FaEye } from "react-icons/fa";
 import { Link, useNavigate, useParams } from "react-router";
 import { toast } from "react-toastify";
 import authService from "../../api/authService";
@@ -9,6 +10,8 @@ const ResetPasswordPage = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState({ newPassword: "", confirmPassword: "" });
   const [loading, setLoading] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,24 +48,44 @@ const ResetPasswordPage = () => {
 
         <div className="mb-3">
           <label className="form-label fw-semibold text-secondary">Mật khẩu mới</label>
-          <input
-            type="password"
-            value={form.newPassword}
-            onChange={(e) => setForm((prev) => ({ ...prev, newPassword: e.target.value }))}
-            className="form-control"
-            required
-          />
+          <div className="position-relative">
+            <input
+              type={showNewPassword ? "text" : "password"}
+              value={form.newPassword}
+              onChange={(e) => setForm((prev) => ({ ...prev, newPassword: e.target.value }))}
+              className="form-control pe-5"
+              required
+            />
+            <button
+              type="button"
+              className="auth-icon-btn position-absolute top-50 end-0 translate-middle-y me-2"
+              onClick={() => setShowNewPassword((value) => !value)}
+              aria-label={showNewPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+            >
+              <FaEye />
+            </button>
+          </div>
         </div>
 
         <div className="mb-4">
           <label className="form-label fw-semibold text-secondary">Xác nhận mật khẩu</label>
-          <input
-            type="password"
-            value={form.confirmPassword}
-            onChange={(e) => setForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
-            className="form-control"
-            required
-          />
+          <div className="position-relative">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              value={form.confirmPassword}
+              onChange={(e) => setForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+              className="form-control pe-5"
+              required
+            />
+            <button
+              type="button"
+              className="auth-icon-btn position-absolute top-50 end-0 translate-middle-y me-2"
+              onClick={() => setShowConfirmPassword((value) => !value)}
+              aria-label={showConfirmPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+            >
+              <FaEye />
+            </button>
+          </div>
         </div>
 
         <button className="btn-search-go" disabled={loading}>
