@@ -19,8 +19,9 @@ export const login = createAsyncThunk(
   "auth/login",
   async (data, { rejectWithValue }) => {
     try {
-      const res = await authService.login(data);
-      return res.data.user;
+      await authService.login(data);
+      const me = await authService.getMe();
+      return me.data.user;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message ?? "Email hoặc mật khẩu không chính xác"
@@ -33,8 +34,9 @@ export const register = createAsyncThunk(
   "auth/register",
   async (data, { rejectWithValue }) => {
     try {
-      const res = await authService.register(data);
-      return res.data.user;
+      await authService.register(data);
+      const me = await authService.getMe();
+      return me.data.user;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message ?? "Đăng ký thất bại"
@@ -61,6 +63,20 @@ export const logoutAll = createAsyncThunk(
       await authService.logoutAll();
     } catch (error) {
       return rejectWithValue(error.response?.data?.message ?? "Đăng xuất thất bại");
+    }
+  }
+);
+
+export const updateCurrentUserProfile = createAsyncThunk(
+  "auth/updateCurrentUserProfile",
+  async (data, { rejectWithValue }) => {
+    try {
+      const res = await authService.updateMeProfile(data);
+      return res.data.user;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message ?? "Cập nhật thông tin thất bại"
+      );
     }
   }
 );
@@ -156,6 +172,22 @@ const authSlice = createSlice({
       .addCase(logoutAll.pending, (state) => { state.isLoading = true; })
       .addCase(logoutAll.fulfilled, handleLogout)
       .addCase(logoutAll.rejected, handleLogout);
+
+    // ── update profile ───────────────────────────────────────────────────
+    builder
+      .addCase(updateCurrentUserProfile.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(updateCurrentUserProfile.fulfilled, (state, action) => {
+        state.user = action.payload;
+        state.isAuthenticated = true;
+        state.isLoading = false;
+      })
+      .addCase(updateCurrentUserProfile.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      });
   },
 });
 
