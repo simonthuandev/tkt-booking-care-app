@@ -4,6 +4,7 @@ import { FaChevronLeft, FaChevronRight, FaClipboardList, FaHospital, FaStar, FaM
 import { Link } from "react-router";
 import { doctorService, specialtyService } from "../../api/appService";
 import LoadingSpinner from "../../components/Common/LoadingSpinner";
+import StarRating from "../../components/Common/StarRating";
 import "./DoctorsPage.scss";
 
 const DEFAULT_AVATAR = "https://ui-avatars.com/api/?background=0fa39b&color=fff&size=200&name=";
@@ -242,9 +243,7 @@ const DoctorsPage = () => {
                     )}
                     <div className="doctor-item-footer">
                       <div className="doctor-item-rating">
-                          {rating || 0}
-                          <FaStar color="orange" />
-                          ({totalReviews || 0} đánh giá)
+                        <StarRating rating={rating || 0} showValue reviewCount={totalReviews || 0} size={13} />
                       </div>
                       {experience && (
                         <span className="doctor-item-exp">{experience} năm KN</span>

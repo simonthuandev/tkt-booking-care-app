@@ -7,11 +7,11 @@ import {
   FaHospital,
   FaLocationDot,
   FaRegCommentDots,
-  FaStar,
   FaUserDoctor,
 } from "react-icons/fa6";
 import { hospitalService } from "../../api/appService";
 import LoadingSpinner from "../../components/Common/LoadingSpinner";
+import StarRating from "../../components/Common/StarRating";
 import "./HospitalDetailPage.scss";
 
 const FALLBACK_HOSPITAL_IMAGE =
@@ -205,11 +205,12 @@ const HospitalDetailPage = () => {
                         )}
                       </div>
                       <div className="hospital-doctor-rating">
-                        <span>
-                          <FaStar />
-                          {doctor.rating || 0}
-                        </span>
-                        <span>({doctor.totalReviews || 0} đánh giá)</span>
+                        <StarRating
+                          rating={doctor.rating || 0}
+                          showValue
+                          reviewCount={doctor.totalReviews || 0}
+                          size={13}
+                        />
                       </div>
                     </div>
                     <div className="hospital-doctor-action">
@@ -247,10 +248,7 @@ const HospitalDetailPage = () => {
                 <article key={review.id} className="hospital-review-card">
                   <div className="hospital-review-top">
                     <strong>{review.patientProfile?.fullName || "Người dùng ẩn danh"}</strong>
-                    <span>
-                      <FaStar />
-                      {review.rating || 0}
-                    </span>
+                    <StarRating rating={review.rating || 0} showValue size={13} />
                   </div>
                   {review.comment && <p>{review.comment}</p>}
                   <div className="hospital-review-meta">

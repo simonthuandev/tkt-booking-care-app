@@ -85,10 +85,6 @@ export default function HospitalsSection() {
                           <BsPersonBadge />
                           <span className="ms-1">{doctorCount} bác sĩ</span>
                         </span>
-                        <span>
-                          <BsStarFill />
-                          <span className="ms-1">Đối tác</span>
-                        </span>
                       </div>
                     </div>
                   </Link>

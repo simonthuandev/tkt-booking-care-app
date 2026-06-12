@@ -2,7 +2,7 @@ import { Link, useParams } from "react-router";
 import { useState, useEffect } from "react";
 import { specialtyService } from "../../api/appService";
 import LoadingSpinner from "../../components/Common/LoadingSpinner";
-import { FaStar } from "react-icons/fa6";
+import StarRating from "../../components/Common/StarRating";
 import "./SpecialtyDetailPage.scss";
 
 const DEFAULT_AVATAR = "https://ui-avatars.com/api/?background=0ba3a3&color=fff&size=200&name=";
@@ -61,6 +61,7 @@ const SpecialtyDetailPage = () => {
     const hospitalName = doc.hospitals?.[0]?.hospital?.name || "Chưa cập nhật";
     const experience   = doc.experience !== undefined ? `${doc.experience} năm` : "Chưa cập nhật";
     const rating = doc?.rating ?? 0;
+    const totalReviews = doc?.totalReviews ?? 0;
     return {
       id:         doc.id   || idx,
       slug:       doc.slug || null,
@@ -70,6 +71,7 @@ const SpecialtyDetailPage = () => {
       hospital:   hospitalName,
       experience: experience,
       rating:     rating,
+      totalReviews,
     };
   });
 
@@ -119,7 +121,7 @@ const SpecialtyDetailPage = () => {
       <div className="specialty doctors-page-container p-5">
         <div className="d-flex flex-column gap-2">
           {apiDoctors.length > 0 ? (
-            apiDoctors.map(({ id, slug, img, name, spec, hospital, experience, rating }) => (
+            apiDoctors.map(({ id, slug, img, name, spec, hospital, experience, rating, totalReviews }) => (
               <div
                 key={id}
                 className="doctor-item d-flex align-items-center gap-4 p-4 border-bottom"
@@ -138,8 +140,8 @@ const SpecialtyDetailPage = () => {
                   <ul className="overflow-hidden mb-0">
                     <li className="text-secondary small">Kinh nghiệm: {experience}</li>
                     <li className="text-secondary small d-inline-flex align-items-center justify-content-between gap-1">
-                      Đánh giá: {rating}
-                      <FaStar color="orange"/>
+                      Đánh giá:
+                      <StarRating rating={rating} showValue reviewCount={totalReviews} size={13} />
                     </li>
                   </ul>
                 </div>

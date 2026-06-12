@@ -15,16 +15,15 @@ const tabs = [
 ];
 
 const FALLBACK_QUICK_TAGS = ["Tim mạch", "Nha khoa", "Nhi khoa", "Da liễu", "Mắt"];
-const DEFAULT_AVATAR =
-  "https://ui-avatars.com/api/?background=0fa39b&color=fff&size=200&name=";
+const DEFAULT_AVATAR = "https://ui-avatars.com/api/?background=0fa39b&color=fff&size=200&name=";
 const FALLBACK_DOCTOR = {
   slug: "",
-  name: "BS. Nguyễn Thị Lan",
-  avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-  specialty: "Tim mạch",
-  hospital: "BV Chợ Rẫy",
-  rating: 4.8,
-  totalReviews: 320,
+  name: "Chưa có bác sĩ nổi bật",
+  avatar: `${DEFAULT_AVATAR}${encodeURIComponent("BS")}`,
+  specialty: "Chưa có thông tin",
+  hospital: "Chưa có thông tin",
+  rating: 0,
+  totalReviews: 0,
 };
 
 const formatNumber = (value, fallback) =>
@@ -48,7 +47,7 @@ const mapFeaturedDoctor = (doctor) => {
   return {
     slug: doctor.slug || "",
     name,
-    avatar: doctor.imgURL || doctor.user?.avatar || `${DEFAULT_AVATAR}${encodeURIComponent(name)}`,
+    avatar: doctor.imgURL || `${DEFAULT_AVATAR}${encodeURIComponent(name)}`,
     specialty,
     hospital,
     rating: doctor.rating || 0,
@@ -221,10 +220,12 @@ export default function HeroSection({ stats }) {
                     {featuredDoctor.specialty} – {featuredDoctor.hospital}
                   </div>
                   <div className="hcard-stars">
-                    <StarRating rating={featuredDoctor.rating} half={true} />
-                    <span>
-                      {featuredDoctor.rating} ({featuredDoctor.totalReviews} đánh giá)
-                    </span>
+                    <StarRating
+                      rating={featuredDoctor.rating}
+                      showValue
+                      reviewCount={featuredDoctor.totalReviews}
+                      size={13}
+                    />
                   </div>
                 </div>
                 {featuredDoctor.slug ? (
