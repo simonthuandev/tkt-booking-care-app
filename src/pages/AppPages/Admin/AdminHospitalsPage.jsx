@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // AdminHospitalsPage.jsx
 // ─────────────────────────────────────────────────────────────────────────────
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import ReactPaginate from "react-paginate";
 import {
   FaHospital,
@@ -16,6 +16,7 @@ import {
 } from "react-icons/fa";
 import "./AdminHospitalsPage.scss";
 import { hospitalService } from "../../../api/appService";
+import ImageUploadField from "../../../components/Common/ImageUploadField";
 import LoadingSpinner from "../../../components/Common/LoadingSpinner";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -150,11 +151,13 @@ const HospitalFormModal = ({
                 </div>
 
                 <div className="col-12">
-                  <label className="form-label">Hình ảnh minh họa (URL)</label>
-                  <div className="d-flex gap-2">
-                    {form.imgURL && <img src={form.imgURL} alt="Preview" className="avatar-preview rounded" style={{width: 36, height: 36, objectFit: "cover"}} />}
-                    <input type="text" className="form-control" name="imgURL" value={form.imgURL} onChange={onChange} placeholder="https://..." />
-                  </div>
+                  <ImageUploadField
+                    label="Hình ảnh minh họa"
+                    value={form.imgURL}
+                    uploadType="hospitals"
+                    onChange={(imgURL) => onFormChange({ ...form, imgURL })}
+                    disabled={saving}
+                  />
                 </div>
 
                 <div className="col-12">
@@ -299,12 +302,26 @@ export default function AdminHospitalsPage() {
   const [saving, setSaving]     = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError]       = useState(null);
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [filterCity, setFilterCity] = useState("");
+  const [filterType, setFilterType] = useState("");
+  const [filterActive, setFilterActive] = useState("");
 
-  const fetchHospitals = (page) => {
+  const fetchHospitals = useCallback((page) => {
     setIsLoading(true);
     setError(null);
+    const params = {
+      page: page + 1,
+      limit: PAGE_LIMIT,
+      ...(search.trim() && { search: search.trim() }),
+      ...(filterCity.trim() && { city: filterCity.trim() }),
+      ...(filterType && { type: filterType }),
+      ...(filterActive !== "" && { isActive: filterActive }),
+    };
+
     hospitalService
-      .adminGetHospitals({ page: page + 1, limit: PAGE_LIMIT })
+      .adminGetHospitals(params)
       .then((res) => {
         setHospitals(res.data?.data ?? []);
         setMeta(res.data?.meta ?? {});
@@ -314,11 +331,17 @@ export default function AdminHospitalsPage() {
         setError("Không thể tải danh sách bệnh viện.");
       })
       .finally(() => setIsLoading(false));
-  };
+  }, [filterActive, filterCity, filterType, search]);
 
   useEffect(() => {
     fetchHospitals(currentPage);
-  }, [currentPage]);
+  }, [currentPage, fetchHospitals]);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setCurrentPage(0);
+    setSearch(searchInput);
+  };
 
   const mapToForm = (hosp) => ({
     name: hosp.name ?? "",
@@ -441,6 +464,78 @@ export default function AdminHospitalsPage() {
       </div>
 
       {error && <div className="alert alert-danger" role="alert">{error}</div>}
+
+      <div className="card shadow-sm border-0 mb-4 p-3 bg-white">
+        <div className="row g-2 align-items-center">
+          <div className="col-12 col-lg-4">
+            <form onSubmit={handleSearchSubmit} className="input-group">
+              <input
+                className="form-control"
+                placeholder="Tìm bệnh viện theo tên..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+              />
+              <button className="btn btn-primary" type="submit">Tìm</button>
+            </form>
+          </div>
+          <div className="col-12 col-md-3 col-lg-2">
+            <input
+              className="form-control"
+              placeholder="Thành phố"
+              value={filterCity}
+              onChange={(e) => {
+                setFilterCity(e.target.value);
+                setCurrentPage(0);
+              }}
+            />
+          </div>
+          <div className="col-12 col-md-3 col-lg-2">
+            <select
+              className="form-select"
+              value={filterType}
+              onChange={(e) => {
+                setFilterType(e.target.value);
+                setCurrentPage(0);
+              }}
+            >
+              <option value="">Tất cả loại</option>
+              <option value="public">Công lập</option>
+              <option value="private">Tư nhân</option>
+            </select>
+          </div>
+          <div className="col-12 col-md-3 col-lg-2">
+            <select
+              className="form-select"
+              value={filterActive}
+              onChange={(e) => {
+                setFilterActive(e.target.value);
+                setCurrentPage(0);
+              }}
+            >
+              <option value="">Tất cả trạng thái</option>
+              <option value="true">Đang hoạt động</option>
+              <option value="false">Ngừng hoạt động</option>
+            </select>
+          </div>
+          {(search || filterCity || filterType || filterActive) && (
+            <div className="col-12 col-md-3 col-lg-2">
+              <button
+                className="btn btn-light border w-100"
+                onClick={() => {
+                  setSearch("");
+                  setSearchInput("");
+                  setFilterCity("");
+                  setFilterType("");
+                  setFilterActive("");
+                  setCurrentPage(0);
+                }}
+              >
+                Xóa lọc
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
 
       {isLoading ? (
         <LoadingSpinner />

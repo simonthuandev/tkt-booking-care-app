@@ -79,8 +79,9 @@
 
   .ddp-verified-badge {
     position: absolute;
-    bottom: 28px;
-    right: 12px;
+    top: 100px;
+    right: 50%;
+    transform: translateX(50%);
     color: v.$primary;
     font-size: 18px;
     background: #fff;

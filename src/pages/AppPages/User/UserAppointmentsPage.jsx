@@ -13,9 +13,10 @@ import {
   FaChevronRight,
   FaStethoscope,
   FaMoneyBillWave,
+  FaStar,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
-import { appointmentService } from "../../../api/appService";
+import { appointmentService, reviewService } from "../../../api/appService";
 import LoadingSpinner from "../../../components/Common/LoadingSpinner";
 import "./UserAppointmentsPage.scss";
 
@@ -30,6 +31,7 @@ const STATUS_CFG = {
   processing: { label: "Đang khám", color: "#3b82f6", bg: "#eff6ff", icon: FaStethoscope },
   completed: { label: "Hoàn thành", color: "#1a9e5c", bg: "#e6f9f0", icon: FaCheckDouble },
   cancelled: { label: "Đã hủy", color: "#e24b4a", bg: "#fef2f2", icon: FaTimesCircle },
+  no_show: { label: "Không đến", color: "#6b7280", bg: "#f3f4f6", icon: FaBan },
 };
 
 const PAYMENT_STATUS_CFG = {
@@ -63,11 +65,12 @@ const formatDateTime = (dateStr, startTime, endTime) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // SUB-COMPONENT: AppointmentRow
 // ─────────────────────────────────────────────────────────────────────────────
-const AppointmentRow = ({ appt, onView, onCancel }) => {
+const AppointmentRow = ({ appt, onView, onCancel, onReview }) => {
   const statusCfg = STATUS_CFG[appt.status] || STATUS_CFG.pending;
   const StatusIcon = statusCfg.icon;
 
   const paymentStatus = PAYMENT_STATUS_CFG[appt.paymentStatus] || PAYMENT_STATUS_CFG.pending;
+  const canReview = appt.status === "completed" && !appt.review;
 
   return (
     <div className="user-appt-row">
@@ -120,6 +123,11 @@ const AppointmentRow = ({ appt, onView, onCancel }) => {
             <FaBan />
           </button>
         )}
+        {canReview && (
+          <button className="user-appt-btn user-appt-btn--view" onClick={() => onReview(appt)} title="Đánh giá">
+            <FaStar />
+          </button>
+        )}
       </div>
     </div>
   );
@@ -129,8 +137,8 @@ const AppointmentRow = ({ appt, onView, onCancel }) => {
 // SUB-COMPONENT: CancelModal
 // ─────────────────────────────────────────────────────────────────────────────
 const CancelModal = ({ appt, onConfirm, onClose, saving }) => {
-  if (!appt) return null;
   const [cancelReason, setCancelReason] = useState("");
+  if (!appt) return null;
 
   return (
     <>
@@ -164,6 +172,80 @@ const CancelModal = ({ appt, onConfirm, onClose, saving }) => {
               <button className="btn btn-light border" onClick={onClose} disabled={saving}>Đóng</button>
               <button className="btn btn-danger" onClick={() => onConfirm(appt.id, cancelReason)} disabled={saving}>
                 {saving ? "Đang xử lý..." : "Xác nhận Hủy"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUB-COMPONENT: ReviewModal
+// ─────────────────────────────────────────────────────────────────────────────
+const ReviewModal = ({ appt, onConfirm, onClose, saving }) => {
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+
+  if (!appt) return null;
+
+  return (
+    <>
+      <div className="modal-backdrop fade show" onClick={onClose} />
+      <div className="modal fade show d-block" tabIndex="-1">
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title text-primary">Đánh giá buổi khám</h5>
+              <button className="btn-close" onClick={onClose} disabled={saving} />
+            </div>
+            <div className="modal-body py-4">
+              <div className="mb-3">
+                <div className="fw-semibold">
+                  {appt.doctor?.user?.lastName} {appt.doctor?.user?.firstName}
+                </div>
+                <div className="text-muted small">{appt.hospital?.name}</div>
+              </div>
+
+              <label className="form-label fw-semibold">Mức độ hài lòng</label>
+              <div className="d-flex gap-2 mb-3">
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={`btn ${value <= rating ? "btn-warning text-white" : "btn-outline-warning"}`}
+                    onClick={() => setRating(value)}
+                    disabled={saving}
+                    aria-label={`${value} sao`}
+                  >
+                    <FaStar />
+                  </button>
+                ))}
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Bình luận</label>
+                <textarea
+                  className="form-control"
+                  rows="4"
+                  placeholder="Chia sẻ trải nghiệm khám bệnh của bạn..."
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  maxLength={1000}
+                  disabled={saving}
+                />
+                <div className="form-text text-end">{comment.length}/1000</div>
+              </div>
+            </div>
+            <div className="modal-footer border-0 pt-0">
+              <button className="btn btn-light border" onClick={onClose} disabled={saving}>Đóng</button>
+              <button
+                className="btn btn-primary"
+                onClick={() => onConfirm(appt.id, rating, comment)}
+                disabled={saving}
+              >
+                {saving ? "Đang gửi..." : "Gửi đánh giá"}
               </button>
             </div>
           </div>
@@ -323,7 +405,7 @@ export default function UserAppointmentsPage() {
   const [filterStatus, setFilterStatus] = useState("");
 
   // Modals
-  const [modal, setModal] = useState(null); // 'view' | 'cancel'
+  const [modal, setModal] = useState(null); // 'view' | 'cancel' | 'review'
   const [selectedAppt, setSelectedAppt] = useState(null);
   const [saving, setSaving] = useState(false);
 
@@ -401,6 +483,25 @@ export default function UserAppointmentsPage() {
     }
   };
 
+  const handleConfirmReview = async (appointmentId, rating, comment) => {
+    setSaving(true);
+    try {
+      await reviewService.createReview({
+        appointmentId,
+        rating,
+        ...(comment.trim() ? { comment: comment.trim() } : {}),
+      });
+      toast.success("Cảm ơn bạn đã gửi đánh giá!");
+      closeModal();
+      fetchAppointments();
+    } catch (err) {
+      console.error("Failed to create review", err);
+      toast.error(err?.response?.data?.message || "Không thể gửi đánh giá. Vui lòng thử lại sau.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="user-appts-page">
       {/* Header */}
@@ -457,6 +558,7 @@ export default function UserAppointmentsPage() {
                 appt={appt}
                 onView={(a) => openModal("view", a)}
                 onCancel={(a) => openModal("cancel", a)}
+                onReview={(a) => openModal("review", a)}
               />
             ))}
           </div>
@@ -525,6 +627,14 @@ export default function UserAppointmentsPage() {
         onClose={closeModal}
         saving={saving}
       />
+      {modal === "review" && (
+        <ReviewModal
+          appt={selectedAppt}
+          onConfirm={handleConfirmReview}
+          onClose={closeModal}
+          saving={saving}
+        />
+      )}
     </div>
   );
 }

@@ -14,6 +14,7 @@ import {
 } from "react-icons/fa6";
 import { doctorService, timeSlotService } from "../../api/appService";
 import LoadingSpinner from "../../components/Common/LoadingSpinner";
+import StarRating from "../../components/Common/StarRating";
 import "./DoctorDetailPage.scss";
 
 const DEFAULT_AVATAR =
@@ -177,9 +178,12 @@ const DoctorDetailPage = () => {
             )}
             {(doctor.rating > 0 || doctor.totalReviews > 0) && (
               <div className="ddp-rating-row">
-                <FaStar className="ddp-star" />
-                <strong>{doctor.rating}</strong>
-                <span className="ddp-review-count">({doctor.totalReviews} đánh giá)</span>
+                <StarRating
+                  rating={doctor.rating}
+                  showValue
+                  reviewCount={doctor.totalReviews}
+                  size={14}
+                />
               </div>
             )}
           </div>
@@ -326,14 +330,11 @@ const DoctorDetailPage = () => {
                       {new Date(review.createdAt).toLocaleDateString("vi-VN")}
                     </span>
                   </div>
-                  <div className="ddp-review-stars">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <FaStar
-                        key={i}
-                        className={i < review.rating ? "star-filled" : "star-empty"}
-                      />
-                    ))}
-                  </div>
+                  <StarRating
+                    rating={review.rating}
+                    className="ddp-review-stars"
+                    size={14}
+                  />
                 </div>
                 {review.comment && (
                   <div className="ddp-review-body">

@@ -4,6 +4,26 @@ import { BrandLogo } from "../../components/Common/BrandLogo";
 import "./LoginPage.scss";
 
 const ForgotPasswordPage = () => {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [devLink, setDevLink] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setDevLink("");
+
+    try {
+      const res = await authService.requestPasswordReset({ email });
+      toast.success(res.data?.message || "Nếu email tồn tại, link khôi phục đã được tạo.");
+      if (res.data?.devLink) setDevLink(res.data.devLink);
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Không thể tạo link khôi phục.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <main className="auth-shell">
       <section className="auth-visual" aria-hidden="true">

@@ -272,7 +272,7 @@ export default function AdminReportsPage() {
                     <div key={doc.id} className="rank-row">
                       <span className="rank-row__rank">#{idx + 1}</span>
                       <img
-                        src={doc.user?.avatar || `https://ui-avatars.com/api/?name=${doc.user?.firstName}&background=0ba3a3&color=fff`}
+                        src={doc?.imgURL || `https://ui-avatars.com/api/?name=${doc.user?.firstName}&background=0ba3a3&color=fff`}
                         alt={`${doc.user?.lastName} ${doc.user?.firstName}`}
                         className="rank-row__avatar"
                       />
@@ -303,7 +303,14 @@ export default function AdminReportsPage() {
                     <div key={hosp.id} className="rank-row">
                       <span className="rank-row__rank">#{idx + 1}</span>
                       <div className="rank-row__icon-wrap">
-                        <FaHospital />
+                        {hosp.imgURL ? (
+                          <img
+                            src={hosp?.imgURL}
+                            alt={hosp.name}
+                          />
+                        ) : (
+                          <FaHospital />
+                        )}
                       </div>
                       <div className="rank-row__info">
                         <p className="rank-row__name">{hosp.name}</p>

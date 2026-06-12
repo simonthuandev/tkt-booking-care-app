@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { Container } from "react-bootstrap";
 import SectionHeader from "../Common/SectionHeader";
-import { FaArrowRight, FaClipboardList, FaHospital, FaStar } from "react-icons/fa";
+import { FaArrowRight, FaClipboardList, FaHospital } from "react-icons/fa";
 import { BsPersonHeart } from "react-icons/bs";
 import { Link } from "react-router-dom";
 import { doctorService } from "../../api/appService";
+import StarRating from "../Common/StarRating";
 
 const DEFAULT_AVATAR = "https://ui-avatars.com/api/?background=0fa39b&color=fff&size=200&name=";
 
@@ -78,11 +79,7 @@ export default function DoctorsSection() {
                         <FaHospital className="me-1" />{hospitalDisplay}
                       </div>
                       <div className="doc-rating">
-                        <div className="d-inline-flex align-items-center gap-1">
-                          <span className="rating-num">{rating}</span>
-                          <FaStar color="orange" size={12}/>
-                        </div>
-                        <span className="rating-cnt">{totalReviews} đánh giá</span>
+                        <StarRating rating={rating} showValue reviewCount={totalReviews} size={12} />
                       </div>
                       <div className="doc-price-row">
                         <span className="doc-price">{priceDisplay}</span>

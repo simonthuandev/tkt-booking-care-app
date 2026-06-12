@@ -70,7 +70,6 @@ export default function HomeNav({ scrolled }) {
           ) : (
             <div className="d-flex align-items-center gap-3 mt-3 mt-lg-0">
               <Link to="/auth/login" className="nav-login">Đăng nhập</Link>
-              <Link to="/specialties" className="btn btn-book-nav">Đặt lịch ngay</Link>
             </div>
           )}
         </Navbar.Collapse>

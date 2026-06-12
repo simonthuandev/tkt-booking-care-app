@@ -1,0 +1,35 @@
+.star-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  line-height: 1;
+  vertical-align: middle;
+
+  &__icons {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.12rem;
+    flex-shrink: 0;
+  }
+
+  &__star {
+    display: block;
+  }
+
+  & &__star--filled {
+    color: #f5a623;
+  }
+
+  & &__star--empty {
+    color: #d7dee8;
+  }
+
+  &__text {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: inherit;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+}

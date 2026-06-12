@@ -558,6 +558,16 @@ $transition:     0.18s ease;
     background: $primary-light;
   }
 
+  &:disabled {
+    opacity: 0.68;
+    cursor: not-allowed;
+  }
+
+  &:disabled:hover {
+    border-color: $border;
+    background: $surface;
+  }
+
   &.online:hover {
     .ubp-payment-icon { background: $primary; color: #fff; }
   }

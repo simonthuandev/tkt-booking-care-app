@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { logout } from "../../store/slices/authSlice";
+import { logout, logoutAll } from "../../store/slices/authSlice";
 import "./UserDropdown.scss";
 import { FiGrid, FiLogOut, FiSettings } from "react-icons/fi";
 
@@ -18,11 +18,27 @@ const getFullName = (firstName = "", lastName = "") => {
   return full || "Người dùng";
 };
 
+const AvatarCircle = ({ user, className }) => {
+  const initials = getInitials(user?.firstName, user?.lastName);
+
+  return (
+    <div className={className}>
+      {user?.avatar ? (
+        <img src={user.avatar} alt={getFullName(user.firstName, user.lastName)} />
+      ) : (
+        initials
+      )}
+    </div>
+  );
+};
+
 // ─── UserDropdown ─────────────────────────────────────────────────────────────
 const UserDropdown = ({ user, onClose }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [open, setOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const ref = useRef(null);
 
   // Click outside → đóng dropdown
@@ -36,10 +52,19 @@ const UserDropdown = ({ user, onClose }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [open]);
 
-  const handleLogout = async () => {
+  const openLogoutConfirm = () => {
     setOpen(false);
+    setShowLogoutConfirm(true);
+  };
+
+  const handleLogout = async (allDevices = false) => {
+    setIsLoggingOut(true);
+    const action = allDevices ? logoutAll : logout;
+
+    await dispatch(action());
+    setIsLoggingOut(false);
+    setShowLogoutConfirm(false);
     onClose?.();
-    await dispatch(logout());
     navigate("/auth/login", { replace: true });
   };
 
@@ -52,7 +77,6 @@ const UserDropdown = ({ user, onClose }) => {
   const dashboardPath = `/app/${user.role || "user"}/dashboard`;
   const settingsPath  = `/app/${user.role || "user"}/settings`;
   const fullName      = getFullName(user.firstName, user.lastName);
-  const initials      = getInitials(user.firstName, user.lastName);
 
   return (
     <div className="hc-user-dropdown-wrapper" ref={ref}>
@@ -65,9 +89,7 @@ const UserDropdown = ({ user, onClose }) => {
         aria-expanded={open}
         aria-label="Tài khoản"
       >
-        <div className="hc-avatar">
-          {initials}
-        </div>
+        <AvatarCircle user={user} className="hc-avatar" />
         <span className="hc-avatar-caret">▾</span>
       </button>
 
@@ -76,7 +98,7 @@ const UserDropdown = ({ user, onClose }) => {
         <div className="hc-dropdown-panel" role="menu">
           {/* Header — tên + email */}
           <div className="hc-dropdown-header">
-            <div className="hc-dropdown-avatar">{initials}</div>
+            <AvatarCircle user={user} className="hc-dropdown-avatar" />
             <div className="hc-dropdown-info">
               <span className="hc-dropdown-name">{fullName}</span>
               <span className="hc-dropdown-email">{user.email}</span>
@@ -112,11 +134,50 @@ const UserDropdown = ({ user, onClose }) => {
             type="button"
             className="hc-dropdown-item hc-dropdown-item--danger"
             role="menuitem"
-            onClick={handleLogout}
+            onClick={openLogoutConfirm}
           >
             <FiLogOut className="hc-dropdown-icon" />
             Đăng xuất
           </button>
+        </div>
+      )}
+
+      {showLogoutConfirm && (
+        <div className="hc-logout-modal" role="dialog" aria-modal="true">
+          <div className="hc-logout-card">
+            <div className="hc-logout-icon">
+              <FiLogOut />
+            </div>
+            <h3>Đăng xuất tài khoản?</h3>
+            <p>Chọn cách bạn muốn kết thúc phiên đăng nhập.</p>
+
+            <div className="hc-logout-actions">
+              <button
+                type="button"
+                className="hc-logout-btn hc-logout-btn--primary"
+                onClick={() => handleLogout(false)}
+                disabled={isLoggingOut}
+              >
+                Đăng xuất phiên hiện tại
+              </button>
+              <button
+                type="button"
+                className="hc-logout-btn hc-logout-btn--danger"
+                onClick={() => handleLogout(true)}
+                disabled={isLoggingOut}
+              >
+                Đăng xuất tất cả thiết bị
+              </button>
+              <button
+                type="button"
+                className="hc-logout-btn hc-logout-btn--ghost"
+                onClick={() => setShowLogoutConfirm(false)}
+                disabled={isLoggingOut}
+              >
+                Hủy
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

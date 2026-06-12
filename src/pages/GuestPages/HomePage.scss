@@ -306,6 +306,9 @@
 }
 
 .btn-search-go {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   @include grad-primary;
   color: v.$white;
   border: none;
@@ -317,10 +320,12 @@
   transition: all 0.25s;
   white-space: nowrap;
   font-family: v.$ff-body;
+  text-decoration: none;
 
   &:hover {
     transform: translateY(-1px);
     box-shadow: 0 6px 18px rgba(11, 163, 163, 0.35);
+    color: v.$white;
   }
 }
 
@@ -414,6 +419,9 @@
 }
 
 .hcard-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   margin-left: auto;
   @include grad-primary;
   color: v.$white;
@@ -425,8 +433,12 @@
   cursor: pointer;
   transition: all 0.2s;
   font-family: v.$ff-body;
+  text-decoration: none;
 
-  &:hover { opacity: 0.9; }
+  &:hover {
+    color: v.$white;
+    opacity: 0.9;
+  }
 }
 
 .hfloat {

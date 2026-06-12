@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // AdminSpecialtiesPage.jsx
 // ─────────────────────────────────────────────────────────────────────────────
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import ReactPaginate from "react-paginate";
 import {
   FaStethoscope,
@@ -16,6 +16,7 @@ import {
 } from "react-icons/fa";
 import "./AdminSpecialtiesPage.scss";
 import { specialtyService } from "../../../api/appService";
+import ImageUploadField from "../../../components/Common/ImageUploadField";
 import LoadingSpinner from "../../../components/Common/LoadingSpinner";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -132,11 +133,13 @@ const SpecialtyFormModal = ({
                 </div>
 
                 <div className="col-12">
-                  <label className="form-label">Hình ảnh minh họa (URL)</label>
-                  <div className="d-flex gap-2">
-                    {form.imgURL && <img src={form.imgURL} alt="Preview" className="avatar-preview rounded" style={{width: 36, height: 36, objectFit: "cover"}} />}
-                    <input type="text" className="form-control" name="imgURL" value={form.imgURL} onChange={onChange} placeholder="https://..." />
-                  </div>
+                  <ImageUploadField
+                    label="Hình ảnh minh họa"
+                    value={form.imgURL}
+                    uploadType="specialties"
+                    onChange={(imgURL) => onFormChange({ ...form, imgURL })}
+                    disabled={saving}
+                  />
                 </div>
 
                 <div className="col-12">
@@ -299,12 +302,22 @@ export default function AdminSpecialtiesPage() {
   const [saving, setSaving]     = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError]       = useState(null);
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [filterActive, setFilterActive] = useState("");
 
-  const fetchSpecialties = (page) => {
+  const fetchSpecialties = useCallback((page) => {
     setIsLoading(true);
     setError(null);
+    const params = {
+      page: page + 1,
+      limit: PAGE_LIMIT,
+      ...(search.trim() && { search: search.trim() }),
+      ...(filterActive !== "" && { isActive: filterActive }),
+    };
+
     specialtyService
-      .adminGetSpecialties({ page: page + 1, limit: PAGE_LIMIT })
+      .adminGetSpecialties(params)
       .then((res) => {
         setSpecialties(res.data?.data ?? []);
         setMeta(res.data?.meta ?? {});
@@ -314,11 +327,17 @@ export default function AdminSpecialtiesPage() {
         setError("Không thể tải danh sách chuyên khoa.");
       })
       .finally(() => setIsLoading(false));
-  };
+  }, [filterActive, search]);
 
   useEffect(() => {
     fetchSpecialties(currentPage);
-  }, [currentPage]);
+  }, [currentPage, fetchSpecialties]);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setCurrentPage(0);
+    setSearch(searchInput);
+  };
 
   const mapToForm = (spec) => ({
     name: spec.name ?? "",
@@ -440,6 +459,51 @@ export default function AdminSpecialtiesPage() {
       </div>
 
       {error && <div className="alert alert-danger" role="alert">{error}</div>}
+
+      <div className="card shadow-sm border-0 mb-4 p-3 bg-white">
+        <div className="row g-2 align-items-center">
+          <div className="col-12 col-md-6">
+            <form onSubmit={handleSearchSubmit} className="input-group">
+              <input
+                className="form-control"
+                placeholder="Tìm chuyên khoa theo tên..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+              />
+              <button className="btn btn-primary" type="submit">Tìm</button>
+            </form>
+          </div>
+          <div className="col-12 col-md-3">
+            <select
+              className="form-select"
+              value={filterActive}
+              onChange={(e) => {
+                setFilterActive(e.target.value);
+                setCurrentPage(0);
+              }}
+            >
+              <option value="">Tất cả trạng thái</option>
+              <option value="true">Đang hoạt động</option>
+              <option value="false">Ngừng hoạt động</option>
+            </select>
+          </div>
+          {(search || filterActive) && (
+            <div className="col-12 col-md-3">
+              <button
+                className="btn btn-light border w-100"
+                onClick={() => {
+                  setSearch("");
+                  setSearchInput("");
+                  setFilterActive("");
+                  setCurrentPage(0);
+                }}
+              >
+                Xóa lọc
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
 
       {isLoading ? (
         <LoadingSpinner />

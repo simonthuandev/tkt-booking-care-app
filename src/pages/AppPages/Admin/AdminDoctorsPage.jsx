@@ -3,7 +3,7 @@
 // Bootstrap Modal (React state controlled)
 // Align đầy đủ với CreateDoctorDto & UpdateDoctorDto (Admin)
 // ─────────────────────────────────────────────────────────────────────────────
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import ReactPaginate from "react-paginate";
 import {
   FaUserMd,
@@ -33,6 +33,7 @@ import {
   hospitalService,
   specialtyService,
 } from "../../../api/appService";
+import ImageUploadField from "../../../components/Common/ImageUploadField";
 import LoadingSpinner from "../../../components/Common/LoadingSpinner";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -445,24 +446,13 @@ const DoctorFormModal = ({
                 </div>
 
                 <div className="col-md-6">
-                  <label className="form-label">Ảnh đại diện bác sĩ (imgURL)</label>
-                  <div className="d-flex gap-2 align-items-center">
-                    <input
-                      className="form-control"
-                      name="imgURL"
-                      value={form.imgURL}
-                      onChange={onChange}
-                      placeholder="https://..."
-                    />
-                    {form.imgURL && (
-                      <img
-                        src={form.imgURL}
-                        alt="preview"
-                        className="avatar-preview"
-                        onError={(e) => { e.target.style.display = "none"; }}
-                      />
-                    )}
-                  </div>
+                  <ImageUploadField
+                    label="Ảnh đại diện bác sĩ (imgURL)"
+                    value={form.imgURL}
+                    uploadType="doctors"
+                    onChange={(imgURL) => onFormChange({ ...form, imgURL })}
+                    disabled={saving}
+                  />
                 </div>
 
                 <div className="col-md-6">
@@ -723,17 +713,21 @@ const DoctorViewModal = ({ doc, onEdit, onClose }) => {
                   { icon: FaCalendarAlt, label: "Kinh nghiệm", val: doc.experience != null ? `${doc.experience} năm` : "—" },
                   { icon: FaStar, label: "Đánh giá", val: doc.rating ?? "Chưa có" },
                   { icon: FaMoneyBillWave, label: "Phí tư vấn", val: `₫${Number(doc.consultationFee || 0).toLocaleString()}` },
-                ].map(({ icon: Icon, label, val }) => (
-                  <div key={label} className="col-md-6">
-                    <div className="view-info-item">
-                      <Icon className="view-info-icon" />
-                      <div>
-                        <p className="view-info-label">{label}</p>
-                        <p className="view-info-val">{val}</p>
+                ].map((item) => {
+                  const InfoIcon = item.icon;
+
+                  return (
+                    <div key={item.label} className="col-md-6">
+                      <div className="view-info-item">
+                        <InfoIcon className="view-info-icon" />
+                        <div>
+                          <p className="view-info-label">{item.label}</p>
+                          <p className="view-info-val">{item.val}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Information */}
@@ -850,6 +844,12 @@ export default function AdminDoctorsPage() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState(null);
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [filterSpecialtyId, setFilterSpecialtyId] = useState("");
+  const [filterHospitalId, setFilterHospitalId] = useState("");
+  const [filterActive, setFilterActive] = useState("");
+  const [filterVerified, setFilterVerified] = useState("");
 
   // ── Fetch options (chạy 1 lần) ───────────────────────────────────────────
   useEffect(() => {
@@ -865,11 +865,21 @@ export default function AdminDoctorsPage() {
   }, []);
 
   // ── Fetch danh sách bác sĩ ───────────────────────────────────────────────
-  const fetchDoctors = (page) => {
+  const fetchDoctors = useCallback((page) => {
     setIsLoading(true);
     setError(null);
+    const params = {
+      page: page + 1,
+      limit: PAGE_LIMIT,
+      ...(search.trim() && { search: search.trim() }),
+      ...(filterSpecialtyId && { specialtyId: filterSpecialtyId }),
+      ...(filterHospitalId && { hospitalId: filterHospitalId }),
+      ...(filterActive !== "" && { isActive: filterActive }),
+      ...(filterVerified !== "" && { isVerified: filterVerified }),
+    };
+
     doctorService
-      .adminGetDoctors({ page: page + 1, limit: PAGE_LIMIT })
+      .adminGetDoctors(params)
       .then((res) => {
         setDoctors(res.data?.data ?? []);
         setMeta(res.data?.meta ?? {});
@@ -879,11 +889,17 @@ export default function AdminDoctorsPage() {
         setError("Không thể tải danh sách bác sĩ.");
       })
       .finally(() => setIsLoading(false));
-  };
+  }, [filterActive, filterHospitalId, filterSpecialtyId, filterVerified, search]);
 
   useEffect(() => {
     fetchDoctors(currentPage);
-  }, [currentPage]);
+  }, [currentPage, fetchDoctors]);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setCurrentPage(0);
+    setSearch(searchInput);
+  };
 
   // ── Helpers map doc detail → form state ──────────────────────────────────
   const docToForm = (doc) => ({
@@ -1029,6 +1045,98 @@ export default function AdminDoctorsPage() {
       {error && (
         <div className="alert alert-danger" role="alert">{error}</div>
       )}
+
+      <div className="card shadow-sm border-0 mb-4 p-3 bg-white">
+        <div className="row g-2 align-items-center">
+          <div className="col-12 col-xl-3">
+            <form onSubmit={handleSearchSubmit} className="input-group">
+              <input
+                className="form-control"
+                placeholder="Tìm tên hoặc email bác sĩ..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+              />
+              <button className="btn btn-primary" type="submit">Tìm</button>
+            </form>
+          </div>
+          <div className="col-12 col-md-6 col-xl-2">
+            <select
+              className="form-select"
+              value={filterSpecialtyId}
+              onChange={(e) => {
+                setFilterSpecialtyId(e.target.value);
+                setCurrentPage(0);
+              }}
+            >
+              <option value="">Tất cả chuyên khoa</option>
+              {specialties.map((spec) => (
+                <option key={spec.id} value={spec.id}>{spec.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="col-12 col-md-6 col-xl-2">
+            <select
+              className="form-select"
+              value={filterHospitalId}
+              onChange={(e) => {
+                setFilterHospitalId(e.target.value);
+                setCurrentPage(0);
+              }}
+            >
+              <option value="">Tất cả cơ sở</option>
+              {hospitals.map((hosp) => (
+                <option key={hosp.id} value={hosp.id}>{hosp.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="col-12 col-md-4 col-xl-2">
+            <select
+              className="form-select"
+              value={filterActive}
+              onChange={(e) => {
+                setFilterActive(e.target.value);
+                setCurrentPage(0);
+              }}
+            >
+              <option value="">Tất cả hoạt động</option>
+              <option value="true">Đang hoạt động</option>
+              <option value="false">Ngừng hoạt động</option>
+            </select>
+          </div>
+          <div className="col-12 col-md-4 col-xl-2">
+            <select
+              className="form-select"
+              value={filterVerified}
+              onChange={(e) => {
+                setFilterVerified(e.target.value);
+                setCurrentPage(0);
+              }}
+            >
+              <option value="">Tất cả xác thực</option>
+              <option value="true">Đã xác thực</option>
+              <option value="false">Chưa xác thực</option>
+            </select>
+          </div>
+          {(search || filterSpecialtyId || filterHospitalId || filterActive || filterVerified) && (
+            <div className="col-12 col-md-4 col-xl-1">
+              <button
+                className="btn btn-light border w-100"
+                onClick={() => {
+                  setSearch("");
+                  setSearchInput("");
+                  setFilterSpecialtyId("");
+                  setFilterHospitalId("");
+                  setFilterActive("");
+                  setFilterVerified("");
+                  setCurrentPage(0);
+                }}
+              >
+                Xóa
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Grid */}
       {isLoading ? (

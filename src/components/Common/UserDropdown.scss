@@ -38,6 +38,14 @@
   flex-shrink: 0;
   letter-spacing: 0.5px;
   user-select: none;
+
+  img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+  }
 }
 
 .hc-avatar-caret {
@@ -92,6 +100,14 @@
   justify-content: center;
   flex-shrink: 0;
   letter-spacing: 0.5px;
+
+  img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+  }
 }
 
 .hc-dropdown-info {
@@ -158,6 +174,99 @@
 .hc-dropdown-icon {
   font-size: 15px;
   flex-shrink: 0;
+}
+
+.hc-logout-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(15, 23, 42, 0.42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.hc-logout-card {
+  width: min(380px, 100%);
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.22);
+  padding: 24px;
+  text-align: center;
+
+  h3 {
+    margin: 10px 0 6px;
+    color: #1a1a2e;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0 0 18px;
+    color: #6c757d;
+    font-size: 0.9rem;
+  }
+}
+
+.hc-logout-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #fff5f5;
+  color: #e53e3e;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.hc-logout-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.hc-logout-btn {
+  min-height: 42px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.16s, border-color 0.16s, color 0.16s;
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  &--primary {
+    background: #0ba3a3;
+    color: #fff;
+
+    &:hover:not(:disabled) {
+      background: #087f7f;
+    }
+  }
+
+  &--danger {
+    background: #fff5f5;
+    color: #c53030;
+    border-color: #fed7d7;
+
+    &:hover:not(:disabled) {
+      background: #ffe8e8;
+    }
+  }
+
+  &--ghost {
+    background: #fff;
+    color: #4a5568;
+    border-color: #e2e8f0;
+
+    &:hover:not(:disabled) {
+      background: #f7fafc;
+    }
+  }
 }
 
 @media (max-width: 991px) {

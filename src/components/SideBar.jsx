@@ -154,6 +154,12 @@ const getFullName = (firstName = "", lastName = "") => {
   return full || "Người dùng";
 };
 
+const getInitials = (firstName = "", lastName = "") => {
+  const f = firstName.trim().charAt(0).toUpperCase();
+  const l = lastName.trim().charAt(0).toUpperCase();
+  return f + l || "U";
+};
+
 const SideBar = () => {
   const [collapsed, setCollapsed] = useState(false);
 
@@ -196,15 +202,23 @@ const SideBar = () => {
           {!collapsed && (
             <div
               className="rounded-circle bg-secondary-subtle d-inline-flex align-items-center justify-content-center"
-              style={{ width: 34, height: 34, flexShrink: 0 }}
+              style={{ width: 34, height: 34, flexShrink: 0, overflow: "hidden" }}
             >
-              {getFullName(user?.firstName, user?.lastName).trim().charAt(0).toUpperCase()}
+              {user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={getFullName(user?.firstName, user?.lastName)}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                getInitials(user?.firstName, user?.lastName)
+              )}
             </div>
           )}
           {!collapsed && (
             <div className="overflow-hidden">
               <div className="small fw-semibold text-truncate">{getFullName(user?.firstName, user?.lastName)}</div>
-              <div className="small text-muted text-capitalize">{user?.role.toUpperCase()}</div>
+              <div className="small text-muted text-capitalize">{user?.role?.toUpperCase()}</div>
             </div>
           )}
         </div>
@@ -220,10 +234,13 @@ const SideBar = () => {
       </div>
 
       <nav className="py-2 px-2 d-flex flex-column gap-1" aria-label="Sidebar menu">
-        {menu.map(({ key, label, path, icon: Icon }) => (
+        {menu.map((item) => {
+          const Icon = item.icon;
+
+          return (
           <NavLink
-            key={key}
-            to={path}
+            key={item.key}
+            to={item.path}
             className={({ isActive }) =>
               `d-flex align-items-center gap-2 text-decoration-none rounded px-3 py-2
               ${isActive ? "text-white" : "text-dark"}
@@ -236,9 +253,10 @@ const SideBar = () => {
             })}
           >
             <Icon size={16} style={{ minWidth: 16 }} />
-            {!collapsed ? <span>{label}</span> : null}
+            {!collapsed ? <span>{item.label}</span> : null}
           </NavLink>
-        ))}
+          );
+        })}
       </nav>
     </aside>
   );
