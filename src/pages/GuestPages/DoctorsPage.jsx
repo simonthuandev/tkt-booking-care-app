@@ -203,12 +203,16 @@ const DoctorsPage = () => {
               const { id, slug, user, specialties, hospitals, rating, totalReviews, consultationFee, experience, imgURL } = doctor;
               const fullName = `${user?.lastName || ""} ${user?.firstName || ""}`.trim();
               const avatar = imgURL || `${DEFAULT_AVATAR}${encodeURIComponent(fullName)}`;
-              const primarySpecialty =
-                specialties?.find((s) => s.isPrimary)?.specialty?.name || "Không có thông tin";
-              const hospitalInfo = hospitals?.[0]?.hospital;
-              const hospitalDisplay = hospitalInfo ? `${hospitalInfo.name}, ${hospitalInfo.city}` : "Không có thông tin";
+              const primarySpecialty = specialties?.find((s) => s.isPrimary)?.specialty?.name || "Không có thông tin";
+
+              const primaryHospital = hospitals?.[0];
+              const hospitalInfo = primaryHospital?.hospital;
+              const hospitalDisplay = hospitalInfo
+                ? `${hospitalInfo.name}, ${hospitalInfo.city}`
+                : "Không có thông tin";
+              const { workingDays, startTime, endTime } = primaryHospital || {};
+
               const priceDisplay = consultationFee ? `${consultationFee.toLocaleString("vi-VN")}đ` : "Không có thông tin";
-              const { workingDays, startTime, endTime } = hospitals?.[0];
 
               return (
                 <div key={id} className="doctor-item">

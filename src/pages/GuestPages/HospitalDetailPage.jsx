@@ -1,184 +1,274 @@
-import { Link } from "react-router";
-import RoutePage from "../../components/Common/RoutePage";
-import StarRating from "../../components/Common/StarRating";
-import { toSlug } from "../../utils/helpers";
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router";
+import { toast } from "react-toastify";
+import {
+  FaCalendarDays,
+  FaClock,
+  FaHospital,
+  FaLocationDot,
+  FaRegCommentDots,
+  FaStar,
+  FaUserDoctor,
+} from "react-icons/fa6";
+import { hospitalService } from "../../api/appService";
+import LoadingSpinner from "../../components/Common/LoadingSpinner";
 import "./HospitalDetailPage.scss";
 
-const hospital = {
-  name: "Bệnh viên Đa Khoa Hoàng Khoa",
-  address: "số 1 Nguyễn Văn Tăng, Long Trường, Thủ Đức",
-  img: "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=400&q=80",
-  logo: "https://cdn.bookingcare.vn/fo/2018/06/18/083122lo-go-viet-duc.jpg",
+const FALLBACK_HOSPITAL_IMAGE =
+  "https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=1200&q=85";
+const DEFAULT_AVATAR =
+  "https://ui-avatars.com/api/?background=0fa39b&color=fff&size=200&name=";
+
+const DAYS_SHORT = {
+  MON: "T2",
+  TUE: "T3",
+  WED: "T4",
+  THU: "T5",
+  FRI: "T6",
+  SAT: "T7",
+  SUN: "CN",
 };
 
-const doctors = [
-  {
-    id: 2,
-    img: "https://randomuser.me/api/portraits/men/32.jpg",
-    name: "PGS.TS. Trần Minh Khoa",
-    spec: "Tim mạch",
-    hospital: "BV Chợ Rẫy, TP.HCM",
-    rating: 4.9,
-    info: [
-      "Gần 40 năm kinh nghiệm điều trị và phẫu thuật thành công hàng ngàn ca viêm Amidan, viêm VA, viêm xoang, u thanh quản, u hạ họng, viêm tai giữa, ù tai, nghe kém, điếc đột ngột, thủng màng nhĩ...",
-      "Nguyên Trưởng khoa Tai mũi họng trẻ em, Bệnh viện Tai Mũi Họng Trung ương",
-      "Giám đốc bệnh viện Đa khoa An Việt",
-    ],
-  },
-  {
-    id: 2,
-    img: "https://randomuser.me/api/portraits/women/65.jpg",
-    name: "TS.BS. Lê Thu Hằng",
-    spec: "Da liễu",
-    hospital: "BV Da Liễu TW, HN",
-    rating: 4.8,
-    info: [
-      "Gần 40 năm kinh nghiệm điều trị và phẫu thuật thành công hàng ngàn ca viêm Amidan, viêm VA, viêm xoang, u thanh quản, u hạ họng, viêm tai giữa, ù tai, nghe kém, điếc đột ngột, thủng màng nhĩ...",
-      "Nguyên Trưởng khoa Tai mũi họng trẻ em, Bệnh viện Tai Mũi Họng Trung ương",
-      "Giám đốc bệnh viện Đa khoa An Việt",
-    ],
-  },
-  {
-    id: 2,
-    img: "https://randomuser.me/api/portraits/men/54.jpg",
-    name: "GS.TS. Nguyễn Đức Tuấn",
-    spec: "Nhi khoa",
-    hospital: "BV Nhi Đồng 1, TP.HCM",
-    rating: 4.9,
-    info: [
-      "Gần 40 năm kinh nghiệm điều trị và phẫu thuật thành công hàng ngàn ca viêm Amidan, viêm VA, viêm xoang, u thanh quản, u hạ họng, viêm tai giữa, ù tai, nghe kém, điếc đột ngột, thủng màng nhĩ...",
-      "Nguyên Trưởng khoa Tai mũi họng trẻ em, Bệnh viện Tai Mũi Họng Trung ương",
-      "Giám đốc bệnh viện Đa khoa An Việt",
-    ],
-  },
-  {
-    id: 2,
-    img: "https://randomuser.me/api/portraits/women/29.jpg",
-    name: "ThS.BS. Phạm Bích Ngọc",
-    spec: "Sản phụ khoa",
-    hospital: "BV Từ Dũ, TP.HCM",
-    rating: 3,
-    info: [
-      "Gần 40 năm kinh nghiệm điều trị và phẫu thuật thành công hàng ngàn ca viêm Amidan, viêm VA, viêm xoang, u thanh quản, u hạ họng, viêm tai giữa, ù tai, nghe kém, điếc đột ngột, thủng màng nhĩ...",
-      "Nguyên Trưởng khoa Tai mũi họng trẻ em, Bệnh viện Tai Mũi Họng Trung ương",
-      "Giám đốc bệnh viện Đa khoa An Việt",
-    ],
-  },
-  {
-    id: 2,
-    img: "https://randomuser.me/api/portraits/women/29.jpg",
-    name: "ThS.BS. Phạm Bích Ngọc",
-    spec: "Sản phụ khoa",
-    hospital: "BV Từ Dũ, TP.HCM",
-    rating: 3,
-    info: [
-      "Gần 40 năm kinh nghiệm điều trị và phẫu thuật thành công hàng ngàn ca viêm Amidan, viêm VA, viêm xoang, u thanh quản, u hạ họng, viêm tai giữa, ù tai, nghe kém, điếc đột ngột, thủng màng nhĩ...",
-      "Nguyên Trưởng khoa Tai mũi họng trẻ em, Bệnh viện Tai Mũi Họng Trung ương",
-      "Giám đốc bệnh viện Đa khoa An Việt",
-    ],
-  },
-  {
-    id: 2,
-    img: "https://randomuser.me/api/portraits/women/29.jpg",
-    name: "ThS.BS. Phạm Bích Ngọc",
-    spec: "Sản phụ khoa",
-    hospital: "BV Từ Dũ, TP.HCM",
-    rating: 3,
-    info: [
-      "Gần 40 năm kinh nghiệm điều trị và phẫu thuật thành công hàng ngàn ca viêm Amidan, viêm VA, viêm xoang, u thanh quản, u hạ họng, viêm tai giữa, ù tai, nghe kém, điếc đột ngột, thủng màng nhĩ...",
-      "Nguyên Trưởng khoa Tai mũi họng trẻ em, Bệnh viện Tai Mũi Họng Trung ương",
-      "Giám đốc bệnh viện Đa khoa An Việt",
-    ],
-  },
-  {
-    id: 2,
-    img: "https://randomuser.me/api/portraits/women/29.jpg",
-    name: "ThS.BS. Phạm Bích Ngọc",
-    spec: "Sản phụ khoa",
-    hospital: "BV Từ Dũ, TP.HCM",
-    rating: 3,
-    info: [
-      "Gần 40 năm kinh nghiệm điều trị và phẫu thuật thành công hàng ngàn ca viêm Amidan, viêm VA, viêm xoang, u thanh quản, u hạ họng, viêm tai giữa, ù tai, nghe kém, điếc đột ngột, thủng màng nhĩ...",
-      "Nguyên Trưởng khoa Tai mũi họng trẻ em, Bệnh viện Tai Mũi Họng Trung ương",
-      "Giám đốc bệnh viện Đa khoa An Việt",
-    ],
-  },
-  {
-    id: 2,
-    img: "https://randomuser.me/api/portraits/women/29.jpg",
-    name: "ThS.BS. Phạm Bích Ngọc",
-    spec: "Sản phụ khoa",
-    hospital: "BV Từ Dũ, TP.HCM",
-    rating: 3,
-    info: [
-      "Gần 40 năm kinh nghiệm điều trị và phẫu thuật thành công hàng ngàn ca viêm Amidan, viêm VA, viêm xoang, u thanh quản, u hạ họng, viêm tai giữa, ù tai, nghe kém, điếc đột ngột, thủng màng nhĩ...",
-      "Nguyên Trưởng khoa Tai mũi họng trẻ em, Bệnh viện Tai Mũi Họng Trung ương",
-      "Giám đốc bệnh viện Đa khoa An Việt",
-    ],
-  },
-  {
-    id: 2,
-    img: "https://randomuser.me/api/portraits/women/29.jpg",
-    name: "ThS.BS. Phạm Bích Ngọc",
-    spec: "Sản phụ khoa",
-    hospital: "BV Từ Dũ, TP.HCM",
-    rating: 3,
-    info: [
-      "Gần 40 năm kinh nghiệm điều trị và phẫu thuật thành công hàng ngàn ca viêm Amidan, viêm VA, viêm xoang, u thanh quản, u hạ họng, viêm tai giữa, ù tai, nghe kém, điếc đột ngột, thủng màng nhĩ...",
-      "Nguyên Trưởng khoa Tai mũi họng trẻ em, Bệnh viện Tai Mũi Họng Trung ương",
-      "Giám đốc bệnh viện Đa khoa An Việt",
-      "Giám đốc bệnh viện Đa khoa An Việt",
-      "Giám đốc bệnh viện Đa khoa An Việt",
-    ],
-  },
-];
+const getHospitalTypeLabel = (type) => (type === "private" ? "Tư nhân" : "Công lập");
+
+const formatDoctorName = (doctor) => {
+  const fullName = `${doctor?.user?.lastName || ""} ${doctor?.user?.firstName || ""}`.trim();
+  return fullName || "Bác sĩ chưa cập nhật tên";
+};
+
+const formatReviewDoctorName = (doctor) => {
+  const fullName = `${doctor?.user?.lastName || ""} ${doctor?.user?.firstName || ""}`.trim();
+  return fullName || "Bác sĩ";
+};
+
+const formatWorkingDays = (workingDays) => {
+  if (!workingDays) return "";
+  return workingDays
+    .split(",")
+    .map((day) => DAYS_SHORT[day.trim()] || day.trim())
+    .filter(Boolean)
+    .join(", ");
+};
+
+const formatDate = (date) => {
+  if (!date) return "";
+  return new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(date));
+};
 
 const HospitalDetailPage = () => {
-  return (
-    <>
-      <div
-        className="hospital-header d-flex align-items-center justify-content-center"
-        style={{
-          backgroundImage: `url(${hospital.img})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        <form className="hospital-info-form d-flex align-items-center gap-4">
-          <div className="logo-wrapper flex-shrink-0">
-            <img src={hospital.logo} alt={hospital.name} className="rounded" />
-          </div>
-          <div className="flex-grow-1">
-            <h1 className="fw-bold mb-2">{hospital.name}</h1>
-            <p className="mb-0">{hospital.address}</p>
-          </div>
-        </form>
-      </div>
+  const { hospitalSlug } = useParams();
+  const [hospital, setHospital] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
-      <div className="hospital doctors-page-container p-5">
-        <div className="d-flex flex-column">
-          {doctors.map(({ id, img, name, spec, hospital, rating, info }) => (
-            <div
-              key={id}
-              className="doctor-item d-flex align-items-center gap-4 p-4 border-bottom"
-            >
-              <img src={img} alt={name} className="rounded flex-shrink-0" />
-              <div className="d-flex flex-column gap-2 flex-grow-1">
-                <div className="fw-bold">{name}</div>
-                <ul className="info">
-                  {info.map((item, index) => (
-                    <li key={index}> {item}</li>
-                  ))}
-                </ul>
-              </div>
-              <button className="btn-book-doc btn btn-rounded flex-shrink-0">
-                <Link to={`/doctors/${toSlug(name)}`}>Đặt lịch</Link>
-              </button>
-            </div>
-          ))}
-        </div>
+  useEffect(() => {
+    let isMounted = true;
+
+    hospitalService
+      .hospitalDetail(hospitalSlug)
+      .then((res) => {
+        if (!isMounted) return;
+        setHospital(res.data?.data || null);
+        setError("");
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error("Lỗi lấy chi tiết bệnh viện:", err);
+        const message = err.response?.data?.message || "Không thể tải thông tin bệnh viện.";
+        toast.error(message);
+        if (!isMounted) return;
+        setError(message);
+        setHospital(null);
+        setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [hospitalSlug]);
+
+  if (isLoading) {
+    return (
+      <div className="hospital-detail-loading">
+        <LoadingSpinner />
       </div>
-    </>
+    );
+  }
+
+  if (error || !hospital) {
+    return (
+      <div className="hospital-detail-error">
+        <FaHospital />
+        <h1>Không tìm thấy bệnh viện</h1>
+        <p>{error || "Bệnh viện này không tồn tại hoặc hiện không hoạt động."}</p>
+        <Link to="/hospitals" className="hospital-detail-back">
+          Xem danh sách bệnh viện
+        </Link>
+      </div>
+    );
+  }
+
+  const {
+    name,
+    address,
+    city,
+    type,
+    imgURL,
+    description,
+    doctors = [],
+    reviews = [],
+  } = hospital;
+
+  return (
+    <main className="hospital-detail-page">
+      <section
+        className="hospital-detail-hero"
+        style={{ backgroundImage: `url(${imgURL || FALLBACK_HOSPITAL_IMAGE})` }}
+      >
+        <div className="hospital-detail-hero-overlay" />
+        <div className="hospital-detail-summary">
+          <span className={`hospital-detail-type ${type || "public"}`}>
+            {getHospitalTypeLabel(type)}
+          </span>
+          <h1>{name}</h1>
+          <div className="hospital-detail-address">
+            <FaLocationDot />
+            <span>{address || city || "Chưa cập nhật địa chỉ"}</span>
+          </div>
+          {city && (
+            <div className="hospital-detail-city">
+              <FaHospital />
+              <span>{city}</span>
+            </div>
+          )}
+          {description && <p className="hospital-detail-description">{description}</p>}
+        </div>
+      </section>
+
+      <section className="hospital-detail-content">
+        <div className="hospital-detail-main">
+          <div className="hospital-section-heading">
+            <div>
+              <span className="section-kicker">Đội ngũ chuyên môn</span>
+              <h2>Bác sĩ đang làm việc tại bệnh viện</h2>
+            </div>
+            <span className="section-count">{doctors.length} bác sĩ</span>
+          </div>
+
+          <div className="hospital-detail-doctors">
+            {doctors.length > 0 ? (
+              doctors.map((item) => {
+                const doctor = item.doctor || {};
+                const fullName = formatDoctorName(doctor);
+                const avatar =
+                  doctor.imgURL ||
+                  doctor.user?.avatar ||
+                  `${DEFAULT_AVATAR}${encodeURIComponent(fullName)}`;
+                const primarySpecialty = doctor.specialties?.[0]?.specialty?.name;
+                const workingDays = formatWorkingDays(item.workingDays);
+                const priceDisplay = doctor.consultationFee
+                  ? `${doctor.consultationFee.toLocaleString("vi-VN")}đ`
+                  : "Liên hệ";
+
+                return (
+                  <article key={doctor.id || doctor.slug || fullName} className="hospital-doctor-card">
+                    <div className="hospital-doctor-avatar">
+                      <img src={avatar} alt={fullName} />
+                    </div>
+                    <div className="hospital-doctor-info">
+                      <h3>{fullName}</h3>
+                      <div className="hospital-doctor-tags">
+                        {primarySpecialty && (
+                          <span>
+                            <FaUserDoctor />
+                            {primarySpecialty}
+                          </span>
+                        )}
+                        {doctor.experience && <span>{doctor.experience} năm kinh nghiệm</span>}
+                      </div>
+                      <div className="hospital-doctor-schedule">
+                        {(item.startTime || item.endTime) && (
+                          <span>
+                            <FaClock />
+                            {item.startTime || "--:--"} - {item.endTime || "--:--"}
+                          </span>
+                        )}
+                        {workingDays && (
+                          <span>
+                            <FaCalendarDays />
+                            {workingDays}
+                          </span>
+                        )}
+                      </div>
+                      <div className="hospital-doctor-rating">
+                        <span>
+                          <FaStar />
+                          {doctor.rating || 0}
+                        </span>
+                        <span>({doctor.totalReviews || 0} đánh giá)</span>
+                      </div>
+                    </div>
+                    <div className="hospital-doctor-action">
+                      <div className="hospital-doctor-price">{priceDisplay}</div>
+                      <span>Phí khám</span>
+                      {doctor.slug && (
+                        <Link to={`/doctors/${doctor.slug}`} className="hospital-doctor-link">
+                          Xem bác sĩ
+                        </Link>
+                      )}
+                    </div>
+                  </article>
+                );
+              })
+            ) : (
+              <div className="hospital-empty-box">
+                <FaUserDoctor />
+                <p>Bệnh viện này chưa có bác sĩ được hiển thị.</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <aside className="hospital-detail-reviews">
+          <div className="hospital-section-heading compact">
+            <div>
+              <span className="section-kicker">Đánh giá gần đây</span>
+              <h2>Nhận xét từ bệnh nhân</h2>
+            </div>
+          </div>
+
+          {reviews.length > 0 ? (
+            <div className="hospital-review-list">
+              {reviews.map((review) => (
+                <article key={review.id} className="hospital-review-card">
+                  <div className="hospital-review-top">
+                    <strong>{review.patientProfile?.fullName || "Người dùng ẩn danh"}</strong>
+                    <span>
+                      <FaStar />
+                      {review.rating || 0}
+                    </span>
+                  </div>
+                  {review.comment && <p>{review.comment}</p>}
+                  <div className="hospital-review-meta">
+                    <span>Với {formatReviewDoctorName(review.doctor)}</span>
+                    {review.createdAt && <span>{formatDate(review.createdAt)}</span>}
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="hospital-empty-box review-empty">
+              <FaRegCommentDots />
+              <p>Chưa có đánh giá.</p>
+            </div>
+          )}
+        </aside>
+      </section>
+    </main>
   );
 };
 

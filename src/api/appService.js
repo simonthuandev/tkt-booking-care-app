@@ -1,6 +1,20 @@
 import axiosInstance from "./axiosInstance";
 
 // ==========================================
+// 0. Module Upload (Tải ảnh lên backend)
+// ==========================================
+export const uploadService = {
+  uploadImage: (type, file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    return axiosInstance.post(`/uploads/${type}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+};
+
+// ==========================================
 // 1. Module User Profile (Bệnh nhân quản lý hồ sơ)
 // ==========================================
 export const patientProfileService = {
@@ -202,21 +216,26 @@ export const searchService = {
 };
 
 // ==========================================
-// 9. Module Payment (Thanh Toán)
+// 9. Module Public Stats (Thống kê công khai)
+// ==========================================
+export const publicStatsService = {
+  // Public: Thống kê hiển thị trang chủ
+  getStats: () => axiosInstance.get("/public/stats"),
+};
+
+// ==========================================
+// 10. Module Payment (Thanh Toán)
 // ==========================================
 export const paymentService = {
   // User: Tạo link thanh toán VNPAY/MoMo cho một lịch hẹn cụ thể
   createPaymentUrl: (data) => axiosInstance.post("/payment/create-url", data),
-
-  // Nhận IPN Webhook từ VNPAY để tự cập nhật trạng thái thanh toán
-  vnPayIpn: (params = {}) => axiosInstance.get("/payment/vnpay-ipn", { params }),
 
   // Admin/Nhân viên lễ tân xác nhận bệnh nhân đã thanh toán tiền mặt
   confirmCashPayment: (id) => axiosInstance.patch(`/payment/confirm-cash/${id}`),
 };
 
 // ==========================================
-// 10. Các API Quản Trị Hệ Thống (Module Admin System)
+// 11. Các API Quản Trị Hệ Thống (Module Admin System)
 // ==========================================
 export const adminSystemService = {
   // Dashboard Statistics

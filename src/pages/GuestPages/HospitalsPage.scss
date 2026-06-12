@@ -47,13 +47,12 @@
   line-height: 1.5;
 }
 
-// ── Filter Section ────────────────────────────────────
 .filter-section {
   background: v.$white;
   border: 2px solid v.$primary-lt;
   border-radius: v.$radius;
   padding: 28px;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   animation: slideDown 0.4s ease-out;
   box-shadow: 0 2px 12px rgba(11, 163, 163, 0.08);
   transition: all 0.3s ease;
@@ -81,11 +80,6 @@
   @media (max-width: v.$bp-md) {
     flex-direction: column;
     align-items: stretch;
-    gap: 16px;
-  }
-
-  @media (max-width: v.$bp-sm) {
-    gap: 12px;
   }
 }
 
@@ -100,10 +94,10 @@
     min-width: auto;
     width: 100%;
   }
+}
 
-  @media (max-width: v.$bp-sm) {
-    flex: auto;
-  }
+.search-filter-group {
+  flex: 1.4;
 }
 
 .filter-label {
@@ -114,69 +108,54 @@
   white-space: nowrap;
   margin: 0;
 
-  @media (max-width: v.$bp-md) {
-    width: 100%;
-  }
-
   @media (max-width: v.$bp-sm) {
     font-size: 0.95rem;
   }
 }
 
-.city-select {
-  padding: 12px 16px;
-  border: 2px solid v.$border;
-  background: v.$white;
-  color: v.$text;
-  border-radius: v.$radius-sm;
-  font-size: 0.95rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%230ba3a3' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 36px;
-  min-width: 200px;
+.hospital-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
 
-  @media (max-width: v.$bp-md) {
-    width: 100%;
-    min-width: auto;
+  .search-icon {
+    position: absolute;
+    left: 14px;
+    color: v.$text-muted;
+    font-size: 15px;
+    pointer-events: none;
   }
 
-  @media (max-width: v.$bp-sm) {
-    font-size: 0.9rem;
-    padding: 10px 14px;
-    padding-right: 32px;
+  .search-input {
+    padding-left: 40px;
+    padding-right: 40px;
   }
 
-  &:hover {
-    border-color: v.$primary;
-    box-shadow: 0 2px 8px rgba(11, 163, 163, 0.1);
-  }
+  .search-clear-btn {
+    position: absolute;
+    right: 10px;
+    border: none;
+    background: transparent;
+    color: v.$text-muted;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: color 0.2s ease, background 0.2s ease;
 
-  &:focus {
-    outline: none;
-    border-color: v.$primary;
-    box-shadow: 0 0 0 3px rgba(11, 163, 163, 0.1);
-  }
-
-  option {
-    padding: 8px 12px;
-    background: v.$white;
-    color: v.$text;
-    font-weight: 500;
-
-    &:checked {
-      background: linear-gradient(v.$primary, v.$primary);
-      background-color: v.$primary !important;
-      color: v.$white !important;
+    &:hover {
+      background: v.$primary-lt;
+      color: v.$primary;
     }
   }
 }
 
+.city-select,
 .search-input {
+  min-height: 46px;
   padding: 12px 16px;
   border: 2px solid v.$border;
   background: v.$white;
@@ -187,18 +166,10 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   width: 100%;
 
-  @media (max-width: v.$bp-md) {
-    width: 100%;
-  }
-
   @media (max-width: v.$bp-sm) {
     font-size: 0.9rem;
-    padding: 10px 14px;
-  }
-
-  &::placeholder {
-    color: v.$text-muted;
-    font-weight: 400;
+    padding-top: 10px;
+    padding-bottom: 10px;
   }
 
   &:hover {
@@ -213,36 +184,108 @@
   }
 }
 
-// ── Results Info ──────────────────────────────────────
-.results-info {
-  margin-bottom: 24px;
+.city-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%230ba3a3' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
 
-  p {
-    font-size: 0.95rem;
-    color: v.$text-muted;
-    margin: 0;
-    padding: 12px 16px;
-    background: rgba(11, 163, 163, 0.05);
-    border-left: 4px solid v.$primary;
-    border-radius: v.$radius-sm;
+.search-input::placeholder {
+  color: v.$text-muted;
+  font-weight: 400;
+}
 
-    strong {
-      color: v.$primary;
-      font-weight: 600;
-    }
-  }
+.hospital-type-filter {
+  flex: 1.1;
+}
+
+.type-toggle-group {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  min-height: 46px;
+  border: 2px solid v.$border;
+  border-radius: v.$radius-sm;
+  background: #f8fbfc;
 
   @media (max-width: v.$bp-sm) {
-    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+}
 
-    p {
-      padding: 10px 12px;
-      font-size: 0.9rem;
+.type-toggle {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: v.$text-muted;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    color: v.$primary;
+    background: rgba(11, 163, 163, 0.08);
+  }
+
+  &.active {
+    color: v.$white;
+    background: v.grad-primary();
+    box-shadow: 0 4px 12px rgba(11, 163, 163, 0.22);
+  }
+}
+
+.hospital-active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 24px;
+
+  .filter-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: v.$primary-lt;
+    color: v.$primary-dk;
+    border: 1px solid rgba(11, 163, 163, 0.25);
+    border-radius: 999px;
+    padding: 7px 10px 7px 14px;
+    font-size: 0.86rem;
+    font-weight: 700;
+  }
+
+  button {
+    border: none;
+    background: transparent;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(11, 163, 163, 0.14);
     }
   }
 }
 
-// ── Hospitals Grid ────────────────────────────────────
+.hospitals-loading {
+  min-height: 360px;
+
+  .min-vh-100 {
+    min-height: 360px !important;
+  }
+}
+
 .hospitals-container {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -261,94 +304,147 @@
 
   @media (max-width: v.$bp-sm) {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 14px;
   }
 }
 
-.specialty-card {
+.hospital-card {
   text-decoration: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: inherit;
   border-radius: v.$radius;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  background: v.$white;
+  border: 1px solid v.$border;
+  box-shadow: v.$shadow;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
 
   &:hover {
-    transform: translateY(-8px);
+    transform: translateY(-6px);
+    box-shadow: v.$shadow-hover;
+    color: inherit;
 
-    .specialty-image {
-      box-shadow: 0 8px 20px rgba(11, 163, 163, 0.15);
-      transform: scale(1.02);
+    .hospital-image img {
+      transform: scale(1.05);
     }
 
-    .specialty-name {
+    .hospital-name {
       color: v.$primary;
     }
   }
 }
 
-.specialty-image {
+.hospital-image {
   width: 100%;
   height: 180px;
   overflow: hidden;
-  border-radius: v.$radius;
   background: #f5f5f5;
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
 
   @media (max-width: v.$bp-md) {
-    height: 150px;
+    height: 160px;
   }
 
   @media (max-width: v.$bp-sm) {
-    height: 200px;
+    height: 210px;
   }
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
-  }
-
-  .city-badge {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: rgba(11, 163, 163, 0.9);
-    color: v.$white;
-    padding: 6px 12px;
-    border-radius: v.$radius-sm;
-    font-size: 0.8rem;
-    font-weight: 600;
-    backdrop-filter: blur(4px);
-
-    @media (max-width: v.$bp-sm) {
-      font-size: 0.75rem;
-      padding: 5px 10px;
-    }
+    transition: transform 0.35s ease;
   }
 }
 
-.specialty-name {
-  margin: 16px 0 0 0;
-  font-size: 0.95rem;
-  font-weight: 600;
+.city-badge,
+.hospital-type-badge {
+  position: absolute;
+  color: v.$white;
+  padding: 6px 12px;
+  border-radius: v.$radius-sm;
+  font-size: 0.78rem;
+  font-weight: 700;
+  backdrop-filter: blur(4px);
+}
+
+.city-badge {
+  top: 12px;
+  right: 12px;
+  background: rgba(13, 43, 69, 0.78);
+}
+
+.hospital-type-badge {
+  left: 12px;
+  bottom: 12px;
+
+  &.public {
+    background: rgba(11, 163, 163, 0.92);
+  }
+
+  &.private {
+    background: rgba(255, 107, 53, 0.92);
+  }
+}
+
+.hospital-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  flex: 1;
+}
+
+.hospital-name {
+  margin: 0;
+  min-height: 44px;
+  font-size: 1rem;
+  font-weight: 800;
   color: v.$text;
-  line-height: 1.4;
+  line-height: 1.35;
   transition: color 0.3s ease;
-  flex-grow: 1;
+}
 
-  @media (max-width: v.$bp-sm) {
-    font-size: 0.9rem;
-    margin-top: 12px;
+.hospital-address {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: v.$text-muted;
+  font-size: 0.86rem;
+  line-height: 1.45;
+
+  svg {
+    color: v.$accent;
+    flex-shrink: 0;
+    margin-top: 2px;
   }
 }
 
-// ── No Results ────────────────────────────────────────
+.hospital-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: v.$text-muted;
+    background: #f7fafb;
+    border: 1px solid v.$border;
+    border-radius: 999px;
+    padding: 6px 9px;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  svg {
+    color: v.$primary;
+  }
+}
+
 .no-results {
   grid-column: 1 / -1;
   text-align: center;
@@ -356,16 +452,87 @@
   background: rgba(11, 163, 163, 0.05);
   border-radius: v.$radius;
   border: 2px dashed v.$border;
+  color: v.$text-muted;
+
+  .no-results-icon {
+    font-size: 44px;
+    color: v.$primary;
+    opacity: 0.55;
+    margin-bottom: 14px;
+  }
 
   p {
-    font-size: 1.1rem;
-    color: v.$text-muted;
+    font-size: 1.05rem;
     margin: 0;
-    font-weight: 500;
+    font-weight: 600;
   }
 }
 
-// ── Animations ────────────────────────────────────────
+.hospitals-pagination-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+
+  .pagination-info {
+    font-size: 0.875rem;
+    color: v.$text-muted;
+  }
+}
+
+.doctors-pagination {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+
+  .page-item {
+    .page-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      border: 1px solid v.$border;
+      background: v.$white;
+      color: #374151;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+
+      &:hover {
+        background: v.$primary-lt;
+        border-color: v.$primary;
+        color: v.$primary;
+      }
+    }
+
+    &.active .page-link {
+      background: v.grad-primary();
+      border-color: transparent;
+      color: v.$white;
+      box-shadow: 0 4px 12px rgba(11, 163, 163, 0.3);
+    }
+
+    &.disabled .page-link {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    &.page-prev .page-link,
+    &.page-next .page-link {
+      font-size: 12px;
+    }
+  }
+}
+
 @keyframes slideDown {
   from {
     opacity: 0;
