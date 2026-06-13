@@ -315,6 +315,10 @@ export default function AdminUsersPage() {
   // Search
   const [search, setSearch] = useState("");
   const [inputSearch, setInputSearch] = useState("");
+  const [filterRole, setFilterRole] = useState("");
+  const [filterProvider, setFilterProvider] = useState("");
+  const [filterActive, setFilterActive] = useState("");
+  const [filterVerified, setFilterVerified] = useState("");
 
   // Modals
   const [modal, setModal] = useState(null); // 'view' | 'role' | 'ban'
@@ -325,11 +329,16 @@ export default function AdminUsersPage() {
   const fetchUsers = async (pageIndex = 0, searchQuery = "") => {
     try {
       setLoading(true);
-      const res = await adminSystemService.getUsers({
+      const params = {
         page: pageIndex + 1, // backend 1-indexed
         limit: PAGE_LIMIT,
-        search: searchQuery
-      });
+        ...(searchQuery.trim() && { search: searchQuery.trim() }),
+        ...(filterRole && { role: filterRole }),
+        ...(filterProvider && { provider: filterProvider }),
+        ...(filterActive !== "" && { isActive: filterActive }),
+        ...(filterVerified !== "" && { isEmailVerified: filterVerified }),
+      };
+      const res = await adminSystemService.getUsers(params);
       
       const respData = res.data?.data;
       
@@ -354,12 +363,27 @@ export default function AdminUsersPage() {
   useEffect(() => {
     fetchUsers(currentPage, search);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, search]);
+  }, [currentPage, search, filterRole, filterProvider, filterActive, filterVerified]);
 
   // 2. Handlers
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setSearch(inputSearch);
+    setCurrentPage(0);
+  };
+
+  const handleFilterChange = (setter) => (e) => {
+    setter(e.target.value);
+    setCurrentPage(0);
+  };
+
+  const clearFilters = () => {
+    setSearch("");
+    setInputSearch("");
+    setFilterRole("");
+    setFilterProvider("");
+    setFilterActive("");
+    setFilterVerified("");
     setCurrentPage(0);
   };
 
@@ -427,8 +451,10 @@ export default function AdminUsersPage() {
 
       {/* Toolbar / Search */}
       <div className="card shadow-sm border-0 mb-4 p-3 bg-white">
-        <form onSubmit={handleSearchSubmit} className="d-flex gap-2" style={{ maxWidth: '400px' }}>
-          <div className="input-group">
+        <div className="row g-2 align-items-center">
+          <div className="col-12 col-lg-4">
+            <form onSubmit={handleSearchSubmit} className="d-flex gap-2">
+              <div className="input-group">
             <span className="input-group-text bg-light border-end-0"><FaSearch className="text-muted"/></span>
             <input 
               type="text" 
@@ -437,9 +463,47 @@ export default function AdminUsersPage() {
               value={inputSearch}
               onChange={e => setInputSearch(e.target.value)}
             />
+              </div>
+              <button type="submit" className="btn btn-primary px-4" style={{ backgroundColor: "#0ba3a3", borderColor: "#0ba3a3"}}>Find</button>
+            </form>
           </div>
-          <button type="submit" className="btn btn-primary px-4" style={{ backgroundColor: "#0ba3a3", borderColor: "#0ba3a3"}}>Find</button>
-        </form>
+          <div className="col-6 col-lg-2">
+            <select className="form-select" value={filterRole} onChange={handleFilterChange(setFilterRole)}>
+              <option value="">Tất cả vai trò</option>
+              <option value="user">User</option>
+              <option value="doctor">Doctor</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div className="col-6 col-lg-2">
+            <select className="form-select" value={filterProvider} onChange={handleFilterChange(setFilterProvider)}>
+              <option value="">Tất cả provider</option>
+              <option value="local">Local</option>
+              <option value="google">Google</option>
+            </select>
+          </div>
+          <div className="col-6 col-lg-2">
+            <select className="form-select" value={filterActive} onChange={handleFilterChange(setFilterActive)}>
+              <option value="">Tất cả trạng thái</option>
+              <option value="true">Đang hoạt động</option>
+              <option value="false">Bị khóa</option>
+            </select>
+          </div>
+          <div className="col-6 col-lg-2">
+            <select className="form-select" value={filterVerified} onChange={handleFilterChange(setFilterVerified)}>
+              <option value="">Tất cả xác thực</option>
+              <option value="true">Đã xác thực</option>
+              <option value="false">Chưa xác thực</option>
+            </select>
+          </div>
+          {(search || filterRole || filterProvider || filterActive || filterVerified) && (
+            <div className="col-12">
+              <button type="button" className="btn btn-light border" onClick={clearFilters}>
+                Xóa lọc
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* List */}

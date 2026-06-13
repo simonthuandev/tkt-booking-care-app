@@ -14,9 +14,10 @@ import {
   FaStethoscope,
   FaMoneyBillWave,
   FaStar,
+  FaCreditCard,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
-import { appointmentService, reviewService } from "../../../api/appService";
+import { appointmentService, paymentService, reviewService } from "../../../api/appService";
 import LoadingSpinner from "../../../components/Common/LoadingSpinner";
 import "./UserAppointmentsPage.scss";
 
@@ -65,12 +66,13 @@ const formatDateTime = (dateStr, startTime, endTime) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // SUB-COMPONENT: AppointmentRow
 // ─────────────────────────────────────────────────────────────────────────────
-const AppointmentRow = ({ appt, onView, onCancel, onReview }) => {
+const AppointmentRow = ({ appt, onView, onCancel, onReview, onPay }) => {
   const statusCfg = STATUS_CFG[appt.status] || STATUS_CFG.pending;
   const StatusIcon = statusCfg.icon;
 
   const paymentStatus = PAYMENT_STATUS_CFG[appt.paymentStatus] || PAYMENT_STATUS_CFG.pending;
   const canReview = appt.status === "completed" && !appt.review;
+  const canPay = appt.status === "pending" && ["pending", "failed"].includes(appt.paymentStatus);
 
   return (
     <div className="user-appt-row">
@@ -126,6 +128,11 @@ const AppointmentRow = ({ appt, onView, onCancel, onReview }) => {
         {canReview && (
           <button className="user-appt-btn user-appt-btn--view" onClick={() => onReview(appt)} title="Đánh giá">
             <FaStar />
+          </button>
+        )}
+        {canPay && (
+          <button className="user-appt-btn user-appt-btn--view" onClick={() => onPay(appt)} title="Thanh toán">
+            <FaCreditCard />
           </button>
         )}
       </div>
@@ -247,6 +254,48 @@ const ReviewModal = ({ appt, onConfirm, onClose, saving }) => {
               >
                 {saving ? "Đang gửi..." : "Gửi đánh giá"}
               </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+const PaymentChoiceModal = ({ appt, onOnline, onCash, onClose, saving }) => {
+  if (!appt) return null;
+
+  return (
+    <>
+      <div className="modal-backdrop fade show" onClick={saving ? undefined : onClose} />
+      <div className="modal fade show d-block" tabIndex="-1">
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title text-primary">Chọn phương thức thanh toán</h5>
+              <button className="btn-close" onClick={onClose} disabled={saving} />
+            </div>
+            <div className="modal-body py-4">
+              <div className="mb-3">
+                <div className="fw-semibold">
+                  {appt.doctor?.user?.lastName} {appt.doctor?.user?.firstName}
+                </div>
+                <div className="text-muted small">{formatDateTime(appt.timeSlot?.date, appt.timeSlot?.startTime, appt.timeSlot?.endTime)}</div>
+                <div className="fw-bold text-success mt-2">{formatCurrency(appt.totalAmount)}</div>
+              </div>
+              <div className="d-grid gap-2">
+                <button className="btn btn-primary" onClick={() => onOnline(appt)} disabled={saving}>
+                  <FaCreditCard className="me-2" />
+                  {saving ? "Đang tạo link..." : "Thanh toán online qua VNPAY"}
+                </button>
+                <button className="btn btn-outline-success" onClick={() => onCash(appt)} disabled={saving}>
+                  <FaMoneyBillWave className="me-2" />
+                  Thanh toán tại quầy
+                </button>
+              </div>
+            </div>
+            <div className="modal-footer border-0 pt-0">
+              <button className="btn btn-light border" onClick={onClose} disabled={saving}>Hủy</button>
             </div>
           </div>
         </div>
@@ -405,7 +454,7 @@ export default function UserAppointmentsPage() {
   const [filterStatus, setFilterStatus] = useState("");
 
   // Modals
-  const [modal, setModal] = useState(null); // 'view' | 'cancel' | 'review'
+  const [modal, setModal] = useState(null); // 'view' | 'cancel' | 'review' | 'payment'
   const [selectedAppt, setSelectedAppt] = useState(null);
   const [saving, setSaving] = useState(false);
 
@@ -502,6 +551,43 @@ export default function UserAppointmentsPage() {
     }
   };
 
+  const handleOnlinePayment = async (appt) => {
+    setSaving(true);
+    try {
+      const res = await paymentService.createPaymentUrl({
+        appointmentId: appt.id,
+        provider: "vn_pay",
+      });
+      const payUrl = res.data?.payUrl || res.data?.data?.payUrl;
+      if (!payUrl) {
+        throw new Error("Không nhận được link thanh toán");
+      }
+      window.location.href = payUrl;
+    } catch (err) {
+      console.error("Failed to create VNPAY payment", err);
+      toast.error(err?.response?.data?.message || "Không thể tạo link thanh toán. Vui lòng thử lại.");
+      setSaving(false);
+    }
+  };
+
+  const handleCashPayment = async (appt) => {
+    setSaving(true);
+    try {
+      await paymentService.createPaymentUrl({
+        appointmentId: appt.id,
+        provider: "cash",
+      });
+      toast.success("Đã chọn thanh toán tại quầy. Lịch hẹn đã được xác nhận.");
+      closeModal();
+      fetchAppointments();
+    } catch (err) {
+      console.error("Failed to choose cash payment", err);
+      toast.error(err?.response?.data?.message || "Không thể chọn thanh toán tại quầy. Vui lòng thử lại.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="user-appts-page">
       {/* Header */}
@@ -559,6 +645,7 @@ export default function UserAppointmentsPage() {
                 onView={(a) => openModal("view", a)}
                 onCancel={(a) => openModal("cancel", a)}
                 onReview={(a) => openModal("review", a)}
+                onPay={(a) => openModal("payment", a)}
               />
             ))}
           </div>
@@ -631,6 +718,15 @@ export default function UserAppointmentsPage() {
         <ReviewModal
           appt={selectedAppt}
           onConfirm={handleConfirmReview}
+          onClose={closeModal}
+          saving={saving}
+        />
+      )}
+      {modal === "payment" && (
+        <PaymentChoiceModal
+          appt={selectedAppt}
+          onOnline={handleOnlinePayment}
+          onCash={handleCashPayment}
           onClose={closeModal}
           saving={saving}
         />

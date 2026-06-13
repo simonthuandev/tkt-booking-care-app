@@ -536,13 +536,13 @@ export default function AdminAppointmentsPage() {
           </div>
           <div className="col-md-3">
             <div className="input-group">
-              <span className="input-group-text bg-light text-muted">Từ</span>
+              <span className="input-group-text bg-light text-muted">Khám từ</span>
               <input type="date" className="form-control" value={fromDate} onChange={(e) => { setFromDate(e.target.value); handleFilterChange(); }} />
             </div>
           </div>
           <div className="col-md-3">
             <div className="input-group">
-              <span className="input-group-text bg-light text-muted">Đến</span>
+              <span className="input-group-text bg-light text-muted">Khám đến</span>
               <input type="date" className="form-control" value={toDate} onChange={(e) => { setToDate(e.target.value); handleFilterChange(); }} />
             </div>
           </div>

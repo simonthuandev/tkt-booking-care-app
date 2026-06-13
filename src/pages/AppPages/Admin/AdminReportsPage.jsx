@@ -206,7 +206,7 @@ export default function AdminReportsPage() {
                 subText="Dựa trên lịch hẹn hoàn thành"
               />
               <KpiCard
-                label="Bệnh Nhân Mới"
+                label="Tài Khoản Mới"
                 value={reports.growth?.newUsers || 0}
                 icon={FaUserPlus}
                 color="navy"

@@ -304,6 +304,7 @@ export default function AdminHospitalsPage() {
   const [error, setError]       = useState(null);
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
+  const [filterCityInput, setFilterCityInput] = useState("");
   const [filterCity, setFilterCity] = useState("");
   const [filterType, setFilterType] = useState("");
   const [filterActive, setFilterActive] = useState("");
@@ -341,6 +342,12 @@ export default function AdminHospitalsPage() {
     e.preventDefault();
     setCurrentPage(0);
     setSearch(searchInput);
+  };
+
+  const handleCitySubmit = (e) => {
+    e.preventDefault();
+    setCurrentPage(0);
+    setFilterCity(filterCityInput);
   };
 
   const mapToForm = (hosp) => ({
@@ -479,15 +486,15 @@ export default function AdminHospitalsPage() {
             </form>
           </div>
           <div className="col-12 col-md-3 col-lg-2">
-            <input
-              className="form-control"
-              placeholder="Thành phố"
-              value={filterCity}
-              onChange={(e) => {
-                setFilterCity(e.target.value);
-                setCurrentPage(0);
-              }}
-            />
+            <form onSubmit={handleCitySubmit} className="input-group">
+              <input
+                className="form-control"
+                placeholder="Thành phố"
+                value={filterCityInput}
+                onChange={(e) => setFilterCityInput(e.target.value)}
+              />
+              <button className="btn btn-outline-primary" type="submit">Lọc</button>
+            </form>
           </div>
           <div className="col-12 col-md-3 col-lg-2">
             <select
@@ -524,6 +531,7 @@ export default function AdminHospitalsPage() {
                 onClick={() => {
                   setSearch("");
                   setSearchInput("");
+                  setFilterCityInput("");
                   setFilterCity("");
                   setFilterType("");
                   setFilterActive("");
