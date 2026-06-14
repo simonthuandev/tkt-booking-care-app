@@ -491,6 +491,31 @@ $shadow-hov: 0 12px 40px rgba(13, 43, 69, 0.14);
   color: $primary;
 }
 
+.doctor-form-section-title-wrap {
+  margin-top: 1.35rem;
+  margin-bottom: -0.25rem;
+
+  &--first {
+    margin-top: 0;
+  }
+}
+
+.form-section-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1rem;
+  margin: 0;
+  padding: 0.65rem 0.9rem;
+  width: 100%;
+  border-radius: $radius-sm;
+  background: linear-gradient(135deg, rgba($primary, 0.1), rgba($primary-dk, 0.04));
+  border: 1px solid rgba($primary, 0.16);
+  color: $text;
+  font-family: $ff-body;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
 // Form label
 .form-label {
   font-size: 0.8rem;

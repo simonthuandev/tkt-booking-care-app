@@ -48,7 +48,6 @@ const EMPTY_FORM = {
   password: "",
   firstName: "",
   lastName: "",
-  avatar: "",
   // --- Doctor profile ---
   slug: "",
   imgURL: "",
@@ -82,7 +81,6 @@ const buildPayload = (form, isEdit = false) => {
     firstName: form.firstName,
     lastName: form.lastName,
     imgURL: form.imgURL || undefined,
-    avatar: form.avatar || undefined,
     slug: form.slug || undefined,
     licenseNumber: form.licenseNumber || undefined,
     experience: form.experience !== "" ? Number(form.experience) : undefined,
@@ -347,7 +345,7 @@ const DoctorFormModal = ({
               <div className="row g-3">
 
                 {/* ── SECTION: Tài khoản ───────────────────── */}
-                <div className="col-12">
+                <div className="col-12 doctor-form-section-title-wrap doctor-form-section-title-wrap--first">
                   <p className="form-section-title">
                     <FaEnvelope className="me-2 text-primary" />
                     Thông tin tài khoản
@@ -414,29 +412,8 @@ const DoctorFormModal = ({
                   </>
                 )}
 
-                <div className="col-md-6">
-                  <label className="form-label">Avatar URL (tài khoản)</label>
-                  <div className="d-flex gap-2 align-items-center">
-                    <input
-                      className="form-control"
-                      name="avatar"
-                      value={form.avatar}
-                      onChange={onChange}
-                      placeholder="https://..."
-                    />
-                    {form.avatar && (
-                      <img
-                        src={form.avatar}
-                        alt="preview"
-                        className="avatar-preview"
-                        onError={(e) => { e.target.style.display = "none"; }}
-                      />
-                    )}
-                  </div>
-                </div>
-
                 {/* ── SECTION: Hồ sơ bác sĩ ───────────────── */}
-                <div className="col-12 mt-2">
+                <div className="col-12 doctor-form-section-title-wrap">
                   <p className="form-section-title">
                     <FaIdCard className="me-2 text-primary" />
                     Hồ sơ bác sĩ
@@ -529,7 +506,7 @@ const DoctorFormModal = ({
                 {/* ── SECTION: Admin flags ─────────────────── */}
                 {isEdit && (
                   <>
-                    <div className="col-12 mt-2">
+                    <div className="col-12 doctor-form-section-title-wrap">
                       <p className="form-section-title">
                         <FaToggleOn className="me-2 text-primary" />
                         Trạng thái (Admin)
@@ -584,7 +561,7 @@ const DoctorFormModal = ({
                 )}
 
                 {/* ── SECTION: Chuyên khoa ─────────────────── */}
-                <div className="col-12 mt-2">
+                <div className="col-12 doctor-form-section-title-wrap">
                   <p className="form-section-title">
                     <FaStethoscope className="me-2 text-primary" />
                     Chuyên khoa <span className="text-danger">*</span>
@@ -610,7 +587,7 @@ const DoctorFormModal = ({
                 </div>
 
                 {/* ── SECTION: Bệnh viện ───────────────────── */}
-                <div className="col-12 mt-2">
+                <div className="col-12 doctor-form-section-title-wrap">
                   <p className="form-section-title">
                     <FaHospital className="me-2 text-primary" />
                     Lịch làm việc tại bệnh viện
@@ -705,7 +682,7 @@ const DoctorViewModal = ({ doc, onEdit, onClose }) => {
               {/* Info grid */}
               <div className="row g-2 mt-3">
                 {[
-                  { icon: FaPhone, label: "Điện thoại", val: doc.user?.phone ?? "—" },
+                  { icon: FaPhone, label: "Slug", val: doc.slug ?? "—" },
                   { icon: FaEnvelope, label: "Email", val: doc.user?.email ?? "—" },
                   { icon: FaIdCard, label: "Số GPHN", val: doc.licenseNumber ?? "—" },
                   { icon: FaCalendarAlt, label: "Kinh nghiệm", val: doc.experience != null ? `${doc.experience} năm` : "—" },
@@ -905,7 +882,6 @@ export default function AdminDoctorsPage() {
     password: "",                              // không map lại password
     firstName: doc.user?.firstName ?? "",
     lastName: doc.user?.lastName ?? "",
-    avatar: doc.user?.avatar ?? "",
     slug: doc.slug ?? "",
     imgURL: doc.imgURL ?? "",
     licenseNumber: doc.licenseNumber ?? "",

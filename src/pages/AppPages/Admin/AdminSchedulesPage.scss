@@ -4,8 +4,8 @@ $surface: #ffffff;
 $border: #e4e7ef;
 $text: #1a1d2e;
 $text-muted: #6b7280;
-$primary: #2563eb;
-$primary-h: #1d4ed8;
+$primary: #0ba3a3;
+$primary-h: #077d7d;
 $primary-dk: #077d7d;
 $primary-lt: #e6f7f7;
 $white: #ffffff;
@@ -210,12 +210,14 @@ $c-blocked: #dc2626;
 .filter-bar {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 10px;
   background: $surface;
   border: 1px solid $border;
   border-radius: $radius-lg;
   padding: 14px 16px;
   margin-bottom: 14px;
+  box-shadow: 0 8px 28px rgba(13, 43, 69, 0.06);
 
   select,
   input[type="date"] {
@@ -223,7 +225,7 @@ $c-blocked: #dc2626;
     padding: 0 10px;
     border: 1px solid $border;
     border-radius: $radius;
-    background: $bg;
+    background: $surface;
     font-size: 0.85rem;
     color: $text;
     cursor: pointer;
@@ -242,13 +244,13 @@ $c-blocked: #dc2626;
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
+  background: $primary-lt;
+  border: 1px solid rgba($primary, 0.22);
   border-radius: $radius;
   padding: 10px 16px;
   margin-bottom: 12px;
   font-size: 0.85rem;
-  color: $primary;
+  color: $primary-dk;
 
   strong {
     font-weight: 600;
@@ -263,6 +265,7 @@ $c-blocked: #dc2626;
   overflow: hidden;
   overflow-x: auto;
   margin-bottom: 20px;
+  box-shadow: 0 10px 32px rgba(13, 43, 69, 0.07);
 }
 
 .slot-table {
@@ -271,7 +274,7 @@ $c-blocked: #dc2626;
   font-size: 0.875rem;
 
   thead tr {
-    background: #f8f9fd;
+    background: #f6fbfb;
     border-bottom: 1px solid $border;
   }
 
@@ -300,11 +303,11 @@ $c-blocked: #dc2626;
     }
 
     &:hover {
-      background: #f8f9fd;
+      background: #f6fbfb;
     }
 
     &.row--selected {
-      background: #eff6ff;
+      background: $primary-lt;
     }
   }
 
@@ -313,7 +316,8 @@ $c-blocked: #dc2626;
   }
 
   .col-actions {
-    width: 90px;
+    width: 118px;
+    min-width: 118px;
     text-align: center;
   }
 }
@@ -326,8 +330,9 @@ $c-blocked: #dc2626;
 
 .hospital-tag {
   font-size: 0.78rem;
-  background: #f0f1f5;
-  color: $text-muted;
+  background: $primary-lt;
+  color: $primary-dk;
+  border: 1px solid rgba($primary, 0.16);
   padding: 2px 8px;
   border-radius: 20px;
   white-space: nowrap;
@@ -342,8 +347,8 @@ $c-blocked: #dc2626;
 .time-cell {
   .time-pill {
     display: inline-block;
-    background: #eff6ff;
-    color: $primary;
+    background: $primary-lt;
+    color: $primary-dk;
     font-size: 0.8rem;
     font-weight: 600;
     padding: 3px 9px;
@@ -360,57 +365,93 @@ $c-blocked: #dc2626;
   font-weight: 600;
   padding: 3px 9px;
   border-radius: 20px;
+  border: 1px solid transparent;
 
   &--free {
     background: #dcfce7;
     color: $c-free;
+    border-color: #bbf7d0;
   }
 
   &--booked {
     background: #dbeafe;
     color: $c-booked;
+    border-color: #bfdbfe;
   }
 
   &--blocked {
     background: #fee2e2;
     color: $c-blocked;
+    border-color: #fecaca;
   }
 }
 
 // ─── Action buttons ───────────────────────────────────────────
+.slot-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
 .action-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: none;
-  border: none;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  background: #f8fafc;
+  border: 1px solid $border;
   cursor: pointer;
-  padding: 6px 8px;
-  border-radius: 6px;
-  font-size: 1rem;
-  transition: background 0.15s, transform 0.1s, color 0.15s;
-  margin: 0 2px;
+  padding: 0;
+  border-radius: 9px;
+  font-size: 0.95rem;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.1s, color 0.15s;
   color: $text-muted;
 
   &:hover {
-    background: #f0f1f5;
-    transform: scale(1.15);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(13, 43, 69, 0.12);
     color: $text;
   }
 
+  &--block {
+    background: #fff7ed;
+    border-color: #fed7aa;
+    color: #b45309;
+  }
+
   &--block:hover {
-    background: #fee2e2;
-    color: $danger;
+    background: #f59e0b;
+    border-color: #f59e0b;
+    color: $white;
+  }
+
+  &--unblock {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #047857;
   }
 
   &--unblock:hover {
-    background: #dcfce7;
-    color: $c-free;
+    background: $primary;
+    border-color: $primary;
+    color: $white;
+  }
+
+  &--delete {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: $danger;
   }
 
   &--delete:hover {
-    background: #fee2e2;
-    color: $danger;
+    background: $danger;
+    border-color: $danger;
+    color: $white;
   }
 }
 

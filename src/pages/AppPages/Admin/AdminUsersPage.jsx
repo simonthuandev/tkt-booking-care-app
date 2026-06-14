@@ -146,12 +146,12 @@ const UserRoleModal = ({ u, onSave, onClose, saving }) => {
       <div className="modal-backdrop fade show" onClick={onClose} />
       <div className="modal fade show d-block" tabIndex="-1">
         <div className="modal-dialog modal-sm modal-dialog-centered">
-          <div className="modal-content">
+          <div className="modal-content user-role-modal">
             <div className="modal-header">
               <h5 className="modal-title">Đổi vai trò người dùng</h5>
               <button className="btn-close" onClick={onClose} disabled={saving} />
             </div>
-            <form onSubmit={(e) => {
+            <form className="user-role-form" onSubmit={(e) => {
               e.preventDefault();
               onSave(u.id, new FormData(e.currentTarget).get("role"));
             }}>
@@ -170,9 +170,9 @@ const UserRoleModal = ({ u, onSave, onClose, saving }) => {
                 ))}
               </select>
             </div>
-            <div className="modal-footer border-0 pt-0">
-              <button type="button" className="btn btn-light border w-100 mb-2" onClick={onClose} disabled={saving}>Hủy</button>
-              <button type="submit" className="btn btn-save w-100 m-0" disabled={saving}>
+            <div className="modal-footer user-modal-footer border-0 pt-0">
+              <button type="button" className="btn btn-user-secondary" onClick={onClose} disabled={saving}>Hủy</button>
+              <button type="submit" className="btn btn-user-primary" disabled={saving}>
                 {saving ? "Đang lưu..." : "Lưu vai trò"}
               </button>
             </div>
@@ -234,9 +234,9 @@ const UserViewModal = ({ u, onClose }) => {
       <div className="modal-backdrop fade show" onClick={onClose} />
       <div className="modal fade show d-block" tabIndex="-1">
         <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content">
+          <div className="modal-content user-view-modal">
             <div className="modal-header">
-              <h5 className="modal-title">User Profile Details</h5>
+              <h5 className="modal-title">Chi tiết người dùng</h5>
               <button className="btn-close" onClick={onClose} />
             </div>
 
@@ -256,7 +256,7 @@ const UserViewModal = ({ u, onClose }) => {
                       <role.icon /> {role.label}
                     </span>
                     <span className={`user-status-badge ${u.isActive ? "st-active" : "st-banned"}`}>
-                      {u.isActive ? "Active" : "Banned"}
+                      {u.isActive ? "Đang hoạt động" : "Đã khóa"}
                     </span>
                   </div>
                 </div>
@@ -269,33 +269,33 @@ const UserViewModal = ({ u, onClose }) => {
                 </div>
                 
                 <div className="col-6">
-                  <small className="text-muted d-block mb-1">Account ID</small>
+                  <small className="text-muted d-block mb-1">Mã tài khoản</small>
                   <div className="p-2 border rounded bg-light text-truncate" title={u.id}>
                     <small>{u.id}</small>
                   </div>
                 </div>
                 
                 <div className="col-6">
-                  <small className="text-muted d-block mb-1">Provider</small>
-                  <div className="p-2 border rounded bg-light text-capitalize">{u.provider || "Local"}</div>
+                  <small className="text-muted d-block mb-1">Nguồn đăng nhập</small>
+                  <div className="p-2 border rounded bg-light text-capitalize">{u.provider || "Tài khoản thường"}</div>
                 </div>
 
                 <div className="col-6">
-                  <small className="text-muted d-block mb-1">Email Verified</small>
+                  <small className="text-muted d-block mb-1">Email đã xác thực</small>
                   <div className="p-2 border rounded bg-light">
-                    {u.isEmailVerified ? <span className="text-success"><FaUserCheck className="me-1"/> Yes</span> : <span className="text-danger">No</span>}
+                    {u.isEmailVerified ? <span className="text-success"><FaUserCheck className="me-1"/> Có</span> : <span className="text-danger">Chưa</span>}
                   </div>
                 </div>
 
                 <div className="col-6">
-                  <small className="text-muted d-block mb-1">Joined Date</small>
+                  <small className="text-muted d-block mb-1">Ngày tham gia</small>
                   <div className="p-2 border rounded bg-light">{formatDate(u.createdAt)}</div>
                 </div>
               </div>
             </div>
 
-            <div className="modal-footer border-0">
-              <button className="btn btn-light border w-100" onClick={onClose}>Đóng</button>
+            <div className="modal-footer user-modal-footer border-0">
+              <button className="btn btn-user-secondary" onClick={onClose}>Đóng</button>
             </div>
           </div>
         </div>

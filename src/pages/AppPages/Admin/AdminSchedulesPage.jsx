@@ -445,27 +445,29 @@ export default function AdminSchedulesPage() {
                 <td className="time-cell"><span className="time-pill">{slot.startTime} - {slot.endTime}</span></td>
                 <td>{statusBadge(slot)}</td>
                 <td className="col-actions">
-                  <button
-                    className={`action-btn ${slot.isBlocked ? "action-btn--unblock" : "action-btn--block"}`}
-                    title={slot.isBlocked ? "Mở khóa" : "Khóa slot"}
-                    onClick={() => handleBlockToggle(slot.id, slot.isBlocked)}
-                  >
-                    {slot.isBlocked ? <FaLockOpen /> : <FaLock />}
-                  </button>
-                  {!slot.isBooked && (
+                  <div className="slot-actions">
                     <button
-                      className="action-btn action-btn--delete"
-                      title="Xóa slot"
-                      onClick={() => setConfirmState({
-                        title: "Xóa slot này?",
-                        message: "Slot chưa được đặt sẽ bị xóa khỏi hệ thống.",
-                        confirmText: "Xóa slot",
-                        onConfirm: () => handleDelete(slot.id),
-                      })}
+                      className={`action-btn ${slot.isBlocked ? "action-btn--unblock" : "action-btn--block"}`}
+                      title={slot.isBlocked ? "Mở khóa" : "Khóa slot"}
+                      onClick={() => handleBlockToggle(slot.id, slot.isBlocked)}
                     >
-                      <FaTrash />
+                      {slot.isBlocked ? <FaLockOpen /> : <FaLock />}
                     </button>
-                  )}
+                    {!slot.isBooked && (
+                      <button
+                        className="action-btn action-btn--delete"
+                        title="Xóa slot"
+                        onClick={() => setConfirmState({
+                          title: "Xóa slot này?",
+                          message: "Slot chưa được đặt sẽ bị xóa khỏi hệ thống.",
+                          confirmText: "Xóa slot",
+                          onConfirm: () => handleDelete(slot.id),
+                        })}
+                      >
+                        <FaTrash />
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
