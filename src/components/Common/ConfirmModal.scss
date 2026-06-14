@@ -1,0 +1,45 @@
+.confirm-modal {
+  .modal-content {
+    border: 0;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(13, 43, 69, 0.22);
+  }
+
+  &__icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    &--danger {
+      color: #e24b4a;
+      background: #fef2f2;
+    }
+
+    &--primary {
+      color: #077d7d;
+      background: #e6f7f7;
+    }
+
+    &--warning {
+      color: #b7791f;
+      background: #fff8e6;
+    }
+  }
+
+  &__title {
+    font-family: "Playfair Display", serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a2b3c;
+    margin: 0 0 8px;
+  }
+
+  &__message {
+    color: #6b7f8e;
+    margin: 0;
+    line-height: 1.6;
+  }
+}
