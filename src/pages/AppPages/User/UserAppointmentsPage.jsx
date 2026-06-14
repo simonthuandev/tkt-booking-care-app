@@ -9,8 +9,6 @@ import {
   FaTimesCircle,
   FaUserMd,
   FaHospital,
-  FaChevronLeft,
-  FaChevronRight,
   FaStethoscope,
   FaMoneyBillWave,
   FaStar,
@@ -18,6 +16,7 @@ import {
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { appointmentService, paymentService, reviewService } from "../../../api/appService";
+import AppPagination from "../../../components/Common/AppPagination";
 import LoadingSpinner from "../../../components/Common/LoadingSpinner";
 import "./UserAppointmentsPage.scss";
 
@@ -42,6 +41,16 @@ const PAYMENT_STATUS_CFG = {
   failed: { label: "Lỗi thanh toán", color: "#e24b4a" },
 };
 
+const STATUS_TABS = [
+  { key: "all", label: "Tất cả", statusVal: "" },
+  { key: "pending", label: "Chờ xác nhận", statusVal: "pending" },
+  { key: "confirmed", label: "Đã xác nhận", statusVal: "confirmed" },
+  { key: "processing", label: "Đang khám", statusVal: "processing" },
+  { key: "completed", label: "Hoàn thành", statusVal: "completed" },
+  { key: "no_show", label: "Không đến", statusVal: "no_show" },
+  { key: "cancelled", label: "Đã hủy", statusVal: "cancelled" },
+];
+
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
@@ -51,7 +60,7 @@ const formatCurrency = (amount) => {
 };
 
 const formatDateTime = (dateStr, startTime, endTime) => {
-  if (!dateStr) return "N/A";
+  if (!dateStr) return "Chưa có";
   const date = new Date(dateStr).toLocaleDateString("vi-VN", {
     day: "2-digit",
     month: "2-digit",
@@ -81,13 +90,13 @@ const AppointmentRow = ({ appt, onView, onCancel, onReview, onPay }) => {
           <FaUserMd className="me-1 text-primary" /> {appt.doctor?.user?.lastName} {appt.doctor?.user?.firstName}
         </p>
         <p className="user-appt-row__hospital text-truncate" title={appt.hospital?.name}>
-          <FaHospital className="me-1 text-muted" /> {appt.hospital?.name || "N/A"}
+          <FaHospital className="me-1 text-muted" /> {appt.hospital?.name || "Chưa có thông tin"}
         </p>
       </div>
 
       <div className="user-appt-row__patient">
         <p className="user-appt-row__title">Hồ sơ khám</p>
-        <p className="fw-semibold mb-0">{appt.patientProfile?.fullName || "N/A"}</p>
+        <p className="fw-semibold mb-0">{appt.patientProfile?.fullName || "Chưa có thông tin"}</p>
       </div>
 
       <div className="user-appt-row__datetime">
@@ -95,7 +104,7 @@ const AppointmentRow = ({ appt, onView, onCancel, onReview, onPay }) => {
           {appt.timeSlot?.startTime} - {appt.timeSlot?.endTime}
         </span>
         <span className="text-muted small">
-          {appt.timeSlot?.date ? new Date(appt.timeSlot.date).toLocaleDateString("vi-VN") : "N/A"}
+          {appt.timeSlot?.date ? new Date(appt.timeSlot.date).toLocaleDateString("vi-VN") : "Chưa có"}
         </span>
       </div>
 
@@ -348,12 +357,12 @@ const AppointmentViewModal = ({ appt, onClose }) => {
                     </h6>
                     <div className="mb-2">
                       <small className="text-muted d-block">Họ và tên</small>
-                      <div className="fw-semibold fs-6">{appt.patientProfile?.fullName || "N/A"}</div>
+                      <div className="fw-semibold fs-6">{appt.patientProfile?.fullName || "Chưa có thông tin"}</div>
                     </div>
                     <div className="row">
                       <div className="col-6 mb-2">
                         <small className="text-muted d-block">Số điện thoại</small>
-                        <div>{appt.patientProfile?.phoneNumber || "N/A"}</div>
+                        <div>{appt.patientProfile?.phoneNumber || "Chưa có SĐT"}</div>
                       </div>
                       <div className="col-6 mb-2">
                         <small className="text-muted d-block">Giới tính</small>
@@ -362,7 +371,7 @@ const AppointmentViewModal = ({ appt, onClose }) => {
                     </div>
                     <div className="mb-2">
                       <small className="text-muted d-block">Ngày sinh</small>
-                      <div>{appt.patientProfile?.dob ? new Date(appt.patientProfile.dob).toLocaleDateString('vi-VN') : "N/A"}</div>
+                      <div>{appt.patientProfile?.dob ? new Date(appt.patientProfile.dob).toLocaleDateString('vi-VN') : "Chưa có"}</div>
                     </div>
                   </div>
                 </div>
@@ -421,7 +430,7 @@ const AppointmentViewModal = ({ appt, onClose }) => {
                       </div>
                     )}
                     <div className="mb-2 mt-3 text-end">
-                      <small className="text-muted">Ngày tạo: {appt.createdAt ? new Date(appt.createdAt).toLocaleString('vi-VN') : "N/A"}</small>
+                      <small className="text-muted">Ngày tạo: {appt.createdAt ? new Date(appt.createdAt).toLocaleString('vi-VN') : "Chưa có"}</small>
                     </div>
                   </div>
                 </div>
@@ -593,8 +602,8 @@ export default function UserAppointmentsPage() {
       {/* Header */}
       <div className="user-appts-header">
         <div>
-          <h1 className="user-appts-title">Quản lý Lịch hẹn</h1>
-          <p className="user-appts-sub text-muted">
+          <h1 className="user-appts-title">Quản lý lịch hẹn</h1>
+          <p className="user-appts-sub">
             Theo dõi và quản lý lịch khám bệnh của bạn.
           </p>
         </div>
@@ -605,19 +614,16 @@ export default function UserAppointmentsPage() {
         </div>
       </div>
 
-      {/* Toolbar / Filters */}
-      <div className="card shadow-sm border-0 mb-4 p-3 bg-white rounded-3">
-        <div className="row g-2 align-items-center">
-          <div className="col-12 col-md-4">
-            <label className="form-label text-muted small fw-semibold">Lọc theo trạng thái</label>
-            <select className="form-select" value={filterStatus} onChange={(e) => handleFilterChange(e.target.value)}>
-              <option value="">Tất cả lịch hẹn</option>
-              {Object.entries(STATUS_CFG).map(([key, cfg]) => (
-                <option key={key} value={key}>{cfg.label}</option>
-              ))}
-            </select>
-          </div>
-        </div>
+      <div className="user-appts-tabs">
+        {STATUS_TABS.map(({ key, label, statusVal }) => (
+          <button
+            key={key}
+            className={`user-appts-tabs__btn ${filterStatus === statusVal ? "user-appts-tabs__btn--active" : ""}`}
+            onClick={() => handleFilterChange(statusVal)}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {/* List */}
@@ -652,56 +658,13 @@ export default function UserAppointmentsPage() {
         )}
       </div>
 
-      {/* Pagination */}
-      {!loading && totalPages > 1 && (
-        <div className="mt-5">
-          <nav aria-label="Page navigation">
-            <ul className="pagination justify-content-center">
-              <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>
-                <button
-                  className="page-link shadow-sm border-0"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 0}
-                >
-                  <FaChevronLeft className="me-1" /> Trước
-                </button>
-              </li>
-
-              {Array.from({ length: totalPages }, (_, i) => {
-                const start = Math.max(0, currentPage - 2);
-                const end = Math.min(totalPages, start + 5);
-                const adjustedStart = Math.max(0, end - 5);
-
-                if (i < adjustedStart || i >= end) return null;
-
-                return (
-                  <li
-                    key={i}
-                    className={`page-item mx-1 ${i === currentPage ? "active" : ""}`}
-                  >
-                    <button
-                      className={`page-link shadow-sm border-0 rounded-3 ${i === currentPage ? 'bg-primary text-white' : ''}`}
-                      onClick={() => handlePageChange(i)}
-                    >
-                      {i + 1}
-                    </button>
-                  </li>
-                );
-              })}
-
-              <li className={`page-item ms-1 ${currentPage === totalPages - 1 ? "disabled" : ""}`}>
-                <button
-                  className="page-link shadow-sm border-0"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages - 1}
-                >
-                  Sau <FaChevronRight className="ms-1" />
-                </button>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      )}
+      <AppPagination
+        pageCount={totalPages}
+        currentPage={currentPage}
+        total={totalCount}
+        itemLabel="lịch hẹn"
+        onPageChange={handlePageChange}
+      />
 
       {/* Modals */}
       <AppointmentViewModal

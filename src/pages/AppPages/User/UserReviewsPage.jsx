@@ -4,14 +4,13 @@ import {
   FaCalendarAlt,
   FaUserMd,
   FaHospital,
-  FaChevronLeft,
-  FaChevronRight,
   FaComments,
   FaEyeSlash
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 import "./UserReviewsPage.scss";
 import { reviewService } from "../../../api/appService";
+import AppPagination from "../../../components/Common/AppPagination";
 import LoadingSpinner from "../../../components/Common/LoadingSpinner";
 
 const PAGE_LIMIT = 10;
@@ -81,12 +80,10 @@ export default function UserReviewsPage() {
   return (
     <div className="user-reviews-page">
       {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="user-reviews-header">
         <div>
           <h2 className="page-title">Lịch sử đánh giá</h2>
-          <p className="text-muted">
-            Quản lý các đánh giá của bạn sau mỗi lần khám bệnh
-          </p>
+          <p className="page-sub">Quản lý các đánh giá của bạn sau mỗi lần khám bệnh.</p>
         </div>
         <div className="bg-light px-3 py-2 rounded-pill border">
           <FaComments className="text-primary me-2" />
@@ -142,11 +139,11 @@ export default function UserReviewsPage() {
                     </td>
                     <td>
                       <div className="fw-medium text-dark">
-                        {r.patientProfile?.fullName || "N/A"}
+                        {r.patientProfile?.fullName || "Chưa có thông tin"}
                       </div>
                       <div className="small text-muted">
                         <FaCalendarAlt className="me-1" /> 
-                        {r.appointment?.timeSlot?.date ? new Date(r.appointment.timeSlot.date).toLocaleDateString('vi-VN') : 'N/A'}
+                        {r.appointment?.timeSlot?.date ? new Date(r.appointment.timeSlot.date).toLocaleDateString('vi-VN') : 'Chưa có'}
                       </div>
                     </td>
                     <td>
@@ -182,56 +179,13 @@ export default function UserReviewsPage() {
         )}
       </div>
 
-      {/* Pagination */}
-      {!loading && totalPages > 1 && (
-        <div className="mt-4">
-          <nav aria-label="Page navigation">
-            <ul className="pagination justify-content-center">
-              <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>
-                <button
-                  className="page-link shadow-sm border-0"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 0}
-                >
-                  <FaChevronLeft className="me-1" /> Trước
-                </button>
-              </li>
-
-              {Array.from({ length: totalPages }, (_, i) => {
-                const start = Math.max(0, currentPage - 2);
-                const end = Math.min(totalPages, start + 5);
-                const adjustedStart = Math.max(0, end - 5);
-
-                if (i < adjustedStart || i >= end) return null;
-
-                return (
-                  <li
-                    key={i}
-                    className={`page-item mx-1 ${i === currentPage ? "active" : ""}`}
-                  >
-                    <button
-                      className={`page-link shadow-sm border-0 rounded-3 ${i === currentPage ? 'bg-primary text-white' : ''}`}
-                      onClick={() => handlePageChange(i)}
-                    >
-                      {i + 1}
-                    </button>
-                  </li>
-                );
-              })}
-
-              <li className={`page-item ms-1 ${currentPage === totalPages - 1 ? "disabled" : ""}`}>
-                <button
-                  className="page-link shadow-sm border-0"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages - 1}
-                >
-                  Sau <FaChevronRight className="ms-1" />
-                </button>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      )}
+      <AppPagination
+        pageCount={totalPages}
+        currentPage={currentPage}
+        total={totalCount}
+        itemLabel="đánh giá"
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 }

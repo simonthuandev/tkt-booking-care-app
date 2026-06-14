@@ -23,20 +23,64 @@ $shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.08);
   .user-appts-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: flex-end;
     margin-bottom: 1.5rem;
     flex-wrap: wrap;
     gap: 1rem;
 
     .user-appts-title {
-      font-size: 1.75rem;
+      font-family: "Playfair Display", serif;
+      font-size: 2rem;
       font-weight: 700;
-      color: $text-dark;
-      margin-bottom: 0.25rem;
+      color: #1a2b3c;
+      margin: 0 0 4px;
     }
 
     .user-appts-sub {
-      font-size: 0.95rem;
+      font-size: 0.875rem;
+      color: $text-muted;
+      margin: 0;
+    }
+  }
+
+  .user-appts-tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 2px solid #e2ebf0;
+    margin-bottom: 1.25rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    &__btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.6rem 1.1rem;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: $text-muted;
+      cursor: pointer;
+      white-space: nowrap;
+      border-radius: 10px 10px 0 0;
+      transition: color 0.18s, border-color 0.18s, background 0.18s;
+
+      &:hover {
+        color: $primary;
+        background: rgba($primary, 0.1);
+      }
+
+      &--active {
+        color: $primary;
+        border-bottom-color: $primary;
+        font-weight: 600;
+      }
     }
   }
 
