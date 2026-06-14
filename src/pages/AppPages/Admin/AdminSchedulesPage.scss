@@ -119,6 +119,40 @@ $c-blocked: #dc2626;
   }
 }
 
+.generate-slot-modal {
+  border: 0;
+  border-radius: $radius-lg;
+  box-shadow: 0 20px 60px rgba(13, 43, 69, 0.2);
+
+  .modal-title {
+    font-family: $ff-head;
+    font-weight: 700;
+    color: $text;
+  }
+
+  .form-control,
+  .form-select {
+    border-color: $border;
+    border-radius: $radius;
+    color: $text;
+
+    &:focus {
+      border-color: $primary-dk;
+      box-shadow: 0 0 0 3px rgba($primary-dk, 0.12);
+    }
+  }
+}
+
+.btn-save-slot {
+  background: $primary-dk !important;
+  border-color: $primary-dk !important;
+
+  &:hover {
+    background: #066f6f !important;
+    border-color: #066f6f !important;
+  }
+}
+
 // ─── Buttons ──────────────────────────────────────────────────
 .btn {
   display: inline-flex;
@@ -386,72 +420,6 @@ $c-blocked: #dc2626;
   padding: 48px !important;
   color: $text-muted;
   font-size: 0.9rem;
-}
-
-// ─── Pagination ───────────────────────────────────────────────
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 4px;
-
-  ul {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  li {
-    button {
-      min-width: 34px;
-      height: 34px;
-      padding: 0 8px;
-      border: 1px solid $border;
-      border-radius: $radius;
-      background: $surface;
-      color: $text;
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: all 0.15s;
-
-      &:hover:not(:disabled) {
-        border-color: $primary;
-        color: $primary;
-        background: #eff6ff;
-      }
-
-      &:disabled {
-        opacity: 0.35;
-        cursor: not-allowed;
-      }
-    }
-
-    &.active button {
-      background: $primary;
-      border-color: $primary;
-      color: #fff;
-      font-weight: 600;
-      box-shadow: 0 1px 4px rgba($primary, 0.4);
-    }
-
-    &.disabled button {
-      opacity: 0.35;
-      cursor: not-allowed;
-    }
-
-    &.ellipsis span {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 34px;
-      height: 34px;
-      color: $text-muted;
-      font-size: 0.85rem;
-      user-select: none;
-    }
-  }
 }
 
 // ─── Form elements inside modal ───────────────────────────────

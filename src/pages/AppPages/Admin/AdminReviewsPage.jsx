@@ -4,8 +4,6 @@ import {
   FaCalendarAlt,
   FaUserMd,
   FaHospital,
-  FaChevronLeft,
-  FaChevronRight,
   FaComments,
   FaEyeSlash,
   FaEye,
@@ -18,6 +16,7 @@ import { toast } from "react-toastify";
 import "./AdminReviewsPage.scss";
 import { reviewService } from "../../../api/appService";
 import LoadingSpinner from "../../../components/Common/LoadingSpinner";
+import AppPagination from "../../../components/Common/AppPagination";
 
 const PAGE_LIMIT = 10;
 
@@ -77,7 +76,7 @@ const ReviewDetailModal = ({ review, onClose, onToggleVisibility, toggling }) =>
                     <h6 className="fw-bold text-primary mb-3 border-bottom pb-2">Người đánh giá</h6>
                     <div className="mb-2">
                       <small className="text-muted d-block">Hồ sơ bệnh nhân</small>
-                      <div className="fw-semibold fs-6">{review.patientProfile?.fullName || "N/A"}</div>
+                      <div className="fw-semibold fs-6">{review.patientProfile?.fullName || "Chưa có thông tin"}</div>
                     </div>
                     <div className="mb-2">
                       <small className="text-muted d-block">Mã hồ sơ</small>
@@ -275,10 +274,10 @@ export default function AdminReviewsPage() {
   return (
     <div className="admin-reviews-page">
       {/* Header */}
-      <div className="admin-page-header d-flex justify-content-between align-items-center mb-4">
+      <div className="admin-page-header">
         <div>
-          <h1 className="page-title">Quản lý Đánh giá</h1>
-          <p className="text-muted mb-0">Duyệt và kiểm duyệt phản hồi từ bệnh nhân</p>
+          <h1 className="page-title">Quản lý đánh giá</h1>
+          <p className="page-sub">Duyệt và kiểm duyệt phản hồi từ bệnh nhân.</p>
         </div>
         <div className="header-stats bg-white border shadow-sm px-4 py-2 rounded-pill d-flex align-items-center gap-2">
           <FaComments className="text-primary" />
@@ -351,7 +350,7 @@ export default function AdminReviewsPage() {
                   <tr key={r.id} className={!r.isVisible ? 'bg-light text-muted' : ''}>
                     <td>
                       <div className="fw-semibold text-dark">
-                        {r.patientProfile?.fullName || "N/A"}
+                        {r.patientProfile?.fullName || "Chưa có thông tin"}
                       </div>
                       <div className="small text-muted">
                         {new Date(r.createdAt).toLocaleDateString("vi-VN")}
@@ -421,56 +420,13 @@ export default function AdminReviewsPage() {
         )}
       </div>
 
-      {/* Pagination */}
-      {!loading && totalPages > 1 && (
-        <div className="mt-4">
-          <nav aria-label="Page navigation">
-            <ul className="pagination justify-content-center">
-              <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>
-                <button
-                  className="page-link shadow-sm border-0"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 0}
-                >
-                  <FaChevronLeft className="me-1" /> Trước
-                </button>
-              </li>
-
-              {Array.from({ length: totalPages }, (_, i) => {
-                const start = Math.max(0, currentPage - 2);
-                const end = Math.min(totalPages, start + 5);
-                const adjustedStart = Math.max(0, end - 5);
-
-                if (i < adjustedStart || i >= end) return null;
-
-                return (
-                  <li
-                    key={i}
-                    className={`page-item mx-1 ${i === currentPage ? "active" : ""}`}
-                  >
-                    <button
-                      className={`page-link shadow-sm border-0 rounded-3 ${i === currentPage ? 'bg-primary text-white' : ''}`}
-                      onClick={() => handlePageChange(i)}
-                    >
-                      {i + 1}
-                    </button>
-                  </li>
-                );
-              })}
-
-              <li className={`page-item ms-1 ${currentPage === totalPages - 1 ? "disabled" : ""}`}>
-                <button
-                  className="page-link shadow-sm border-0"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages - 1}
-                >
-                  Sau <FaChevronRight className="ms-1" />
-                </button>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      )}
+      <AppPagination
+        pageCount={totalPages}
+        currentPage={currentPage}
+        total={totalCount}
+        itemLabel="đánh giá"
+        onPageChange={handlePageChange}
+      />
 
       {/* Detail Modal */}
       <ReviewDetailModal 

@@ -2,22 +2,21 @@
 // AdminSpecialtiesPage.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 import { useState, useEffect, useCallback } from "react";
-import ReactPaginate from "react-paginate";
 import {
   FaStethoscope,
   FaPlus,
   FaEdit,
   FaTrash,
   FaEye,
-  FaChevronLeft,
-  FaChevronRight,
   FaDisease,
   FaInfoCircle
 } from "react-icons/fa";
+import { toast } from "react-toastify";
 import "./AdminSpecialtiesPage.scss";
 import { specialtyService } from "../../../api/appService";
 import ImageUploadField from "../../../components/Common/ImageUploadField";
 import LoadingSpinner from "../../../components/Common/LoadingSpinner";
+import AppPagination from "../../../components/Common/AppPagination";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONSTANTS
@@ -364,7 +363,7 @@ export default function AdminSpecialtiesPage() {
       setModal("edit");
     } catch (err) {
       console.error("Lỗi lấy chi tiết chuyên khoa:", err);
-      alert("Không thể tải thông tin chuyên khoa.");
+      toast.error("Không thể tải thông tin chuyên khoa.");
     }
   };
 
@@ -375,7 +374,7 @@ export default function AdminSpecialtiesPage() {
       setModal("view");
     } catch (err) {
       console.error("Lỗi lấy chi tiết chuyên khoa:", err);
-      alert("Không thể tải thông tin chuyên khoa.");
+      toast.error("Không thể tải thông tin chuyên khoa.");
     }
   };
 
@@ -399,7 +398,7 @@ export default function AdminSpecialtiesPage() {
     const payload = buildPayload(form, isEdit);
 
     if (!payload.name) {
-      alert("Vui lòng điền tên chuyên khoa!");
+      toast.warning("Vui lòng điền tên chuyên khoa!");
       return;
     }
 
@@ -414,7 +413,7 @@ export default function AdminSpecialtiesPage() {
       fetchSpecialties(currentPage);
     } catch (err) {
       console.error("Lỗi lưu chuyên khoa:", err);
-      alert(err?.response?.data?.message ?? "Có lỗi xảy ra, vui lòng thử lại.");
+      toast.error(err?.response?.data?.message ?? "Có lỗi xảy ra, vui lòng thử lại.");
     } finally {
       setSaving(false);
     }
@@ -430,7 +429,7 @@ export default function AdminSpecialtiesPage() {
       else fetchSpecialties(currentPage);
     } catch (err) {
       console.error("Lỗi xóa chuyên khoa:", err);
-      alert(err?.response?.data?.message ?? "Không thể xóa, vui lòng thử lại.");
+      toast.error(err?.response?.data?.message ?? "Không thể xóa, vui lòng thử lại.");
     } finally {
       setDeleting(false);
     }
@@ -526,55 +525,13 @@ export default function AdminSpecialtiesPage() {
         </div>
       )}
 
-      {!isLoading && (meta.totalPages ?? 1) > 1 && (
-        <div className="mt-4">
-          <nav aria-label="Page navigation">
-            <ul className="pagination justify-content-center mb-3">
-              <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>
-                <button
-                  className="page-link"
-                  onClick={() => handlePageChange({ selected: currentPage - 1 })}
-                  disabled={currentPage === 0}
-                >
-                  <FaChevronLeft /> Trước
-                </button>
-              </li>
-
-              {Array.from({ length: meta.totalPages }, (_, i) => {
-                const start = Math.max(0, currentPage - 2);
-                const end = Math.min(meta.totalPages, start + 5);
-                const adjustedStart = Math.max(0, end - 5);
-
-                if (i < adjustedStart || i >= end) return null;
-
-                return (
-                  <li
-                    key={i}
-                    className={`page-item ${i === currentPage ? "active" : ""}`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => handlePageChange({ selected: i })}
-                    >
-                      {i + 1}
-                    </button>
-                  </li>
-                );
-              })}
-
-              <li className={`page-item ${currentPage === meta.totalPages - 1 ? "disabled" : ""}`}>
-                <button
-                  className="page-link"
-                  onClick={() => handlePageChange({ selected: currentPage + 1 })}
-                  disabled={currentPage === meta.totalPages - 1}
-                >
-                  Sau <FaChevronRight />
-                </button>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      )}
+      <AppPagination
+        pageCount={meta.totalPages ?? 1}
+        currentPage={currentPage}
+        total={meta.total}
+        itemLabel="chuyên khoa"
+        onPageChange={(selected) => handlePageChange({ selected })}
+      />
 
       <SpecialtyFormModal
         mode={modal}

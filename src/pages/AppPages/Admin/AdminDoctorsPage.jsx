@@ -4,7 +4,6 @@
 // Align đầy đủ với CreateDoctorDto & UpdateDoctorDto (Admin)
 // ─────────────────────────────────────────────────────────────────────────────
 import { useState, useEffect, useCallback } from "react";
-import ReactPaginate from "react-paginate";
 import {
   FaUserMd,
   FaPlus,
@@ -18,8 +17,6 @@ import {
   FaEye,
   FaExclamationTriangle,
   FaCalendarAlt,
-  FaChevronLeft,
-  FaChevronRight,
   FaIdCard,
   FaMoneyBillWave,
   FaTimesCircle,
@@ -27,6 +24,7 @@ import {
   FaToggleOn,
   FaToggleOff,
 } from "react-icons/fa";
+import { toast } from "react-toastify";
 import "./AdminDoctorsPage.scss";
 import {
   doctorService,
@@ -35,6 +33,8 @@ import {
 } from "../../../api/appService";
 import ImageUploadField from "../../../components/Common/ImageUploadField";
 import LoadingSpinner from "../../../components/Common/LoadingSpinner";
+import AppPagination from "../../../components/Common/AppPagination";
+import WorkingDaysSelector from "../../../components/Common/WorkingDaysSelector";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONSTANTS
@@ -144,7 +144,7 @@ const DoctorRow = ({ doc, onView, onEdit, onDelete }) => {
           <FaHospital className="me-1 text-muted" /> {hospital}
         </p>
         <p className="doc-row__experience text-muted small">
-          <FaCalendarAlt className="me-1" /> {doc.experience ?? "—"} yrs exp
+          <FaCalendarAlt className="me-1" /> {doc.experience ?? "—"} năm kinh nghiệm
         </p>
       </div>
 
@@ -157,13 +157,13 @@ const DoctorRow = ({ doc, onView, onEdit, onDelete }) => {
       </div>
 
       <div className="doc-row__actions">
-        <button className="doc-btn doc-btn--view" onClick={() => onView(doc.id)} title="View Detail">
+        <button className="doc-btn doc-btn--view" onClick={() => onView(doc.id)} title="Xem chi tiết">
           <FaEye />
         </button>
-        <button className="doc-btn doc-btn--edit" onClick={() => onEdit(doc.id)} title="Edit Doctor">
+        <button className="doc-btn doc-btn--edit" onClick={() => onEdit(doc.id)} title="Sửa bác sĩ">
           <FaEdit />
         </button>
-        <button className="doc-btn doc-btn--delete" onClick={() => onDelete(doc)} title="Delete Doctor">
+        <button className="doc-btn doc-btn--delete" onClick={() => onDelete(doc)} title="Xóa bác sĩ">
           <FaTrash />
         </button>
       </div>
@@ -254,11 +254,9 @@ const HospitalLinkEditor = ({ links, hospitals, onAdd, onRemove, onChangeLink })
             </div>
             <div className="col-md-6">
               <label className="form-label form-label-sm">Ngày làm việc</label>
-              <input
-                className="form-control form-control-sm"
+              <WorkingDaysSelector
                 value={link.workingDays}
-                onChange={(e) => onChangeLink(i, "workingDays", e.target.value)}
-                placeholder="VD: MON,TUE,WED"
+                onChange={(value) => onChangeLink(i, "workingDays", value)}
               />
             </div>
             <div className="col-md-6">
@@ -943,7 +941,7 @@ export default function AdminDoctorsPage() {
       setModal("edit");
     } catch (err) {
       console.error("Lỗi lấy chi tiết bác sĩ:", err);
-      alert("Không thể tải thông tin bác sĩ.");
+      toast.error("Không thể tải thông tin bác sĩ.");
     }
   };
 
@@ -954,7 +952,7 @@ export default function AdminDoctorsPage() {
       setModal("view");
     } catch (err) {
       console.error("Lỗi lấy chi tiết bác sĩ:", err);
-      alert("Không thể tải thông tin bác sĩ.");
+      toast.error("Không thể tải thông tin bác sĩ.");
     }
   };
 
@@ -992,7 +990,7 @@ export default function AdminDoctorsPage() {
       fetchDoctors(currentPage);
     } catch (err) {
       console.error("Lỗi lưu bác sĩ:", err);
-      alert(err?.response?.data?.message ?? "Có lỗi xảy ra, vui lòng thử lại.");
+      toast.error(err?.response?.data?.message ?? "Có lỗi xảy ra, vui lòng thử lại.");
     } finally {
       setSaving(false);
     }
@@ -1009,7 +1007,7 @@ export default function AdminDoctorsPage() {
       else fetchDoctors(currentPage);
     } catch (err) {
       console.error("Lỗi xóa bác sĩ:", err);
-      alert(err?.response?.data?.message ?? "Không thể xóa, vui lòng thử lại.");
+      toast.error(err?.response?.data?.message ?? "Không thể xóa, vui lòng thử lại.");
     } finally {
       setDeleting(false);
     }
@@ -1160,59 +1158,13 @@ export default function AdminDoctorsPage() {
         </div>
       )}
 
-      {/* Pagination */}
-      {!isLoading && (meta.totalPages ?? 1) > 1 && (
-        <div className="doctors-pagination-wrap">
-          <nav aria-label="Page navigation">
-            <ul className="pagination justify-content-center mb-3">
-              <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>
-                <button
-                  className="page-link"
-                  onClick={() => handlePageChange({ selected: currentPage - 1 })}
-                  disabled={currentPage === 0}
-                >
-                  <FaChevronLeft /> Trước
-                </button>
-              </li>
-
-              {Array.from({ length: meta.totalPages }, (_, i) => {
-                // Hiển thị tối đa 5 trang gần hiện tại
-                const start = Math.max(0, currentPage - 2);
-                const end = Math.min(meta.totalPages, start + 5);
-                const adjustedStart = Math.max(0, end - 5);
-
-                if (i < adjustedStart || i >= end) return null;
-
-                return (
-                  <li
-                    key={i}
-                    className={`page-item ${i === currentPage ? "active" : ""}`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => handlePageChange({ selected: i })}
-                    >
-                      {i + 1}
-                    </button>
-                  </li>
-                );
-              })}
-
-              <li
-                className={`page-item ${currentPage === meta.totalPages - 1 ? "disabled" : ""}`}
-              >
-                <button
-                  className="page-link"
-                  onClick={() => handlePageChange({ selected: currentPage + 1 })}
-                  disabled={currentPage === meta.totalPages - 1}
-                >
-                  Sau <FaChevronRight />
-                </button>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      )}
+      <AppPagination
+        pageCount={meta.totalPages ?? 1}
+        currentPage={currentPage}
+        total={meta.total}
+        itemLabel="bác sĩ"
+        onPageChange={(selected) => handlePageChange({ selected })}
+      />
 
       {/* ── Modals ── */}
       <DoctorFormModal

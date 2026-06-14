@@ -2,22 +2,21 @@
 // AdminHospitalsPage.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 import { useState, useEffect, useCallback } from "react";
-import ReactPaginate from "react-paginate";
 import {
   FaHospital,
   FaPlus,
   FaEdit,
   FaTrash,
   FaEye,
-  FaChevronLeft,
-  FaChevronRight,
   FaMapMarkerAlt,
   FaCity
 } from "react-icons/fa";
+import { toast } from "react-toastify";
 import "./AdminHospitalsPage.scss";
 import { hospitalService } from "../../../api/appService";
 import ImageUploadField from "../../../components/Common/ImageUploadField";
 import LoadingSpinner from "../../../components/Common/LoadingSpinner";
+import AppPagination from "../../../components/Common/AppPagination";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONSTANTS
@@ -376,7 +375,7 @@ export default function AdminHospitalsPage() {
       setModal("edit");
     } catch (err) {
       console.error("Lỗi lấy chi tiết bệnh viện:", err);
-      alert("Không thể tải thông tin bệnh viện.");
+      toast.error("Không thể tải thông tin bệnh viện.");
     }
   };
 
@@ -387,7 +386,7 @@ export default function AdminHospitalsPage() {
       setModal("view");
     } catch (err) {
       console.error("Lỗi lấy chi tiết bệnh viện:", err);
-      alert("Không thể tải thông tin bệnh viện.");
+      toast.error("Không thể tải thông tin bệnh viện.");
     }
   };
 
@@ -411,7 +410,7 @@ export default function AdminHospitalsPage() {
     const payload = buildPayload(form, isEdit);
 
     if (!payload.name || !payload.address || !payload.city) {
-      alert("Vui lòng điền các trường bắt buộc (Tên, Địa chỉ, Thành phố)!");
+      toast.warning("Vui lòng điền các trường bắt buộc (Tên, Địa chỉ, Thành phố)!");
       return;
     }
 
@@ -426,7 +425,7 @@ export default function AdminHospitalsPage() {
       fetchHospitals(currentPage);
     } catch (err) {
       console.error("Lỗi lưu bệnh viện:", err);
-      alert(err?.response?.data?.message ?? "Có lỗi xảy ra, vui lòng thử lại.");
+      toast.error(err?.response?.data?.message ?? "Có lỗi xảy ra, vui lòng thử lại.");
     } finally {
       setSaving(false);
     }
@@ -442,7 +441,7 @@ export default function AdminHospitalsPage() {
       else fetchHospitals(currentPage);
     } catch (err) {
       console.error("Lỗi xóa bệnh viện:", err);
-      alert(err?.response?.data?.message ?? "Không thể xóa, vui lòng thử lại.");
+      toast.error(err?.response?.data?.message ?? "Không thể xóa, vui lòng thử lại.");
     } finally {
       setDeleting(false);
     }
@@ -493,7 +492,7 @@ export default function AdminHospitalsPage() {
                 value={filterCityInput}
                 onChange={(e) => setFilterCityInput(e.target.value)}
               />
-              <button className="btn btn-outline-primary" type="submit">Lọc</button>
+              <button className="btn btn-primary" type="submit">Lọc</button>
             </form>
           </div>
           <div className="col-12 col-md-3 col-lg-2">
@@ -566,55 +565,13 @@ export default function AdminHospitalsPage() {
         </div>
       )}
 
-      {!isLoading && (meta.totalPages ?? 1) > 1 && (
-        <div className="mt-4">
-          <nav aria-label="Page navigation">
-            <ul className="pagination justify-content-center mb-3">
-              <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>
-                <button
-                  className="page-link"
-                  onClick={() => handlePageChange({ selected: currentPage - 1 })}
-                  disabled={currentPage === 0}
-                >
-                  <FaChevronLeft /> Trước
-                </button>
-              </li>
-
-              {Array.from({ length: meta.totalPages }, (_, i) => {
-                const start = Math.max(0, currentPage - 2);
-                const end = Math.min(meta.totalPages, start + 5);
-                const adjustedStart = Math.max(0, end - 5);
-
-                if (i < adjustedStart || i >= end) return null;
-
-                return (
-                  <li
-                    key={i}
-                    className={`page-item ${i === currentPage ? "active" : ""}`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => handlePageChange({ selected: i })}
-                    >
-                      {i + 1}
-                    </button>
-                  </li>
-                );
-              })}
-
-              <li className={`page-item ${currentPage === meta.totalPages - 1 ? "disabled" : ""}`}>
-                <button
-                  className="page-link"
-                  onClick={() => handlePageChange({ selected: currentPage + 1 })}
-                  disabled={currentPage === meta.totalPages - 1}
-                >
-                  Sau <FaChevronRight />
-                </button>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      )}
+      <AppPagination
+        pageCount={meta.totalPages ?? 1}
+        currentPage={currentPage}
+        total={meta.total}
+        itemLabel="bệnh viện"
+        onPageChange={(selected) => handlePageChange({ selected })}
+      />
 
       <HospitalFormModal
         mode={modal}

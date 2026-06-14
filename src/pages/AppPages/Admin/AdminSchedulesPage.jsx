@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { FaLock, FaLockOpen, FaTrash, FaPlus } from "react-icons/fa";
+import { FaCheckToSlot } from "react-icons/fa6";
 import { toast } from "react-toastify";
 import { timeSlotService, doctorService, hospitalService } from "../../../api/appService";
+import AppPagination from "../../../components/Common/AppPagination";
+import ConfirmModal from "../../../components/Common/ConfirmModal";
+import WorkingDaysSelector from "../../../components/Common/WorkingDaysSelector";
+import { DAYS_OF_WEEK, DAY_LABELS, parseWorkingDays } from "../../../components/Common/workingDaysUtils";
 import "./AdminSchedulesPage.scss";
-import { FaCheckToSlot } from "react-icons/fa6";
-
-const DAYS_OF_WEEK = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
-const DAY_LABELS = { MON: "T2", TUE: "T3", WED: "T4", THU: "T5", FRI: "T6", SAT: "T7", SUN: "CN" };
 
 const PAGE_LIMIT = 20;
 
@@ -16,46 +17,96 @@ function statusBadge(slot) {
   return <span className="badge badge--free">Trống</span>;
 }
 
-// ─── Generate Modal ───────────────────────────────────────────
-function GenerateModal({ onClose, doctors, hospitals, onSuccess }) {
+function GenerateModal({ onClose, doctors, onSuccess }) {
   const [form, setForm] = useState({
-    doctorId: doctors.length > 0 ? doctors[0].id : "",
-    hospitalId: hospitals.length > 0 ? hospitals[0].id : "",
-    startDate: "", endDate: "",
-    dayOfWeek: ["MON", "WED", "FRI"],
-    startTime: "08:00", endTime: "17:00",
+    doctorId: "",
+    hospitalId: "",
+    startDate: "",
+    endDate: "",
+    dayOfWeek: [],
+    startTime: "",
+    endTime: "",
     durationMinutes: 30,
-    breakStart: "12:00", breakEnd: "13:00",
+    breakStart: "12:00",
+    breakEnd: "13:00",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const toggle = (day) => setForm(f => ({
-    ...f,
-    dayOfWeek: f.dayOfWeek.includes(day)
-      ? f.dayOfWeek.filter(d => d !== day)
-      : [...f.dayOfWeek, day],
-  }));
+  const selectedDoctor = doctors.find((doctor) => doctor.id === form.doctorId);
+  const doctorHospitals = selectedDoctor?.hospitals || [];
+  const selectedLink = doctorHospitals.find((item) => {
+    const hospitalId = item.hospital?.id || item.hospitalId;
+    return hospitalId === form.hospitalId;
+  });
+  const allowedDays = parseWorkingDays(selectedLink?.workingDays);
+  const disabledDays = allowedDays.length ? DAYS_OF_WEEK.filter((day) => !allowedDays.includes(day)) : [];
+  const allowedStartTime = selectedLink?.startTime || "";
+  const allowedEndTime = selectedLink?.endTime || "";
 
-  const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
+  const set = (key) => (e) => setForm((current) => ({ ...current, [key]: e.target.value }));
+
+  const handleDoctorChange = (e) => {
+    setForm((current) => ({
+      ...current,
+      doctorId: e.target.value,
+      hospitalId: "",
+      dayOfWeek: [],
+      startTime: "",
+      endTime: "",
+    }));
+  };
+
+  const handleHospitalChange = (e) => {
+    const hospitalId = e.target.value;
+    const link = doctorHospitals.find((item) => (item.hospital?.id || item.hospitalId) === hospitalId);
+
+    setForm((current) => ({
+      ...current,
+      hospitalId,
+      dayOfWeek: parseWorkingDays(link?.workingDays),
+      startTime: link?.startTime || "",
+      endTime: link?.endTime || "",
+    }));
+  };
+
+  const isTimeOutsideRange = (value) => {
+    if (!value || !allowedStartTime || !allowedEndTime) return false;
+    return value < allowedStartTime || value > allowedEndTime;
+  };
 
   const handleSubmit = async () => {
     if (!form.doctorId || !form.hospitalId || !form.startDate || !form.endDate) {
       toast.error("Vui lòng điền đủ thông tin cơ bản!");
       return;
     }
+    if (!form.dayOfWeek.length) {
+      toast.error("Vui lòng chọn ít nhất một ngày làm việc.");
+      return;
+    }
+    if (!form.startTime || !form.endTime) {
+      toast.error("Vui lòng chọn giờ bắt đầu và giờ kết thúc.");
+      return;
+    }
+    if (isTimeOutsideRange(form.startTime) || isTimeOutsideRange(form.endTime)) {
+      toast.error(`Giờ sinh slot phải nằm trong khung ${allowedStartTime} - ${allowedEndTime}.`);
+      return;
+    }
+    if (form.startTime >= form.endTime) {
+      toast.error("Giờ kết thúc phải sau giờ bắt đầu.");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
-      const payload = { ...form };
+      const payload = { ...form, durationMinutes: Number(form.durationMinutes) };
       if (!payload.breakStart) delete payload.breakStart;
       if (!payload.breakEnd) delete payload.breakEnd;
-      payload.durationMinutes = Number(payload.durationMinutes);
 
       await timeSlotService.adminGenerateTimeSlots(payload);
       toast.success("Sinh slots thành công!");
       onSuccess();
     } catch (error) {
-      const msg = error?.response?.data?.message || "Lỗi khi sinh slots. Vui lòng thử lại!";
-      toast.error(msg);
+      toast.error(error?.response?.data?.message || "Lỗi khi sinh slots. Vui lòng thử lại!");
     } finally {
       setIsSubmitting(false);
     }
@@ -63,13 +114,10 @@ function GenerateModal({ onClose, doctors, hospitals, onSuccess }) {
 
   return (
     <>
-      {/* Lớp nền đen xám của Bootstrap */}
       <div className="modal-backdrop fade show" onClick={onClose} />
-
-      {/* Khung Modal của Bootstrap */}
       <div className="modal fade show d-block" tabIndex="-1">
         <div className="modal-dialog modal-lg modal-dialog-centered">
-          <div className="modal-content">
+          <div className="modal-content generate-slot-modal">
             <div className="modal-header">
               <h5 className="modal-title">Sinh slots tự động</h5>
               <button className="btn-close" onClick={onClose} disabled={isSubmitting} />
@@ -79,14 +127,23 @@ function GenerateModal({ onClose, doctors, hospitals, onSuccess }) {
               <div className="row mb-3">
                 <div className="col-md-6">
                   <label className="form-label text-muted small text-uppercase fw-bold">Bác sĩ</label>
-                  <select className="form-select" value={form.doctorId} onChange={set("doctorId")}>
-                    {doctors.map(d => <option key={d.id} value={d.id}>{d.user?.lastName} {d.user?.firstName}</option>)}
+                  <select className="form-select" value={form.doctorId} onChange={handleDoctorChange}>
+                    <option value="">Chọn bác sĩ</option>
+                    {doctors.map((doctor) => (
+                      <option key={doctor.id} value={doctor.id}>
+                        {doctor.user?.lastName} {doctor.user?.firstName}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div className="col-md-6">
                   <label className="form-label text-muted small text-uppercase fw-bold">Cơ sở</label>
-                  <select className="form-select" value={form.hospitalId} onChange={set("hospitalId")}>
-                    {hospitals.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+                  <select className="form-select" value={form.hospitalId} onChange={handleHospitalChange} disabled={!form.doctorId}>
+                    <option value="">{form.doctorId ? "Chọn cơ sở của bác sĩ" : "Chọn bác sĩ trước"}</option>
+                    {doctorHospitals.map((item) => {
+                      const hospital = item.hospital || item;
+                      return <option key={hospital.id} value={hospital.id}>{hospital.name}</option>;
+                    })}
                   </select>
                 </div>
               </div>
@@ -104,28 +161,28 @@ function GenerateModal({ onClose, doctors, hospitals, onSuccess }) {
 
               <div className="mb-3">
                 <label className="form-label text-muted small text-uppercase fw-bold">Ngày trong tuần</label>
-                <div className="d-flex flex-wrap gap-2">
-                  {DAYS_OF_WEEK.map(d => (
-                    <button
-                      key={d}
-                      type="button"
-                      className={`btn btn-sm ${form.dayOfWeek.includes(d) ? "btn-primary" : "btn-outline-secondary"}`}
-                      onClick={() => toggle(d)}
-                    >
-                      {DAY_LABELS[d]}
-                    </button>
-                  ))}
-                </div>
+                <WorkingDaysSelector
+                  value={form.dayOfWeek.join(",")}
+                  onChange={(value) => setForm((current) => ({ ...current, dayOfWeek: parseWorkingDays(value) }))}
+                  disabledDays={disabledDays}
+                  disabled={!form.hospitalId}
+                />
+                {selectedLink && (
+                  <div className="form-text">
+                    Lịch tại cơ sở này: {allowedDays.map((day) => DAY_LABELS[day]).join(", ") || "Chưa cấu hình"}
+                    {allowedStartTime && allowedEndTime ? ` · ${allowedStartTime} - ${allowedEndTime}` : ""}
+                  </div>
+                )}
               </div>
 
               <div className="row mb-3">
                 <div className="col-md-4">
                   <label className="form-label text-muted small text-uppercase fw-bold">Giờ bắt đầu</label>
-                  <input type="time" className="form-control" value={form.startTime} onChange={set("startTime")} />
+                  <input type="time" className="form-control" value={form.startTime} min={allowedStartTime} max={allowedEndTime} onChange={set("startTime")} disabled={!form.hospitalId} />
                 </div>
                 <div className="col-md-4">
                   <label className="form-label text-muted small text-uppercase fw-bold">Giờ kết thúc</label>
-                  <input type="time" className="form-control" value={form.endTime} onChange={set("endTime")} />
+                  <input type="time" className="form-control" value={form.endTime} min={allowedStartTime} max={allowedEndTime} onChange={set("endTime")} disabled={!form.hospitalId} />
                 </div>
                 <div className="col-md-4">
                   <label className="form-label text-muted small text-uppercase fw-bold">Mỗi slot (phút)</label>
@@ -147,7 +204,7 @@ function GenerateModal({ onClose, doctors, hospitals, onSuccess }) {
 
             <div className="modal-footer border-0">
               <button className="btn btn-light border" onClick={onClose} disabled={isSubmitting}>Hủy</button>
-              <button className="btn btn-primary" onClick={handleSubmit} disabled={isSubmitting} style={{ backgroundColor: "#2563eb", borderColor: "#2563eb" }}>
+              <button className="btn btn-primary btn-save-slot" onClick={handleSubmit} disabled={isSubmitting}>
                 {isSubmitting ? "Đang xử lý..." : "Sinh slots"}
               </button>
             </div>
@@ -158,36 +215,23 @@ function GenerateModal({ onClose, doctors, hospitals, onSuccess }) {
   );
 }
 
-// ─── Main Page ────────────────────────────────────────────────
 export default function AdminSchedulesPage() {
   const [slots, setSlots] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [hospitals, setHospitals] = useState([]);
   const [meta, setMeta] = useState({ total: 0, totalPages: 1 });
-
   const [filters, setFilters] = useState({
-    doctorId: "", hospitalId: "", date: "", isBooked: "", isBlocked: "",
+    doctorId: "",
+    hospitalId: "",
+    date: "",
+    isBooked: "",
+    isBlocked: "",
   });
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [showGenerate, setShowGenerate] = useState(false);
   const [selected, setSelected] = useState(new Set());
-
-  useEffect(() => {
-    const fetchMasterData = async () => {
-      try {
-        const [docsRes, hospsRes] = await Promise.all([
-          doctorService.adminGetDoctors({ limit: 50 }),
-          hospitalService.adminGetHospitals({ limit: 50 })
-        ]);
-        setDoctors(docsRes.data?.data || docsRes.data || []);
-        setHospitals(hospsRes.data?.data || hospsRes.data || []);
-      } catch (err) {
-        toast.error("Không thể tải danh sách bác sĩ/cơ sở.");
-      }
-    };
-    fetchMasterData();
-  }, []);
+  const [confirmState, setConfirmState] = useState(null);
 
   const fetchSlots = async () => {
     try {
@@ -204,7 +248,7 @@ export default function AdminSchedulesPage() {
       setSlots(data.data || []);
       setMeta(data.meta || { total: 0, totalPages: 1, page: 1 });
       setSelected(new Set());
-    } catch (err) {
+    } catch {
       toast.error("Không thể tải danh sách lịch khám.");
     } finally {
       setIsLoading(false);
@@ -212,24 +256,40 @@ export default function AdminSchedulesPage() {
   };
 
   useEffect(() => {
+    const fetchMasterData = async () => {
+      try {
+        const [docsRes, hospsRes] = await Promise.all([
+          doctorService.adminGetDoctors({ limit: 50 }),
+          hospitalService.adminGetHospitals({ limit: 50 }),
+        ]);
+        setDoctors(docsRes.data?.data || docsRes.data || []);
+        setHospitals(hospsRes.data?.data || hospsRes.data || []);
+      } catch {
+        toast.error("Không thể tải danh sách bác sĩ/cơ sở.");
+      }
+    };
+    fetchMasterData();
+  }, []);
+
+  useEffect(() => {
     fetchSlots();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, filters]);
 
-  const setFilter = (k) => (e) => {
-    setFilters(f => ({ ...f, [k]: e.target.value }));
+  const setFilter = (key) => (e) => {
+    setFilters((current) => ({ ...current, [key]: e.target.value }));
     setPage(1);
   };
 
-  const toggleSelect = (id) => setSelected(s => {
-    const next = new Set(s);
+  const toggleSelect = (id) => setSelected((current) => {
+    const next = new Set(current);
     next.has(id) ? next.delete(id) : next.add(id);
     return next;
   });
 
   const toggleAll = () => {
     if (selected.size === slots.length) setSelected(new Set());
-    else setSelected(new Set(slots.map(s => s.id)));
+    else setSelected(new Set(slots.map((slot) => slot.id)));
   };
 
   const handleBlockToggle = async (id, currentBlocked) => {
@@ -243,7 +303,6 @@ export default function AdminSchedulesPage() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa slot này?")) return;
     try {
       await timeSlotService.adminDeleteTimeSlot(id);
       toast.success("Xóa slot thành công");
@@ -254,29 +313,25 @@ export default function AdminSchedulesPage() {
   };
 
   const handleBulkDelete = async () => {
-    if (!window.confirm(`Bạn có chắc chắn muốn xóa ${selected.size} slot đã chọn?`)) return;
     try {
       setIsLoading(true);
-      await Promise.all(Array.from(selected).map(id => timeSlotService.adminDeleteTimeSlot(id)));
+      await Promise.all(Array.from(selected).map((id) => timeSlotService.adminDeleteTimeSlot(id)));
       toast.success(`Đã xóa thành công ${selected.size} slot`);
       fetchSlots();
-    } catch (error) {
+    } catch {
       toast.error("Có lỗi xảy ra khi xóa một số slot. Có thể một số slot đã được đặt.");
       fetchSlots();
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const pageRange = () => {
-    const delta = 2;
-    const range = [];
-    for (let i = Math.max(1, page - delta); i <= Math.min(meta.totalPages || 1, page + delta); i++) range.push(i);
-    return range;
-  };
-
   const formatDoctorName = (doctor) => {
-    if (!doctor || !doctor.user) return "N/A";
+    if (!doctor || !doctor.user) return "Chưa có thông tin";
     return `${doctor.user.lastName || ""} ${doctor.user.firstName || ""}`.trim();
   };
+
+  const closeConfirm = () => setConfirmState(null);
 
   return (
     <div className="schedules-page">
@@ -284,7 +339,6 @@ export default function AdminSchedulesPage() {
         <GenerateModal
           onClose={() => setShowGenerate(false)}
           doctors={doctors}
-          hospitals={hospitals}
           onSuccess={() => {
             setShowGenerate(false);
             setPage(1);
@@ -300,7 +354,7 @@ export default function AdminSchedulesPage() {
         </div>
         <div className="slots-header__right">
           <span className="slots-total-badge">
-            <FaCheckToSlot /> {meta.total ?? 0} slots
+            <FaCheckToSlot /> {meta.total ?? 0} slot
           </span>
           <button className="btn-add-slot" onClick={() => setShowGenerate(true)}>
             <FaPlus /> Sinh slots
@@ -308,31 +362,16 @@ export default function AdminSchedulesPage() {
         </div>
       </div>
 
-      {/* <div className="page-header">
-        <div>
-          <h1 className="page-title">Quản lý lịch khám</h1>
-          <p className="page-sub">Tổng <strong>{meta.total}</strong> slots · Trang {page}/{meta.totalPages || 1}</p>
-        </div>
-        <button className="btn btn--primary" onClick={() => setShowGenerate(true)}>
-          <FaPlus /> Sinh slots
-        </button>
-      </div> */}
-
       <div className="filter-bar">
         <select value={filters.doctorId} onChange={setFilter("doctorId")}>
           <option value="">Tất cả bác sĩ</option>
-          {doctors.map(d => <option key={d.id} value={d.id}>{formatDoctorName(d)}</option>)}
+          {doctors.map((doctor) => <option key={doctor.id} value={doctor.id}>{formatDoctorName(doctor)}</option>)}
         </select>
         <select value={filters.hospitalId} onChange={setFilter("hospitalId")}>
           <option value="">Tất cả cơ sở</option>
-          {hospitals.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+          {hospitals.map((hospital) => <option key={hospital.id} value={hospital.id}>{hospital.name}</option>)}
         </select>
-        <input
-          type="date"
-          value={filters.date}
-          onChange={setFilter("date")}
-          title="Lọc theo ngày"
-        />
+        <input type="date" value={filters.date} onChange={setFilter("date")} title="Lọc theo ngày" />
         <select value={filters.isBooked} onChange={setFilter("isBooked")}>
           <option value="">Trạng thái đặt</option>
           <option value="true">Đã đặt</option>
@@ -344,7 +383,13 @@ export default function AdminSchedulesPage() {
           <option value="false">Chưa khóa</option>
         </select>
         {(filters.doctorId || filters.hospitalId || filters.date || filters.isBooked || filters.isBlocked) && (
-          <button className="btn btn--ghost btn--sm" onClick={() => { setFilters({ doctorId: "", hospitalId: "", date: "", isBooked: "", isBlocked: "" }); setPage(1); }}>
+          <button
+            className="btn btn--ghost btn--sm"
+            onClick={() => {
+              setFilters({ doctorId: "", hospitalId: "", date: "", isBooked: "", isBlocked: "" });
+              setPage(1);
+            }}
+          >
             Xóa lọc
           </button>
         )}
@@ -353,7 +398,16 @@ export default function AdminSchedulesPage() {
       {selected.size > 0 && (
         <div className="bulk-bar">
           <span>Đã chọn <strong>{selected.size}</strong> slot</span>
-          <button className="btn btn--danger btn--sm" onClick={handleBulkDelete} disabled={isLoading}>
+          <button
+            className="btn btn--danger btn--sm"
+            onClick={() => setConfirmState({
+              title: "Xóa các slot đã chọn?",
+              message: `Bạn có chắc chắn muốn xóa ${selected.size} slot đã chọn không?`,
+              confirmText: "Xóa slot",
+              onConfirm: handleBulkDelete,
+            })}
+            disabled={isLoading}
+          >
             <FaTrash /> Xóa hàng loạt
           </button>
           <button className="btn btn--ghost btn--sm" onClick={() => setSelected(new Set())}>Bỏ chọn</button>
@@ -380,19 +434,15 @@ export default function AdminSchedulesPage() {
               <tr><td colSpan={7} className="empty-state">Đang tải dữ liệu...</td></tr>
             ) : slots.length === 0 ? (
               <tr><td colSpan={7} className="empty-state">Không tìm thấy slot nào</td></tr>
-            ) : slots.map(slot => (
+            ) : slots.map((slot) => (
               <tr key={slot.id} className={selected.has(slot.id) ? "row--selected" : ""}>
                 <td className="col-check">
                   <input type="checkbox" checked={selected.has(slot.id)} onChange={() => toggleSelect(slot.id)} />
                 </td>
-                <td>
-                  <span className="doctor-name">{formatDoctorName(slot.doctor)}</span>
-                </td>
-                <td><span className="hospital-tag">{slot.hospital?.name || "N/A"}</span></td>
+                <td><span className="doctor-name">{formatDoctorName(slot.doctor)}</span></td>
+                <td><span className="hospital-tag">{slot.hospital?.name || "Chưa có thông tin"}</span></td>
                 <td className="date-cell">{new Date(slot.date).toLocaleDateString("vi-VN")}</td>
-                <td className="time-cell">
-                  <span className="time-pill">{slot.startTime} – {slot.endTime}</span>
-                </td>
+                <td className="time-cell"><span className="time-pill">{slot.startTime} - {slot.endTime}</span></td>
                 <td>{statusBadge(slot)}</td>
                 <td className="col-actions">
                   <button
@@ -403,7 +453,16 @@ export default function AdminSchedulesPage() {
                     {slot.isBlocked ? <FaLockOpen /> : <FaLock />}
                   </button>
                   {!slot.isBooked && (
-                    <button className="action-btn action-btn--delete" title="Xóa slot" onClick={() => handleDelete(slot.id)}>
+                    <button
+                      className="action-btn action-btn--delete"
+                      title="Xóa slot"
+                      onClick={() => setConfirmState({
+                        title: "Xóa slot này?",
+                        message: "Slot chưa được đặt sẽ bị xóa khỏi hệ thống.",
+                        confirmText: "Xóa slot",
+                        onConfirm: () => handleDelete(slot.id),
+                      })}
+                    >
                       <FaTrash />
                     </button>
                   )}
@@ -414,45 +473,27 @@ export default function AdminSchedulesPage() {
         </table>
       </div>
 
-      {(meta.totalPages > 1) && (
-        <nav className="pagination" aria-label="Phân trang">
-          <ul>
-            <li className={page === 1 ? "disabled" : ""}>
-              <button onClick={() => setPage(1)} disabled={page === 1} aria-label="Trang đầu">«</button>
-            </li>
-            <li className={page === 1 ? "disabled" : ""}>
-              <button onClick={() => setPage(p => p - 1)} disabled={page === 1} aria-label="Trang trước">‹</button>
-            </li>
+      <AppPagination
+        pageCount={meta.totalPages || 1}
+        currentPage={page - 1}
+        total={meta.total}
+        itemLabel="slot"
+        onPageChange={(selectedPage) => setPage(selectedPage + 1)}
+      />
 
-            {page > 3 && (
-              <>
-                <li><button onClick={() => setPage(1)}>1</button></li>
-                {page > 4 && <li className="ellipsis"><span>…</span></li>}
-              </>
-            )}
-
-            {pageRange().map(p => (
-              <li key={p} className={p === page ? "active" : ""}>
-                <button onClick={() => setPage(p)}>{p}</button>
-              </li>
-            ))}
-
-            {page < meta.totalPages - 2 && (
-              <>
-                {page < meta.totalPages - 3 && <li className="ellipsis"><span>…</span></li>}
-                <li><button onClick={() => setPage(meta.totalPages)}>{meta.totalPages}</button></li>
-              </>
-            )}
-
-            <li className={page === meta.totalPages ? "disabled" : ""}>
-              <button onClick={() => setPage(p => p + 1)} disabled={page === meta.totalPages} aria-label="Trang sau">›</button>
-            </li>
-            <li className={page === meta.totalPages ? "disabled" : ""}>
-              <button onClick={() => setPage(meta.totalPages)} disabled={page === meta.totalPages} aria-label="Trang cuối">»</button>
-            </li>
-          </ul>
-        </nav>
-      )}
+      <ConfirmModal
+        show={!!confirmState}
+        title={confirmState?.title}
+        message={confirmState?.message}
+        confirmText={confirmState?.confirmText}
+        saving={isLoading}
+        onClose={closeConfirm}
+        onConfirm={async () => {
+          const action = confirmState?.onConfirm;
+          closeConfirm();
+          await action?.();
+        }}
+      />
     </div>
   );
 }
