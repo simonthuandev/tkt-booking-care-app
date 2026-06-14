@@ -15,13 +15,13 @@ import {
   FaFilter,
   FaStethoscope,
   FaPlay,
-  FaChevronLeft,
-  FaChevronRight,
   FaExclamationTriangle
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { appointmentService } from "../../../api/appService";
 import LoadingSpinner from "../../../components/Common/LoadingSpinner";
+import AppPagination from "../../../components/Common/AppPagination";
+import ConfirmModal from "../../../components/Common/ConfirmModal";
 import "./DoctorAppointmentsPage.scss";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -89,7 +89,7 @@ function StatusBadge({ status }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // SUB-COMPONENT: AppointmentRow
 // ─────────────────────────────────────────────────────────────────────────────
-function AppointmentRow({ appt, onUpdateStatus, loadingId }) {
+function AppointmentRow({ appt, onUpdateStatus, onRequestStatusConfirm, loadingId }) {
   const patient = appt.patientProfile?.fullName || "Bệnh nhân";
   const phone = appt.patientProfile?.phoneNumber || "Chưa cập nhật SĐT";
   const age = calculateAge(appt.patientProfile?.dob);
@@ -160,11 +160,7 @@ function AppointmentRow({ appt, onUpdateStatus, loadingId }) {
             </button>
             <button 
               className="doc-appt-btn doc-appt-btn--cancel" 
-              onClick={() => {
-                if(window.confirm("Bạn có chắc muốn huỷ lịch khám này không?")) {
-                  onUpdateStatus(appt.id, "cancelled");
-                }
-              }}
+              onClick={() => onRequestStatusConfirm(appt.id, "cancelled", "Hủy lịch khám?", "Bạn có chắc muốn hủy lịch khám này không?")}
               disabled={isUpdating}
             >
               <FaTimes /> Huỷ lịch
@@ -183,11 +179,7 @@ function AppointmentRow({ appt, onUpdateStatus, loadingId }) {
             </button>
             <button 
               className="doc-appt-btn doc-appt-btn--noshow" 
-              onClick={() => {
-                if(window.confirm("Xác nhận bệnh nhân không đến khám?")) {
-                  onUpdateStatus(appt.id, "no_show");
-                }
-              }}
+              onClick={() => onRequestStatusConfirm(appt.id, "no_show", "Xác nhận bệnh nhân không đến?", "Lịch hẹn sẽ được chuyển sang trạng thái không đến.")}
               disabled={isUpdating}
             >
               <FaExclamationTriangle /> Không đến
@@ -210,6 +202,7 @@ export default function DoctorAppointmentsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [confirmState, setConfirmState] = useState(null);
 
   const PAGE_LIMIT = 20; // Đồng bộ với Backend
 
@@ -260,6 +253,10 @@ export default function DoctorAppointmentsPage() {
     } finally {
       setUpdatingId(null);
     }
+  };
+
+  const requestStatusConfirm = (id, status, title, message) => {
+    setConfirmState({ id, status, title, message });
   };
 
   const handleTabChange = (key) => {
@@ -349,35 +346,34 @@ export default function DoctorAppointmentsPage() {
               key={appt.id}
               appt={appt}
               onUpdateStatus={handleUpdateStatus}
+              onRequestStatusConfirm={requestStatusConfirm}
               loadingId={updatingId}
             />
           ))
         )}
       </div>
 
-      {!loading && totalPages > 1 && (
-        <div className="mt-4">
-          <nav>
-            <ul className="pagination justify-content-center">
-              <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-                <button className="page-link" onClick={() => handlePageChange(currentPage - 1)}>
-                  <FaChevronLeft />
-                </button>
-              </li>
-              {Array.from({ length: totalPages }, (_, i) => (
-                <li key={i+1} className={`page-item ${i+1 === currentPage ? "active" : ""}`}>
-                  <button className="page-link" onClick={() => handlePageChange(i+1)}>{i+1}</button>
-                </li>
-              ))}
-              <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
-                <button className="page-link" onClick={() => handlePageChange(currentPage + 1)}>
-                  <FaChevronRight />
-                </button>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      )}
+      <AppPagination
+        pageCount={totalPages}
+        currentPage={currentPage - 1}
+        total={totalCount}
+        itemLabel="lịch hẹn"
+        onPageChange={(selected) => handlePageChange(selected + 1)}
+      />
+
+      <ConfirmModal
+        show={!!confirmState}
+        title={confirmState?.title}
+        message={confirmState?.message}
+        confirmText="Xác nhận"
+        saving={!!updatingId}
+        onClose={() => setConfirmState(null)}
+        onConfirm={async () => {
+          const next = confirmState;
+          setConfirmState(null);
+          await handleUpdateStatus(next.id, next.status);
+        }}
+      />
     </div>
   );
 }

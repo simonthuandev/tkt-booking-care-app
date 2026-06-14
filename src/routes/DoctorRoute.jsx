@@ -12,6 +12,7 @@ const DoctorRoute = {
         { path: "dashboard", element: <Doctor.DoctorDashboardPage /> },
         { path: "schedule", element: <Doctor.DoctorSchedulePage /> },
         { path: "appointments", element: <Doctor.DoctorAppointmentsPage /> },
+        { path: "reviews", element: <Doctor.DoctorReviewsPage /> },
         { path: "patients", element: <Doctor.DoctorPatientsPage /> },
         { path: "settings", element: <Doctor.DoctorSettingsPage /> },
       ],

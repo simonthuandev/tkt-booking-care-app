@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import ReactPaginate from "react-paginate";
+import ReactPaginateModule from "react-paginate";
 import { FaChevronLeft, FaChevronRight, FaClipboardList, FaHospital, FaStar, FaMagnifyingGlass, FaChevronDown, FaXmark } from "react-icons/fa6";
 import { Link } from "react-router";
 import { doctorService, specialtyService } from "../../api/appService";
@@ -8,8 +8,9 @@ import StarRating from "../../components/Common/StarRating";
 import "./DoctorsPage.scss";
 
 const DEFAULT_AVATAR = "https://ui-avatars.com/api/?background=0fa39b&color=fff&size=200&name=";
-const PAGE_LIMIT = 20;
+const PAGE_LIMIT = 12;
 const DEBOUNCE_MS = 400;
+const ReactPaginate = ReactPaginateModule.default || ReactPaginateModule;
 
 const DoctorsPage = () => {
   const [doctors, setDoctors] = useState([]);
@@ -106,6 +107,9 @@ const DoctorsPage = () => {
     setCurrentPage(selected);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  const totalPages = Math.max(Number(meta.totalPages) || 1, 1);
+  const safeCurrentPage = Math.min(currentPage, totalPages - 1);
 
   return (
     <>
@@ -264,14 +268,14 @@ const DoctorsPage = () => {
         )}
 
         {/* Pagination */}
-        {!isLoading && meta.totalPages > 1 && (
+        {!isLoading && totalPages > 1 && (
           <div className="doctors-pagination-wrap">
             <ReactPaginate
-              pageCount={meta.totalPages}
+              pageCount={totalPages}
               pageRangeDisplayed={5}
               marginPagesDisplayed={1}
               onPageChange={handlePageChange}
-              forcePage={currentPage}
+              forcePage={safeCurrentPage}
               previousLabel={<FaChevronLeft />}
               nextLabel={<FaChevronRight />}
               breakLabel="..."
@@ -288,7 +292,7 @@ const DoctorsPage = () => {
               disabledClassName="disabled"
             />
             <div className="pagination-info">
-              Trang {currentPage + 1} / {meta.totalPages} &nbsp;·&nbsp; Tổng {meta.total} bác sĩ
+              Trang {safeCurrentPage + 1} / {totalPages} &nbsp;·&nbsp; Tổng {meta.total} bác sĩ
             </div>
           </div>
         )}

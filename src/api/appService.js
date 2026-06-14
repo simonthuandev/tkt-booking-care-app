@@ -197,6 +197,9 @@ export const reviewService = {
   // User: Danh sách review chính mình đã viết
   getMyReviews: (params = {}) => axiosInstance.get("/users/me/reviews", { params }),
 
+  // Doctor: Danh sách review bệnh nhân đánh giá mình
+  getDoctorReviews: (params = {}) => axiosInstance.get("/doctors/me/reviews", { params }),
+
   // Admin: Xem toàn bộ đánh giá (kể cả bị ẩn)
   adminGetReviews: (params = {}) => axiosInstance.get("/admin/reviews", { params }),
 

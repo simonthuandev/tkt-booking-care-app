@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import ReactPaginate from "react-paginate";
+import ReactPaginateModule from "react-paginate";
 import { Link } from "react-router";
 import { toast } from "react-toastify";
 import {
@@ -21,6 +21,7 @@ const ALL_CITIES = "Tất cả";
 const ALL_TYPES = "";
 const FALLBACK_HOSPITAL_IMAGE =
   "https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=600&q=80";
+const ReactPaginate = ReactPaginateModule.default || ReactPaginateModule;
 
 const TYPE_OPTIONS = [
   { value: ALL_TYPES, label: "Tất cả" },
@@ -158,6 +159,8 @@ const HospitalsPage = () => {
   };
 
   const hasActiveFilters = searchQuery || selectedCity !== ALL_CITIES || selectedType;
+  const totalPages = Math.max(Number(meta.totalPages) || 1, 1);
+  const safeCurrentPage = Math.min(currentPage, totalPages - 1);
 
   return (
     <div className="hospitals-wrapper">
@@ -326,14 +329,14 @@ const HospitalsPage = () => {
         </div>
       )}
 
-      {!isLoading && meta.totalPages > 1 && (
+      {!isLoading && totalPages > 1 && (
         <div className="doctors-pagination-wrap hospitals-pagination-wrap">
           <ReactPaginate
-            pageCount={meta.totalPages}
+            pageCount={totalPages}
             pageRangeDisplayed={5}
             marginPagesDisplayed={1}
             onPageChange={handlePageChange}
-            forcePage={currentPage}
+            forcePage={safeCurrentPage}
             previousLabel={<FaChevronLeft />}
             nextLabel={<FaChevronRight />}
             breakLabel="..."
@@ -350,7 +353,7 @@ const HospitalsPage = () => {
             disabledClassName="disabled"
           />
           <div className="pagination-info">
-            Trang {currentPage + 1} / {meta.totalPages} &nbsp;·&nbsp; Tổng {meta.total} cơ sở
+            Trang {safeCurrentPage + 1} / {totalPages} &nbsp;·&nbsp; Tổng {meta.total} cơ sở
           </div>
         </div>
       )}

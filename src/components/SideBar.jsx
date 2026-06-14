@@ -141,6 +141,13 @@ const MENU_ITEMS = [
     roles: ["doctor"],
   },
   {
+    key: "doctor-reviews",
+    label: "Reviews",
+    path: "/app/doctor/reviews",
+    icon: MdOutlineReviews,
+    roles: ["doctor"],
+  },
+  {
     key: "doctor-settings",
     label: "Settings",
     path: "/app/doctor/settings",

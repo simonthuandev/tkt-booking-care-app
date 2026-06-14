@@ -1,12 +1,13 @@
 import { Link } from "react-router";
-import { useState, useEffect, useRef } from "react";
-import ReactPaginate from "react-paginate";
+import { useState, useEffect } from "react";
+import ReactPaginateModule from "react-paginate";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa6";
 import { specialtyService } from "../../api/appService";
 import LoadingSpinner from "../../components/Common/LoadingSpinner";
 import "./SpecialtiesPage.scss";
 
-const PAGE_LIMIT = 20;
+const PAGE_LIMIT = 12;
+const ReactPaginate = ReactPaginateModule.default || ReactPaginateModule;
 
 const SpecialtiesPage = () => {
   const [specialties, setSpecialties] = useState([]);
@@ -49,6 +50,9 @@ const SpecialtiesPage = () => {
     setCurrentPage(selected);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  const totalPages = Math.max(Number(meta.totalPages) || 1, 1);
+  const safeCurrentPage = Math.min(currentPage, totalPages - 1);
 
   return (
     <>
@@ -121,14 +125,14 @@ const SpecialtiesPage = () => {
           </div>
 
           {/* ── Pagination ─────────────────────────────── */}
-          {meta.totalPages > 1 && (
+          {totalPages > 1 && (
             <div className="specialties-pagination-wrap">
               <ReactPaginate
-                pageCount={meta.totalPages}
+                pageCount={totalPages}
                 pageRangeDisplayed={5}
                 marginPagesDisplayed={1}
                 onPageChange={handlePageChange}
-                forcePage={currentPage}
+                forcePage={safeCurrentPage}
                 previousLabel={<FaChevronLeft />}
                 nextLabel={<FaChevronRight />}
                 breakLabel="..."
@@ -145,7 +149,7 @@ const SpecialtiesPage = () => {
                 disabledClassName="disabled"
               />
               <p className="specialties-pagination-info">
-                Trang {currentPage + 1} / {meta.totalPages} &nbsp;·&nbsp; Tổng {meta.total} chuyên khoa
+                Trang {safeCurrentPage + 1} / {totalPages} &nbsp;·&nbsp; Tổng {meta.total} chuyên khoa
               </p>
             </div>
           )}

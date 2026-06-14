@@ -9,14 +9,14 @@ import {
   FaTimesCircle,
   FaUserMd,
   FaHospital,
-  FaChevronLeft,
-  FaChevronRight,
   FaStethoscope,
   FaMoneyBillWave,
   FaStar,
+  FaCreditCard,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
-import { appointmentService, reviewService } from "../../../api/appService";
+import { appointmentService, paymentService, reviewService } from "../../../api/appService";
+import AppPagination from "../../../components/Common/AppPagination";
 import LoadingSpinner from "../../../components/Common/LoadingSpinner";
 import "./UserAppointmentsPage.scss";
 
@@ -41,6 +41,16 @@ const PAYMENT_STATUS_CFG = {
   failed: { label: "Lỗi thanh toán", color: "#e24b4a" },
 };
 
+const STATUS_TABS = [
+  { key: "all", label: "Tất cả", statusVal: "" },
+  { key: "pending", label: "Chờ xác nhận", statusVal: "pending" },
+  { key: "confirmed", label: "Đã xác nhận", statusVal: "confirmed" },
+  { key: "processing", label: "Đang khám", statusVal: "processing" },
+  { key: "completed", label: "Hoàn thành", statusVal: "completed" },
+  { key: "no_show", label: "Không đến", statusVal: "no_show" },
+  { key: "cancelled", label: "Đã hủy", statusVal: "cancelled" },
+];
+
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
@@ -50,7 +60,7 @@ const formatCurrency = (amount) => {
 };
 
 const formatDateTime = (dateStr, startTime, endTime) => {
-  if (!dateStr) return "N/A";
+  if (!dateStr) return "Chưa có";
   const date = new Date(dateStr).toLocaleDateString("vi-VN", {
     day: "2-digit",
     month: "2-digit",
@@ -65,12 +75,13 @@ const formatDateTime = (dateStr, startTime, endTime) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // SUB-COMPONENT: AppointmentRow
 // ─────────────────────────────────────────────────────────────────────────────
-const AppointmentRow = ({ appt, onView, onCancel, onReview }) => {
+const AppointmentRow = ({ appt, onView, onCancel, onReview, onPay }) => {
   const statusCfg = STATUS_CFG[appt.status] || STATUS_CFG.pending;
   const StatusIcon = statusCfg.icon;
 
   const paymentStatus = PAYMENT_STATUS_CFG[appt.paymentStatus] || PAYMENT_STATUS_CFG.pending;
   const canReview = appt.status === "completed" && !appt.review;
+  const canPay = appt.status === "pending" && ["pending", "failed"].includes(appt.paymentStatus);
 
   return (
     <div className="user-appt-row">
@@ -79,13 +90,13 @@ const AppointmentRow = ({ appt, onView, onCancel, onReview }) => {
           <FaUserMd className="me-1 text-primary" /> {appt.doctor?.user?.lastName} {appt.doctor?.user?.firstName}
         </p>
         <p className="user-appt-row__hospital text-truncate" title={appt.hospital?.name}>
-          <FaHospital className="me-1 text-muted" /> {appt.hospital?.name || "N/A"}
+          <FaHospital className="me-1 text-muted" /> {appt.hospital?.name || "Chưa có thông tin"}
         </p>
       </div>
 
       <div className="user-appt-row__patient">
         <p className="user-appt-row__title">Hồ sơ khám</p>
-        <p className="fw-semibold mb-0">{appt.patientProfile?.fullName || "N/A"}</p>
+        <p className="fw-semibold mb-0">{appt.patientProfile?.fullName || "Chưa có thông tin"}</p>
       </div>
 
       <div className="user-appt-row__datetime">
@@ -93,7 +104,7 @@ const AppointmentRow = ({ appt, onView, onCancel, onReview }) => {
           {appt.timeSlot?.startTime} - {appt.timeSlot?.endTime}
         </span>
         <span className="text-muted small">
-          {appt.timeSlot?.date ? new Date(appt.timeSlot.date).toLocaleDateString("vi-VN") : "N/A"}
+          {appt.timeSlot?.date ? new Date(appt.timeSlot.date).toLocaleDateString("vi-VN") : "Chưa có"}
         </span>
       </div>
 
@@ -126,6 +137,11 @@ const AppointmentRow = ({ appt, onView, onCancel, onReview }) => {
         {canReview && (
           <button className="user-appt-btn user-appt-btn--view" onClick={() => onReview(appt)} title="Đánh giá">
             <FaStar />
+          </button>
+        )}
+        {canPay && (
+          <button className="user-appt-btn user-appt-btn--view" onClick={() => onPay(appt)} title="Thanh toán">
+            <FaCreditCard />
           </button>
         )}
       </div>
@@ -255,6 +271,48 @@ const ReviewModal = ({ appt, onConfirm, onClose, saving }) => {
   );
 };
 
+const PaymentChoiceModal = ({ appt, onOnline, onCash, onClose, saving }) => {
+  if (!appt) return null;
+
+  return (
+    <>
+      <div className="modal-backdrop fade show" onClick={saving ? undefined : onClose} />
+      <div className="modal fade show d-block" tabIndex="-1">
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title text-primary">Chọn phương thức thanh toán</h5>
+              <button className="btn-close" onClick={onClose} disabled={saving} />
+            </div>
+            <div className="modal-body py-4">
+              <div className="mb-3">
+                <div className="fw-semibold">
+                  {appt.doctor?.user?.lastName} {appt.doctor?.user?.firstName}
+                </div>
+                <div className="text-muted small">{formatDateTime(appt.timeSlot?.date, appt.timeSlot?.startTime, appt.timeSlot?.endTime)}</div>
+                <div className="fw-bold text-success mt-2">{formatCurrency(appt.totalAmount)}</div>
+              </div>
+              <div className="d-grid gap-2">
+                <button className="btn btn-primary" onClick={() => onOnline(appt)} disabled={saving}>
+                  <FaCreditCard className="me-2" />
+                  {saving ? "Đang tạo link..." : "Thanh toán online qua VNPAY"}
+                </button>
+                <button className="btn btn-outline-success" onClick={() => onCash(appt)} disabled={saving}>
+                  <FaMoneyBillWave className="me-2" />
+                  Thanh toán tại quầy
+                </button>
+              </div>
+            </div>
+            <div className="modal-footer border-0 pt-0">
+              <button className="btn btn-light border" onClick={onClose} disabled={saving}>Hủy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // SUB-COMPONENT: AppointmentViewModal
 // ─────────────────────────────────────────────────────────────────────────────
@@ -299,12 +357,12 @@ const AppointmentViewModal = ({ appt, onClose }) => {
                     </h6>
                     <div className="mb-2">
                       <small className="text-muted d-block">Họ và tên</small>
-                      <div className="fw-semibold fs-6">{appt.patientProfile?.fullName || "N/A"}</div>
+                      <div className="fw-semibold fs-6">{appt.patientProfile?.fullName || "Chưa có thông tin"}</div>
                     </div>
                     <div className="row">
                       <div className="col-6 mb-2">
                         <small className="text-muted d-block">Số điện thoại</small>
-                        <div>{appt.patientProfile?.phoneNumber || "N/A"}</div>
+                        <div>{appt.patientProfile?.phoneNumber || "Chưa có SĐT"}</div>
                       </div>
                       <div className="col-6 mb-2">
                         <small className="text-muted d-block">Giới tính</small>
@@ -313,7 +371,7 @@ const AppointmentViewModal = ({ appt, onClose }) => {
                     </div>
                     <div className="mb-2">
                       <small className="text-muted d-block">Ngày sinh</small>
-                      <div>{appt.patientProfile?.dob ? new Date(appt.patientProfile.dob).toLocaleDateString('vi-VN') : "N/A"}</div>
+                      <div>{appt.patientProfile?.dob ? new Date(appt.patientProfile.dob).toLocaleDateString('vi-VN') : "Chưa có"}</div>
                     </div>
                   </div>
                 </div>
@@ -372,7 +430,7 @@ const AppointmentViewModal = ({ appt, onClose }) => {
                       </div>
                     )}
                     <div className="mb-2 mt-3 text-end">
-                      <small className="text-muted">Ngày tạo: {appt.createdAt ? new Date(appt.createdAt).toLocaleString('vi-VN') : "N/A"}</small>
+                      <small className="text-muted">Ngày tạo: {appt.createdAt ? new Date(appt.createdAt).toLocaleString('vi-VN') : "Chưa có"}</small>
                     </div>
                   </div>
                 </div>
@@ -405,7 +463,7 @@ export default function UserAppointmentsPage() {
   const [filterStatus, setFilterStatus] = useState("");
 
   // Modals
-  const [modal, setModal] = useState(null); // 'view' | 'cancel' | 'review'
+  const [modal, setModal] = useState(null); // 'view' | 'cancel' | 'review' | 'payment'
   const [selectedAppt, setSelectedAppt] = useState(null);
   const [saving, setSaving] = useState(false);
 
@@ -502,13 +560,50 @@ export default function UserAppointmentsPage() {
     }
   };
 
+  const handleOnlinePayment = async (appt) => {
+    setSaving(true);
+    try {
+      const res = await paymentService.createPaymentUrl({
+        appointmentId: appt.id,
+        provider: "vn_pay",
+      });
+      const payUrl = res.data?.payUrl || res.data?.data?.payUrl;
+      if (!payUrl) {
+        throw new Error("Không nhận được link thanh toán");
+      }
+      window.location.href = payUrl;
+    } catch (err) {
+      console.error("Failed to create VNPAY payment", err);
+      toast.error(err?.response?.data?.message || "Không thể tạo link thanh toán. Vui lòng thử lại.");
+      setSaving(false);
+    }
+  };
+
+  const handleCashPayment = async (appt) => {
+    setSaving(true);
+    try {
+      await paymentService.createPaymentUrl({
+        appointmentId: appt.id,
+        provider: "cash",
+      });
+      toast.success("Đã chọn thanh toán tại quầy. Lịch hẹn đã được xác nhận.");
+      closeModal();
+      fetchAppointments();
+    } catch (err) {
+      console.error("Failed to choose cash payment", err);
+      toast.error(err?.response?.data?.message || "Không thể chọn thanh toán tại quầy. Vui lòng thử lại.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="user-appts-page">
       {/* Header */}
       <div className="user-appts-header">
         <div>
-          <h1 className="user-appts-title">Quản lý Lịch hẹn</h1>
-          <p className="user-appts-sub text-muted">
+          <h1 className="user-appts-title">Quản lý lịch hẹn</h1>
+          <p className="user-appts-sub">
             Theo dõi và quản lý lịch khám bệnh của bạn.
           </p>
         </div>
@@ -519,19 +614,16 @@ export default function UserAppointmentsPage() {
         </div>
       </div>
 
-      {/* Toolbar / Filters */}
-      <div className="card shadow-sm border-0 mb-4 p-3 bg-white rounded-3">
-        <div className="row g-2 align-items-center">
-          <div className="col-12 col-md-4">
-            <label className="form-label text-muted small fw-semibold">Lọc theo trạng thái</label>
-            <select className="form-select" value={filterStatus} onChange={(e) => handleFilterChange(e.target.value)}>
-              <option value="">Tất cả lịch hẹn</option>
-              {Object.entries(STATUS_CFG).map(([key, cfg]) => (
-                <option key={key} value={key}>{cfg.label}</option>
-              ))}
-            </select>
-          </div>
-        </div>
+      <div className="user-appts-tabs">
+        {STATUS_TABS.map(({ key, label, statusVal }) => (
+          <button
+            key={key}
+            className={`user-appts-tabs__btn ${filterStatus === statusVal ? "user-appts-tabs__btn--active" : ""}`}
+            onClick={() => handleFilterChange(statusVal)}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {/* List */}
@@ -559,62 +651,20 @@ export default function UserAppointmentsPage() {
                 onView={(a) => openModal("view", a)}
                 onCancel={(a) => openModal("cancel", a)}
                 onReview={(a) => openModal("review", a)}
+                onPay={(a) => openModal("payment", a)}
               />
             ))}
           </div>
         )}
       </div>
 
-      {/* Pagination */}
-      {!loading && totalPages > 1 && (
-        <div className="mt-5">
-          <nav aria-label="Page navigation">
-            <ul className="pagination justify-content-center">
-              <li className={`page-item ${currentPage === 0 ? "disabled" : ""}`}>
-                <button
-                  className="page-link shadow-sm border-0"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 0}
-                >
-                  <FaChevronLeft className="me-1" /> Trước
-                </button>
-              </li>
-
-              {Array.from({ length: totalPages }, (_, i) => {
-                const start = Math.max(0, currentPage - 2);
-                const end = Math.min(totalPages, start + 5);
-                const adjustedStart = Math.max(0, end - 5);
-
-                if (i < adjustedStart || i >= end) return null;
-
-                return (
-                  <li
-                    key={i}
-                    className={`page-item mx-1 ${i === currentPage ? "active" : ""}`}
-                  >
-                    <button
-                      className={`page-link shadow-sm border-0 rounded-3 ${i === currentPage ? 'bg-primary text-white' : ''}`}
-                      onClick={() => handlePageChange(i)}
-                    >
-                      {i + 1}
-                    </button>
-                  </li>
-                );
-              })}
-
-              <li className={`page-item ms-1 ${currentPage === totalPages - 1 ? "disabled" : ""}`}>
-                <button
-                  className="page-link shadow-sm border-0"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages - 1}
-                >
-                  Sau <FaChevronRight className="ms-1" />
-                </button>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      )}
+      <AppPagination
+        pageCount={totalPages}
+        currentPage={currentPage}
+        total={totalCount}
+        itemLabel="lịch hẹn"
+        onPageChange={handlePageChange}
+      />
 
       {/* Modals */}
       <AppointmentViewModal
@@ -631,6 +681,15 @@ export default function UserAppointmentsPage() {
         <ReviewModal
           appt={selectedAppt}
           onConfirm={handleConfirmReview}
+          onClose={closeModal}
+          saving={saving}
+        />
+      )}
+      {modal === "payment" && (
+        <PaymentChoiceModal
+          appt={selectedAppt}
+          onOnline={handleOnlinePayment}
+          onCash={handleCashPayment}
           onClose={closeModal}
           saving={saving}
         />

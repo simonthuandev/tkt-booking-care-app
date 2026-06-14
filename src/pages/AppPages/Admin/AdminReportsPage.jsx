@@ -20,12 +20,13 @@ import "./AdminReportsPage.scss";
 // ─────────────────────────────────────────────────────────────────────────────
 // COMPONENT: KpiCard
 // ─────────────────────────────────────────────────────────────────────────────
-const KpiCard = ({ label, value, icon: Icon, color, subText }) => {
+const KpiCard = ({ label, value, icon, color, subText }) => {
+  const IconComponent = icon;
   return (
     <div className={`kpi-card kpi-card--${color}`}>
       <div className="kpi-card__top">
         <div className="kpi-card__icon">
-          <Icon />
+          <IconComponent />
         </div>
       </div>
       <p className="kpi-card__value">{value}</p>
@@ -47,7 +48,6 @@ const TimelineChart = ({ data }) => {
     <div className="rep-bar-chart">
       {data.map((item, idx) => {
         const pct = maxTotal === 0 ? 0 : (item.total / maxTotal) * 100;
-        // Format date: YYYY-MM-DD to DD/MM
         const dateObj = new Date(item.date);
         const dateStr = `${dateObj.getDate()}/${dateObj.getMonth() + 1}`;
 
@@ -58,7 +58,7 @@ const TimelineChart = ({ data }) => {
               <div
                 className="rep-bar-chart__bar"
                 style={{ height: `${pct}%` }}
-                title={`Completed: ${item.completed} | Cancelled: ${item.cancelled} | No Show: ${item.noShow}`}
+                title={`Hoàn thành: ${item.completed} | Đã hủy: ${item.cancelled} | Không đến: ${item.noShow}`}
               />
             </div>
             <span className="rep-bar-chart__month">{dateStr}</span>
@@ -109,6 +109,85 @@ function DonutChart({ data, total }) {
   );
 }
 
+const toDateInputValue = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const formatDateLabel = (value) => {
+  if (!value) return "Chọn ngày";
+  return new Date(`${value}T00:00:00`).toLocaleDateString("vi-VN");
+};
+
+const buildCalendarDays = (monthDate) => {
+  const year = monthDate.getFullYear();
+  const month = monthDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const firstWeekday = (firstDay.getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const cells = Array.from({ length: firstWeekday }, () => null);
+  for (let day = 1; day <= daysInMonth; day += 1) cells.push(new Date(year, month, day));
+  return cells;
+};
+
+const DatePickerField = ({ label, value, onChange, min, max, align = "start" }) => {
+  const [open, setOpen] = useState(false);
+  const [monthDate, setMonthDate] = useState(() => value ? new Date(`${value}T00:00:00`) : new Date());
+  const days = buildCalendarDays(monthDate);
+  const monthLabel = monthDate.toLocaleDateString("vi-VN", { month: "long", year: "numeric" });
+
+  const isDisabled = (date) => {
+    const dateValue = toDateInputValue(date);
+    return (min && dateValue < min) || (max && dateValue > max);
+  };
+
+  const selectDate = (date) => {
+    if (isDisabled(date)) return;
+    onChange(toDateInputValue(date));
+    setOpen(false);
+  };
+
+  return (
+    <div className={`date-picker-field date-picker-field--${align}`}>
+      <label>{label}</label>
+      <button type="button" className="date-picker-trigger" onClick={() => setOpen((current) => !current)}>
+        <FaCalendarAlt /> {formatDateLabel(value)}
+      </button>
+      {open && (
+        <div className="date-popover">
+          <div className="date-popover__head">
+            <button type="button" onClick={() => setMonthDate(new Date(monthDate.getFullYear(), monthDate.getMonth() - 1, 1))}>‹</button>
+            <strong>{monthLabel}</strong>
+            <button type="button" onClick={() => setMonthDate(new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 1))}>›</button>
+          </div>
+          <div className="date-popover__weekdays">
+            {["T2", "T3", "T4", "T5", "T6", "T7", "CN"].map((day) => <span key={day}>{day}</span>)}
+          </div>
+          <div className="date-popover__grid">
+            {days.map((date, index) => {
+              if (!date) return <span key={`blank-${index}`} />;
+              const dateValue = toDateInputValue(date);
+              return (
+                <button
+                  key={dateValue}
+                  type="button"
+                  className={dateValue === value ? "is-selected" : ""}
+                  onClick={() => selectDate(date)}
+                  disabled={isDisabled(date)}
+                >
+                  {date.getDate()}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN PAGE
 // ─────────────────────────────────────────────────────────────────────────────
@@ -158,14 +237,8 @@ export default function AdminReportsPage() {
         </div>
         <div className="rep-header__right">
           <div className="date-picker-group">
-            <div className="date-input-wrap">
-              <label>Từ ngày</label>
-              <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} max={toDate} />
-            </div>
-            <div className="date-input-wrap">
-              <label>Đến ngày</label>
-              <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} min={fromDate} />
-            </div>
+            <DatePickerField label="Từ ngày" value={fromDate} onChange={setFromDate} max={toDate} />
+            <DatePickerField label="Đến ngày" value={toDate} onChange={setToDate} min={fromDate} align="end" />
           </div>
         </div>
       </div>
@@ -206,7 +279,7 @@ export default function AdminReportsPage() {
                 subText="Dựa trên lịch hẹn hoàn thành"
               />
               <KpiCard
-                label="Bệnh Nhân Mới"
+                label="Tài Khoản Mới"
                 value={reports.growth?.newUsers || 0}
                 icon={FaUserPlus}
                 color="navy"

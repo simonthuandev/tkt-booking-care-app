@@ -439,10 +439,10 @@ export default function UserPatientProfilesPage() {
   // Render
   return (
     <div className="patient-profiles-page">
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="patient-profiles-header">
         <div>
           <h2 className="page-title">Hồ sơ bệnh nhân</h2>
-          <p className="text-muted">Quản lý hồ sơ khám bệnh của bạn và người thân (Tối đa 5 hồ sơ)</p>
+          <p className="page-sub">Quản lý hồ sơ khám bệnh của bạn và người thân (tối đa 5 hồ sơ).</p>
         </div>
         <button 
           className="btn btn-primary d-flex align-items-center gap-2" 
