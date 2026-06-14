@@ -226,10 +226,11 @@ const SORT_OPTIONS = [
 // ─────────────────────────────────────────────────────────────────────────────
 // SUB-COMPONENT: SummaryCard
 // ─────────────────────────────────────────────────────────────────────────────
-function SummaryCard({ icon: Icon, label, value, colorClass }) {
+function SummaryCard({ icon, label, value, colorClass }) {
+  const IconComponent = icon;
   return (
     <div className={`pt-summary-card ${colorClass}`}>
-      <div className="pt-summary-card__icon"><Icon /></div>
+      <div className="pt-summary-card__icon"><IconComponent /></div>
       <div>
         <p className="pt-summary-card__value">{value}</p>
         <p className="pt-summary-card__label">{label}</p>
@@ -288,7 +289,7 @@ function PatientCard({ patient, onViewProfile }) {
       {/* ── Last visit ── */}
       <div className="pt-card__last-visit">
         <p className="pt-card__last-visit-label">
-          <BsCalendar2WeekFill /> Last visit
+          <BsCalendar2WeekFill /> Lần khám gần nhất
         </p>
         <p className="pt-card__last-visit-date">{lastVisit}</p>
         <p className="pt-card__last-visit-reason">{lastReason}</p>
@@ -300,10 +301,10 @@ function PatientCard({ patient, onViewProfile }) {
           className="pt-btn pt-btn--view"
           onClick={() => onViewProfile(patient)}
         >
-          <FaEye /> View Profile
+          <FaEye /> Xem hồ sơ
         </button>
         <button className="pt-btn pt-btn--book">
-          <FaCalendarPlus /> Book Appointment
+          <FaCalendarPlus /> Đặt lịch
         </button>
       </div>
     </div>
@@ -350,7 +351,7 @@ function PatientModal({ patient, onClose }) {
           </div>
           <div className="pt-modal__identity">
             <h3 className="pt-modal__name">{name}</h3>
-            <p className="pt-modal__meta">{age} yrs · {gender}</p>
+            <p className="pt-modal__meta">{age} tuổi · {gender}</p>
             <span className={`pt-cat-tag ${catCfg.className}`}>{catCfg.label}</span>
           </div>
           <button className="pt-modal__close" onClick={onClose}>
@@ -364,20 +365,20 @@ function PatientModal({ patient, onClose }) {
           {/* Personal info */}
           <div className="pt-modal__section">
             <p className="pt-modal__section-title">
-              <BsPersonBadgeFill /> Personal Information
+              <BsPersonBadgeFill /> Thông tin cá nhân
             </p>
             <div className="pt-modal__info-grid">
               <div className="pt-modal__info-item">
                 <FaBirthdayCake />
                 <div>
-                  <span className="pt-modal__info-label">Date of Birth</span>
+                  <span className="pt-modal__info-label">Ngày sinh</span>
                   <span className="pt-modal__info-value">{dob}</span>
                 </div>
               </div>
               <div className="pt-modal__info-item">
                 <FaPhone />
                 <div>
-                  <span className="pt-modal__info-label">Phone</span>
+                  <span className="pt-modal__info-label">Số điện thoại</span>
                   <span className="pt-modal__info-value">{phone}</span>
                 </div>
               </div>
@@ -391,21 +392,21 @@ function PatientModal({ patient, onClose }) {
               <div className="pt-modal__info-item">
                 <FaMapMarkerAlt />
                 <div>
-                  <span className="pt-modal__info-label">Address</span>
+                  <span className="pt-modal__info-label">Địa chỉ</span>
                   <span className="pt-modal__info-value">{address}</span>
                 </div>
               </div>
               <div className="pt-modal__info-item">
                 <FaTint />
                 <div>
-                  <span className="pt-modal__info-label">Blood Type</span>
+                  <span className="pt-modal__info-label">Nhóm máu</span>
                   <span className="pt-modal__info-value pt-modal__blood">{bloodType}</span>
                 </div>
               </div>
               <div className="pt-modal__info-item">
                 <FaExclamationTriangle />
                 <div>
-                  <span className="pt-modal__info-label">Allergies</span>
+                  <span className="pt-modal__info-label">Dị ứng</span>
                   <span className="pt-modal__info-value">{allergies}</span>
                 </div>
               </div>
@@ -415,7 +416,7 @@ function PatientModal({ patient, onClose }) {
           {/* Visit history */}
           <div className="pt-modal__section">
             <p className="pt-modal__section-title">
-              <BsFileEarmarkMedicalFill /> Visit History
+              <BsFileEarmarkMedicalFill /> Lịch sử khám
             </p>
             <div className="pt-modal__history">
               {history.map((h, idx) => (
@@ -497,22 +498,22 @@ export default function DoctorPatientsPage() {
       {/* ── Page Header ─────────────────────────────────── */}
       <div className="pt-page__header">
         <div>
-          <h1 className="pt-page__title">My Patients</h1>
+          <h1 className="pt-page__title">Bệnh nhân của tôi</h1>
           <p className="pt-page__subtitle">
-            View and manage your patient records and history.
+            Theo dõi và quản lý hồ sơ, lịch sử khám của bệnh nhân.
           </p>
         </div>
         <div className="pt-page__total-badge">
           <FaUserInjured />
-          {totalCount} patients total
+          Tổng {totalCount} bệnh nhân
         </div>
       </div>
 
       {/* ── Summary bar ─────────────────────────────────── */}
       <div className="pt-summary-grid">
-        <SummaryCard icon={BsPersonBadgeFill}        label="Total Patients"   value={totalCount}    colorClass="pt-summary-card--teal"     />
-        <SummaryCard icon={FaHeartbeat}               label="New This Month"   value={newCount}      colorClass="pt-summary-card--navy"     />
-        <SummaryCard icon={FaExclamationTriangle}     label="Critical Cases"   value={criticalCount} colorClass="pt-summary-card--critical"  />
+        <SummaryCard icon={BsPersonBadgeFill}        label="Tổng bệnh nhân" value={totalCount}    colorClass="pt-summary-card--teal"     />
+        <SummaryCard icon={FaHeartbeat}               label="Mới trong tháng" value={newCount}      colorClass="pt-summary-card--navy"     />
+        <SummaryCard icon={FaExclamationTriangle}     label="Cần lưu ý" value={criticalCount} colorClass="pt-summary-card--critical"  />
       </div>
 
       {/* ── Toolbar ─────────────────────────────────────── */}
@@ -523,7 +524,7 @@ export default function DoctorPatientsPage() {
           <input
             type="text"
             className="pt-search__input"
-            placeholder="Search by name or email..."
+            placeholder="Tìm theo tên hoặc email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
