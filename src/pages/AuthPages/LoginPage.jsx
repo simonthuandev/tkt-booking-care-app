@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import authService from "../../api/authService";
 import { BrandLogo } from "../../components/Common/BrandLogo";
 import { login } from "../../store/slices/authSlice";
+import { getRoleLandingPath } from "../../utils/rolePaths";
 import "./LoginPage.scss";
 
 const LoginPage = () => {
@@ -33,13 +34,7 @@ const LoginPage = () => {
     try {
       const resultAction = await dispatch(login(formData)).unwrap();
       toast.success("Đăng nhập thành công!");
-      const returnUrl =
-        resultAction.role === "admin"
-          ? "/app/admin/dashboard"
-          : resultAction.role === "doctor"
-            ? "/app/doctor/dashboard"
-            : "/app/user/dashboard";
-      navigate(returnUrl);
+      navigate(getRoleLandingPath(resultAction.role));
     } catch (error) {
       toast.error(error || "Đăng nhập thất bại");
     }

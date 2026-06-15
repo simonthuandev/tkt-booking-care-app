@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import { fetchCurrentUser } from "../../store/slices/authSlice";
 import LoadingSpinner from "../../components/Common/LoadingSpinner";
 import { toast } from "react-toastify";
+import { getRoleLandingPath } from "../../utils/rolePaths";
 
 const OAuthCallbackPage = () => {
   const navigate = useNavigate();
@@ -13,10 +14,8 @@ const OAuthCallbackPage = () => {
     const handleAuth = async () => {
       try {
         const resultAction = await dispatch(fetchCurrentUser()).unwrap();
-        const returnUrl = resultAction.role === "admin" ? "/app/admin/dashboard" 
-          : resultAction.role === "doctor" ? "/app/doctor/dashboard" : "/app/user/dashboard";
         toast.success("Đăng nhập thành công!");
-        navigate(returnUrl, { replace: true });
+        navigate(getRoleLandingPath(resultAction.role), { replace: true });
       } catch (error) {
         toast.error("Đăng nhập thất bại, vui lòng thử lại!");
         navigate("/auth/login", { replace: true });

@@ -1,4 +1,3 @@
-export {default as DoctorDashboardPage} from "./DoctorDashboardPage";
 export {default as DoctorAppointmentsPage} from "./DoctorAppointmentsPage";
 export {default as DoctorPatientsPage} from "./DoctorPatientsPage";
 export {default as DoctorReviewsPage} from "./DoctorReviewsPage";
