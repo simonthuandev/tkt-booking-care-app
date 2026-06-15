@@ -118,6 +118,13 @@ export const specialtyService = {
 };
 
 // ==========================================
+// 4.1 Module AI (Gợi ý chuyên khoa)
+// ==========================================
+export const aiService = {
+  triage: (message) => axiosInstance.post("/ai/triage", { message }),
+};
+
+// ==========================================
 // 5. Module TimeSlot (Quản lý Lịch Khám / Ca Làm Việc)
 // ==========================================
 export const timeSlotService = {

@@ -19,6 +19,7 @@ import "./DoctorDetailPage.scss";
 
 const DEFAULT_AVATAR =
   "https://ui-avatars.com/api/?background=0fa39b&color=fff&size=200&name=";
+const AI_BOOKING_REASON_KEY = "tkt_ai_booking_reason";
 
 const DAYS_VI = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
 const DAYS_SHORT = { MON: "T2", TUE: "T3", WED: "T4", THU: "T5", FRI: "T6", SAT: "T7", SUN: "CN" };
@@ -103,7 +104,10 @@ const DoctorDetailPage = () => {
 
   const handleBook = () => {
     if (!selectedSlot) return;
-    navigate(`/app/user/booking/${selectedSlot.id}`, { state: { doctor } });
+    const bookingReason = sessionStorage.getItem(AI_BOOKING_REASON_KEY) || "";
+    navigate(`/app/user/booking/${selectedSlot.id}`, {
+      state: { doctor, bookingReason },
+    });
   };
 
   if (isLoading) return <div className="ddp-loading-wrap"><LoadingSpinner /></div>;
