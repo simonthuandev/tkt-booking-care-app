@@ -1,5 +1,59 @@
 @use "../../styles/variables" as v;
 
+.specialty-header {
+  width: 100%;
+  padding: 40px 20px;
+}
+
+.hospital-info-form {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.specialty-detail-info {
+  width: 100%;
+  color: v.$text;
+  line-height: 1.65;
+
+  h1 {
+    font-family: v.$ff-head;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.15;
+  }
+
+  p,
+  li {
+    font-size: 1rem;
+  }
+
+  ul {
+    padding-left: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+}
+
+.specialty.doctors-page-container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px 60px;
+}
+
+.specialty-doctors-list {
+  width: 100%;
+}
+
+@media (max-width: v.$bp-md) {
+  .specialty-header {
+    padding: 28px 16px;
+  }
+
+  .specialty.doctors-page-container {
+    padding: 28px 16px 48px;
+  }
+}
+
 .specialties-container {
   display: grid;
   padding: 40px;

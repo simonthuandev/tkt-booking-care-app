@@ -308,20 +308,6 @@ const Chatbot = () => {
           </div>
 
           {/* Input */}
-          <div className="chatbot-command-bar">
-            {SYSTEM_COMMANDS.map((item) => (
-              <button
-                key={item.command}
-                type="button"
-                onClick={() => handleCommand(item.command)}
-                disabled={isTyping}
-                title={item.description}
-              >
-                {item.command}
-              </button>
-            ))}
-          </div>
-
           {showCommandMenu && (
             <div className="chatbot-command-menu">
               {SYSTEM_COMMANDS.filter((item) =>

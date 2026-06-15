@@ -375,40 +375,6 @@ $teal-glow:  rgba(11, 163, 163, 0.25);
 }
 
 // System commands
-.chatbot-command-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 8px 14px 0;
-  background: #fff;
-  border-top: 1px solid #f0f0f0;
-  flex-shrink: 0;
-
-  button {
-    border: 1px solid rgba(11,163,163,0.26);
-    border-radius: 999px;
-    background: $teal-light;
-    color: $teal-dark;
-    font-family: 'Be Vietnam Pro', sans-serif;
-    font-size: 11.5px;
-    font-weight: 600;
-    line-height: 1;
-    padding: 7px 9px;
-    cursor: pointer;
-    transition: background 0.14s, border-color 0.14s, opacity 0.14s;
-
-    &:hover:not(:disabled) {
-      background: rgba(11,163,163,0.15);
-      border-color: $teal;
-    }
-
-    &:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-  }
-}
-
 .chatbot-command-menu {
   margin: 8px 14px 0;
   padding: 6px;

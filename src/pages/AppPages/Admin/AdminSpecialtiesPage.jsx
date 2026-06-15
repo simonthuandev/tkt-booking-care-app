@@ -42,8 +42,8 @@ const buildPayload = (form, isEdit = false) => {
     slug: form.slug?.trim() || undefined,
     description: form.description?.trim() || undefined,
     imgURL: form.imgURL?.trim() || undefined,
-    diseases: form.diseases ? form.diseases.split(",").map(d => d.trim()).filter(Boolean) : undefined,
-    information: form.information ? form.information.split(",").map(i => i.trim()).filter(Boolean) : undefined,
+    diseases: form.diseases ? form.diseases.split(";").map(d => d.trim()).filter(Boolean) : undefined,
+    information: form.information ? form.information.split(";").map(i => i.trim()).filter(Boolean) : undefined,
   };
   
   if (isEdit) {
@@ -142,18 +142,18 @@ const SpecialtyFormModal = ({
                 </div>
 
                 <div className="col-12">
-                  <label className="form-label">Mô tả (Tối đa 500 ký tự)</label>
+                  <label className="form-label">Mô tả (Tối đa 1000 ký tự)</label>
                   <textarea className="form-control" name="description" value={form.description} onChange={onChange} rows="3" />
                 </div>
 
                 <div className="col-12">
-                  <label className="form-label">Các bệnh liên quan (Cách nhau bằng dấu phẩy)</label>
-                  <input type="text" className="form-control" name="diseases" value={form.diseases} onChange={onChange} placeholder="VD: Đau đầu, Sốt, Cảm cúm" />
+                  <label className="form-label">Các bệnh liên quan (Cách nhau bằng dấu chấm phẩy)</label>
+                  <input type="text" className="form-control" name="diseases" value={form.diseases} onChange={onChange} placeholder="VD: Đau đầu; Sốt; Cảm cúm" />
                 </div>
 
                 <div className="col-12">
-                  <label className="form-label">Thông tin khác (Cách nhau bằng dấu phẩy)</label>
-                  <input type="text" className="form-control" name="information" value={form.information} onChange={onChange} placeholder="VD: Chữa khỏi 99%, Điều trị ngoại trú" />
+                  <label className="form-label">Thông tin khác (Cách nhau bằng dấu chấm phẩy)</label>
+                  <input type="text" className="form-control" name="information" value={form.information} onChange={onChange} placeholder="VD: Chữa khỏi 99%; Điều trị ngoại trú" />
                 </div>
 
                 {isEdit && (
@@ -343,8 +343,8 @@ export default function AdminSpecialtiesPage() {
     slug: spec.slug ?? "",
     description: spec.description ?? "",
     imgURL: spec.imgURL ?? "",
-    diseases: spec.diseases ? spec.diseases.join(", ") : "",
-    information: spec.information ? spec.information.join(", ") : "",
+    diseases: spec.diseases ? spec.diseases.join("; ") : "",
+    information: spec.information ? spec.information.join("; ") : "",
     isActive: spec.isActive ?? true,
   });
 

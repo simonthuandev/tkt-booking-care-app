@@ -87,8 +87,8 @@ const SpecialtyDetailPage = () => {
           minHeight: "200px"
         }}
       >
-        <form className="hospital-info-form d-flex align-items-center gap-4">
-          <div className="flex-grow-1">
+        <form className="hospital-info-form">
+          <div className="specialty-detail-info">
             <h1 className="fw-bold mb-2">{name}</h1>
             <p className="fw-bold mt-3">Mô tả chuyên khoa:</p>
             <p className="mb-3 text-justify">{description}</p>
@@ -118,8 +118,8 @@ const SpecialtyDetailPage = () => {
         </form>
       </div>
 
-      <div className="specialty doctors-page-container p-5">
-        <div className="d-flex flex-column gap-2">
+      <div className="specialty doctors-page-container">
+        <div className="specialty-doctors-list d-flex flex-column gap-2">
           {apiDoctors.length > 0 ? (
             apiDoctors.map(({ id, slug, img, name, spec, hospital, experience, rating, totalReviews }) => (
               <div

@@ -2,6 +2,7 @@ import { Outlet } from "react-router";
 import NavBar from "../NavBar";
 import Footer from "../Footer";
 import Chatbot from "../Common/Chatbot";
+import ScrollToTopButton from "../Common/ScrollToTopButton";
 
 const PublicLayout = () => {
   return (
@@ -12,6 +13,7 @@ const PublicLayout = () => {
       </main>
       <Footer />
 
+      <ScrollToTopButton />
       <Chatbot />
     </>
   );
