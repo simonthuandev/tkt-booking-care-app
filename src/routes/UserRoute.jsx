@@ -1,3 +1,4 @@
+import { Navigate } from "react-router";
 import UserLayout from "../components/Layout/UserLayout";
 import RoleRoute from "../components/Auth/RoleRoute";
 import * as User from "../pages/AppPages/User";
@@ -9,7 +10,7 @@ const UserRoute = {
     {
       element: <UserLayout />,
       children: [
-        { path: "dashboard", element: <User.UserDashboardPage /> },
+        { path: "dashboard", element: <Navigate to="/app/user/appointments" replace /> },
         { path: "booking/:timeSlotId", element: <User.UserBookingPage /> },
         { path: "appointments", element: <User.UserAppointmentsPage /> },
         { path: "patient-profiles", element: <User.UserPatientProfilesPage /> },

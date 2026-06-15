@@ -21,13 +21,9 @@ const MENU_ITEMS = [
   {
     key: "dashboard",
     label: "Dashboard",
-    getPathByRole: (role) => {
-      if (role === "admin") return "/app/admin/dashboard";
-      if (role === "doctor") return "/app/doctor/dashboard";
-      return "/app/user/dashboard";
-    },
+    path: "/app/admin/dashboard",
     icon: FaTachometerAlt,
-    roles: ["user", "admin", "doctor"],
+    roles: ["admin"],
   },
 
   // User
@@ -178,7 +174,7 @@ const SideBar = () => {
   const menu = useMemo(() => {
     return MENU_ITEMS.filter((item) => item.roles.includes(role)).map((item) => ({
       ...item,
-      path: item.path || item.getPathByRole?.(role) || "/app/user/dashboard",
+      path: item.path || item.getPathByRole?.(role) || "/app/user/appointments",
     }));
   }, [role]);
 

@@ -4,6 +4,7 @@ import Footer from "../../components/Footer";
 import { publicStatsService } from "../../api/appService";
 import "./HomePage.scss";
 import Chatbot from '../../components/Common/Chatbot';
+import ScrollToTopButton from '../../components/Common/ScrollToTopButton';
 
 export default function HomePage() {
   const [scrolled, setScrolled] = useState(false);
@@ -43,6 +44,7 @@ export default function HomePage() {
       <Home.HospitalSection />
       <Home.DoctorsSection />
       <Footer />
+      <ScrollToTopButton />
       <Chatbot />
     </>
   );

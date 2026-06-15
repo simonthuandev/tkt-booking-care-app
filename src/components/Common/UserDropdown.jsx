@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import { logout, logoutAll } from "../../store/slices/authSlice";
 import "./UserDropdown.scss";
 import { FiGrid, FiLogOut, FiSettings } from "react-icons/fi";
+import { getRoleLandingPath, getRoleSettingsPath } from "../../utils/rolePaths";
 
 // ─── Helper: lấy initials từ firstName + lastName ────────────────────────────
 const getInitials = (firstName = "", lastName = "") => {
@@ -74,8 +75,8 @@ const UserDropdown = ({ user, onClose }) => {
     navigate(path);
   };
 
-  const dashboardPath = `/app/${user.role || "user"}/dashboard`;
-  const settingsPath  = `/app/${user.role || "user"}/settings`;
+  const dashboardPath = getRoleLandingPath(user.role);
+  const settingsPath  = getRoleSettingsPath(user.role);
   const fullName      = getFullName(user.firstName, user.lastName);
 
   return (

@@ -1,4 +1,3 @@
-export {default as UserDashboardPage} from "./UserDashboardPage";
 export {default as UserPatientProfilesPage} from "./UserPatientProfilesPage";
 export {default as UserSettingsPage} from "./UserSettingsPage";
 export {default as UserAppointmentsPage} from "./UserAppointmentsPage";
