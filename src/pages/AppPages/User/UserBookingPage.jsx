@@ -24,7 +24,6 @@ import "./UserBookingPage.scss";
 
 const DEFAULT_AVATAR =
   "https://ui-avatars.com/api/?background=0fa39b&color=fff&size=200&name=";
-const AI_BOOKING_REASON_KEY = "tkt_ai_booking_reason";
 
 const RELATIONSHIP_LABELS = {
   self: "Bản thân",
@@ -109,9 +108,7 @@ const UserBookingPage = () => {
 
   const [profiles, setProfiles] = useState([]);
   const [selectedProfileId, setSelectedProfileId] = useState(null);
-  const [reason, setReason] = useState(
-    state?.bookingReason || sessionStorage.getItem(AI_BOOKING_REASON_KEY) || ""
-  );
+  const [reason, setReason] = useState("");
   const [isProfilesLoading, setIsProfilesLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
@@ -146,7 +143,6 @@ const UserBookingPage = () => {
         patientProfileId: selectedProfileId,
         ...(reason.trim() ? { reason: reason.trim() } : {}),
       });
-      sessionStorage.removeItem(AI_BOOKING_REASON_KEY);
       const id = res.data?.data?.id || res.data?.id || null;
       setCreatedAppointmentId(id);
       setShowPaymentModal(true);

@@ -5,8 +5,6 @@ import { FiX, FiSend } from "react-icons/fi";
 import { aiService } from "../../api/appService";
 import "./Chatbot.scss";
 
-const AI_BOOKING_REASON_KEY = "tkt_ai_booking_reason";
-
 // ─── Gợi ý nhanh ──────────────────────────────────────────────────────────────
 const QUICK_SUGGESTIONS = [
   "Tôi đau bụng và buồn nôn",
@@ -108,7 +106,6 @@ const Chatbot = () => {
     resetTextareaHeight();
 
     if (command === "/clear") {
-      sessionStorage.removeItem(AI_BOOKING_REASON_KEY);
       setMessages([WELCOME_MESSAGE]);
       return;
     }
@@ -205,9 +202,6 @@ const Chatbot = () => {
 
   const openSpecialty = (triage) => {
     if (!triage?.specialtySlug) return;
-    if (triage.bookingReason) {
-      sessionStorage.setItem(AI_BOOKING_REASON_KEY, triage.bookingReason);
-    }
     setIsOpen(false);
     navigate(`/specialties/${triage.specialtySlug}`);
   };
