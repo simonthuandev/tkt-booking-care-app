@@ -30,6 +30,20 @@ export const login = createAsyncThunk(
   }
 );
 
+export const exchangeOAuthCode = createAsyncThunk(
+  "auth/exchangeOAuthCode",
+  async (code, { rejectWithValue }) => {
+    try {
+      const res = await authService.exchangeOAuthCode(code);
+      return res.data.user;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message ?? "Đăng nhập Google thất bại"
+      );
+    }
+  }
+);
+
 export const register = createAsyncThunk(
   "auth/register",
   async (data, { rejectWithValue }) => {
@@ -136,6 +150,27 @@ const authSlice = createSlice({
       .addCase(login.rejected, (state, action) => {
         state.isLoading = false;
         state.isAuthenticated = false;
+        state.error = action.payload;
+      });
+
+    // ── Google OAuth exchange ─────────────────────────────────────────────
+    builder
+      .addCase(exchangeOAuthCode.pending, (state) => {
+        state.isLoading = true;
+        state.isInitializing = true;
+        state.error = null;
+      })
+      .addCase(exchangeOAuthCode.fulfilled, (state, action) => {
+        state.user = action.payload;
+        state.isAuthenticated = true;
+        state.isLoading = false;
+        state.isInitializing = false;
+      })
+      .addCase(exchangeOAuthCode.rejected, (state, action) => {
+        state.user = null;
+        state.isAuthenticated = false;
+        state.isLoading = false;
+        state.isInitializing = false;
         state.error = action.payload;
       });
 

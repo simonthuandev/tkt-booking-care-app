@@ -10,12 +10,14 @@ import LoadingSpinner from "./components/Common/LoadingSpinner";
 const App = () => {
   const dispatch = useDispatch();
   const { isInitializing } = useSelector((state) => state.auth);
+  const isOAuthCallback = window.location.pathname === "/auth/oauth/callback";
 
   useEffect(() => {
+    if (isOAuthCallback) return;
     dispatch(fetchCurrentUser());
-  }, [dispatch]);
+  }, [dispatch, isOAuthCallback]);
 
-  if (isInitializing) {
+  if (isInitializing && !isOAuthCallback) {
     return <LoadingSpinner />;
   }
 

@@ -39,6 +39,7 @@ const setupInterceptors = (store) => {
       // /auth/me được phép trigger refresh — xem giải thích bên dưới
       const isHardSkip =
         url.includes("/auth/refresh") ||
+        url.includes("/auth/oauth/exchange") ||
         url.includes("/auth/login") ||
         url.includes("/auth/register") ||
         url.match(/\.(jpeg|jpg|gif|png|svg|webp)$/i); // Bypass resource URLs

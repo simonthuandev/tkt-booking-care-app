@@ -10,6 +10,8 @@ const authService = {
 
   login: (data) => axiosInstance.post("/auth/login", data),
 
+  exchangeOAuthCode: (code) => axiosInstance.post("/auth/oauth/exchange", { code }),
+
   logout: () => axiosInstance.post("/auth/logout"),
 
   logoutAll: () => axiosInstance.post("/auth/logout-all"),
