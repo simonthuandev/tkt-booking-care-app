@@ -264,39 +264,15 @@ function SecuritySection({ user }) {
 }
 
 function EmailVerificationSection({ user }) {
-  const dispatch = useDispatch();
-  const [requestResult, setRequestResult] = useState(null);
-  const [token, setToken] = useState("");
   const [loading, setLoading] = useState(false);
 
   const requestVerification = async () => {
     setLoading(true);
     try {
       const res = await authService.requestEmailVerification();
-      setRequestResult(res.data);
-      toast.success(res.data?.message || "Đã tạo link xác thực email.");
+      toast.success(res.data?.message || "Email xác thực đã được gửi.");
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Không thể tạo link xác thực.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const confirm = async () => {
-    if (!token.trim()) {
-      toast.error("Vui lòng nhập token xác thực.");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await authService.confirmEmailVerification({ token: token.trim() });
-      await dispatch(fetchCurrentUser()).unwrap();
-      toast.success("Xác thực email thành công.");
-      setToken("");
-      setRequestResult(null);
-    } catch (error) {
-      toast.error(error?.response?.data?.message || "Token không hợp lệ.");
+      toast.error(error?.response?.data?.message || "Không thể gửi email xác thực.");
     } finally {
       setLoading(false);
     }
@@ -331,32 +307,7 @@ function EmailVerificationSection({ user }) {
             disabled={loading}
             type="button"
           >
-            Tạo link xác thực
-          </button>
-
-          {requestResult?.devLink && (
-            <div className="danger-zone mt-3">
-              <p className="danger-zone__title">Dev verification link</p>
-              <p className="danger-zone__sub" style={{ wordBreak: "break-all" }}>
-                {requestResult.devLink}
-              </p>
-            </div>
-          )}
-
-          <div className="settings-form mt-3" style={{ maxWidth: 560 }}>
-            <div className="settings-form__group settings-form__group--full">
-              <label>Token xác thực</label>
-              <input value={token} onChange={(e) => setToken(e.target.value)} />
-            </div>
-          </div>
-
-          <button
-            className="settings-btn settings-btn--save"
-            onClick={confirm}
-            disabled={loading}
-            type="button"
-          >
-            Xác thực email
+            Gửi email xác thực
           </button>
         </>
       )}

@@ -9,19 +9,19 @@ import "./LoginPage.scss";
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [devLink, setDevLink] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setDevLink("");
 
     try {
       const res = await authService.requestPasswordReset({ email });
-      toast.success(res.data?.message || "Nếu email tồn tại, link khôi phục đã được tạo.");
-      if (res.data?.devLink) setDevLink(res.data.devLink);
+      toast.success(
+        res.data?.message ||
+          "Nếu email tồn tại, vui lòng kiểm tra hộp thư để khôi phục mật khẩu.",
+      );
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Không thể tạo link khôi phục.");
+      toast.error(error?.response?.data?.message || "Không thể gửi email khôi phục.");
     } finally {
       setLoading(false);
     }
@@ -73,14 +73,6 @@ const ForgotPasswordPage = () => {
             <span>{loading ? "Đang xử lý..." : "Tiếp tục"}</span>
             <FaArrowRight />
           </button>
-
-          {devLink && (
-            <div className="alert alert-info mt-3 mb-0" style={{ wordBreak: "break-all" }}>
-              <strong>Dev reset link:</strong>
-              <br />
-              <Link to={devLink.replace(window.location.origin, "")}>{devLink}</Link>
-            </div>
-          )}
 
           <p className="auth-switch">
             <Link to="/auth/login">Quay lại trang đăng nhập</Link>
